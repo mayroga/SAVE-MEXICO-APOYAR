@@ -8,3 +8,4 @@ google-generativeai
 stripe
 reportlab
 requests
+google-genai
