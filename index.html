@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA BY MAY ROGA LLC - Asistente Consular</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 600px; background: #fff; margin: auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #b32134; text-align: center; font-size: 24px; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }
+        .step { display: none; }
+        .step.active { display: block; }
+        label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; background: #fff; }
+        .buttons { margin-top: 25px; display: flex; justify-content: space-between; gap: 10px; }
+        button { background: #b32134; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; flex: 1; }
+        button.secondary { background: #6c757d; }
+        button:hover { opacity: 0.9; }
+        .alert-box { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 13px; font-weight: bold; text-align: center; }
+        .loading { text-align: center; font-size: 18px; color: #004080; display: none; margin-top: 20px; }
+        .legal-footer { margin-top: 20px; font-size: 11px; color: #777; text-align: center; line-height: 1.4; border-top: 1px solid #eee; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>AURA BY MAY ROGA LLC</h1>
+    <p class="subtitle">Asistente Consular | Preparación de Papelería Oficial</p>
+
+    <div id="formulario">
+        <!-- PASO 1 -->
+        <div class="step active" id="step-1">
+            <div class="alert-box">🇲🇽 CERO ERRORES: Ingrese sus datos exactamente como aparecen en sus documentos oficiales.</div>
+            
+            <label>Seleccione el Trámite Consular:</label>
+            <select id="tipo_tramite" onchange="actualizarEtiquetasExtra()">
+                <option value="pasaporte">Pasaporte Mexicano</option>
+                <option value="matricula">Matrícula Consular</option>
+                <option value="registro">Registro de Nacimiento (Doble Nacionalidad)</option>
+            </select>
+
+            <label>Primer Nombre (Obligatorio):</label>
+            <input type="text" id="primer_nombre" placeholder="Ej. JUAN">
+            
+            <label>Segundo Nombre (Opcional):</label>
+            <input type="text" id="segundo_nombre" placeholder="Ej. ANTONIO">
+            
+            <div class="buttons">
+                <div></div>
+                <button onclick="validarPaso1()">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- PASO 2 (Con botón Atrás) -->
+        <div class="step" id="step-2">
+            <label>Apellido Paterno (Obligatorio):</label>
+            <input type="text" id="primer_apellido" placeholder="Ej. PÉREZ">
+            
+            <label>Apellido Materno (Opcional):</label>
+            <input type="text" id="segundo_apellido" placeholder="Ej. GÓMEZ">
+            
+            <div class="buttons">
+                <button class="secondary" onclick="siguienteStep(1)">Atrás</button>
+                <button onclick="validarPaso2()">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- PASO 3 (Con botón Atrás) -->
+        <div class="step" id="step-3">
+            <label>Fecha de Nacimiento (Obligatorio):</label>
+            <input type="date" id="fecha_nacimiento">
+            
+            <label>Estado o Lugar de Nacimiento en México (Obligatorio):</label>
+            <input type="text" id="lugar_nacimiento" placeholder="Ej. JALISCO">
+            
+            <div class="buttons">
+                <button class="secondary" onclick="siguienteStep(2)">Atrás</button>
+                <button onclick="validarPaso3()">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- PASO 4 (Con botón Atrás) -->
+        <div class="step" id="step-4">
+            <div class="alert-box">🚨 VERIFICACIÓN FINAL: Incluya calle, número, ciudad, estado y Código Postal (Zip Code).</div>
+            
+            <label>Dirección Actual en EE. UU. (Con Código Postal):</label>
+            <input type="text" id="direccion_usa" placeholder="Ej. 123 MAIN ST, MIAMI FL 33101">
+            
+            <label>Teléfono de Contacto (10 dígitos):</label>
+            <input type="text" id="telefono" placeholder="Ej. 7860000000">
+
+            <div id="seccion-extra" style="display: none;">
+                <label id="label-extra-1">Dato Adicional 1:</label>
+                <input type="text" id="extra_1" placeholder="">
+                
+                <label id="label-extra-2">Dato Adicional 2:</label>
+                <input type="text" id="extra_2" placeholder="">
+            </div>
+            
+            <div class="buttons">
+                <button class="secondary" onclick="siguienteStep(3)">Atrás</button>
+                <button onclick="enviarDatos()" style="background: #28a745;">¡Generar Guía Oficial Garantizada!</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading-box">
+        <p>Validando parámetros y generando documento oficial...</p>
+    </div>
+
+    <div class="legal-footer">
+        AURA BY MAY ROGA LLC | Herramienta de orientación independiente y de apoyo administrativo. No gubernamental.
+    </div>
+</div>
+
+<script>
+    function siguienteStep(n) {
+        const tipo = document.getElementById('tipo_tramite').value;
+        const seccionExtra = document.getElementById('seccion-extra');
+        
+        if (n === 4) {
+            if (tipo === 'pasaporte') {
+                seccionExtra.style.display = 'none';
+            } else {
+                seccionExtra.style.display = 'block';
+                actualizarEtiquetasExtra();
+            }
+        }
+
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById('step-' + n).classList.add('active');
+    }
+
+    function validarPaso1() {
+        if (!document.getElementById('primer_nombre').value.trim()) {
+            alert('⚠️ El primer nombre es obligatorio.');
+            return;
+        }
+        siguienteStep(2);
+    }
+
+    function validarPaso2() {
+        if (!document.getElementById('primer_apellido').value.trim()) {
+            alert('⚠️ El apellido paterno es obligatorio.');
+            return;
+        }
+        siguienteStep(3);
+    }
+
+    function validarPaso3() {
+        if (!document.getElementById('fecha_nacimiento').value || !document.getElementById('lugar_nacimiento').value.trim()) {
+            alert('⚠️ Debe completar la fecha y lugar de nacimiento.');
+            return;
+        }
+        siguienteStep(4);
+    }
+
+    function actualizarEtiquetasExtra() {
+        const tipo = document.getElementById('tipo_tramite').value;
+        const lbl1 = document.getElementById('label-extra-1');
+        const lbl2 = document.getElementById('label-extra-2');
+        const inp1 = document.getElementById('extra_1');
+        const inp2 = document.getElementById('extra_2');
+
+        if (tipo === 'matricula') {
+            lbl1.innerText = "Contacto de Emergencia (Nombre Completo):";
+            inp1.placeholder = "Ej. MARÍA PÉREZ";
+            lbl2.innerText = "Teléfono de Emergencia (10 dígitos):";
+            inp2.placeholder = "Ej. 7861111111";
+        } else if (tipo === 'registro') {
+            lbl1.innerText = "Nombre del Padre/Madre Mexicano(a):";
+            inp1.placeholder = "Ej. CARLOS PÉREZ";
+            lbl2.innerText = "Hospital o Lugar de Nacimiento en EE. UU.:";
+            inp2.placeholder = "Ej. JACKSON MEMORIAL HOSPITAL";
+        }
+    }
+
+    async function enviarDatos() {
+        const dir = document.getElementById('direccion_usa').value.trim();
+        const tel = document.getElementById('telefono').value.trim();
+
+        if (!dir || !tel) {
+            alert('⚠️ La dirección completa con código postal y el teléfono son obligatorios.');
+            return;
+        }
+
+        const payload = {
+            tipo_tramite: document.getElementById('tipo_tramite').value,
+            primer_nombre: document.getElementById('primer_nombre').value,
+            segundo_nombre: document.getElementById('segundo_nombre').value,
+            primer_apellido: document.getElementById('primer_apellido').value,
+            segundo_apellido: document.getElementById('segundo_apellido').value,
+            fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+            lugar_nacimiento: document.getElementById('lugar_nacimiento').value,
+            direccion_usa: dir,
+            telefono: tel,
+            extra_1: document.getElementById('extra_1').value,
+            extra_2: document.getElementById('extra_2').value
+        };
+
+        document.getElementById('formulario').style.display = 'none';
+        document.getElementById('loading-box').style.display = 'block';
+
+        try {
+            const response = await fetch('/api/generar-tramite-mexicano', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const resultado = await response.json();
+            if (response.ok) {
+                window.location.href = resultado.archivo;
+            } else {
+                alert('Error: ' + resultado.detail);
+                document.getElementById('formulario').style.display = 'block';
+                document.getElementById('loading-box').style.display = 'none';
+            }
+        } catch (error) {
+            alert('Error de conexión con el servidor.');
+            document.getElementById('formulario').style.display = 'block';
+            document.getElementById('loading-box').style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
