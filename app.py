@@ -16,7 +16,7 @@ import stripe
 # Importación de la librería oficial y actual para Gemini
 from google import genai
 
-app = FastAPI(title="SAVE MÉXICO AYUDAR - Asistente de Trámites Consulares", version="3.2")
+app = FastAPI(title="SAVE MÉXICO AYUDAR - Asistencia Privada de Gestión Documental", version="3.3")
 
 security = HTTPBasic()
 
@@ -259,7 +259,7 @@ async def generar_guia_consular(datos: DatosTramiteConsular, username: str = Dep
     
     checklist_data = []
     for req in config["requisitos"]:
-        checklist_data.append([Paragraph("[   ]", estilo_texto), Paragraph(req, estilo_texto)])
+        checklist_data.append([Paragraph("[    ]", estilo_texto), Paragraph(req, estilo_texto)])
 
     t_check = Table(checklist_data, colWidths=[30, 500])
     t_check.setStyle(TableStyle([
@@ -274,9 +274,9 @@ async def generar_guia_consular(datos: DatosTramiteConsular, username: str = Dep
     elementos.append(Spacer(1, 10))
 
     texto_legal = (
-        "SAVE MÉXICO AYUDAR | Asesoría Consular Independiente.<br/>"
-        "Operado por MAY ROGA LLC, Florida. El alcance legal se limita al comprador en USA.<br/>"
-        "Esta guía ayuda a organizar su expediente. Los requisitos definitivos corresponden a la autoridad competente."
+        "SAVE MÉXICO AYUDAR | Asistencia Privada de Gestión Documental.<br/>"
+        "Operado por MAY ROGA LLC, Florida. El alcance legal se limita exclusivamente al comprador en USA.<br/>"
+        "Este documento es una guía privada de organización de expedientes y no constituye representación oficial."
     )
     elementos.append(Paragraph(texto_legal, estilo_legal))
 
