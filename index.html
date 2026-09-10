@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAVE MÉXICO AYUDAR- Asistente de Trámites Consulares</title>
+    <title>SAVE MÉXICO AYUDAR - Asistente de Trámites Consulares</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 650px; background: #fff; margin: auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
@@ -76,7 +76,7 @@
         </div>
     </div>
 
-    <!-- VISTA 3: TRAMITE / PREGUNTA CENTRAL (NUNCA AMONTONAR) -->
+    <!-- VISTA 3: TRAMITE / PREGUNTA CENTRAL -->
     <div id="vista-tramite" class="section-view">
         <div class="alert-box">¿Qué necesitas resolver hoy?</div>
         
@@ -156,22 +156,34 @@
             alert('⚠️ Ingrese su usuario y contraseña.');
             return;
         }
-        // Simulación de acceso correcto basado en credenciales válidas
         mostrarSeccion('vista-tramite');
     }
 
     function seleccionarPlan(priceId, monto) {
         planSeleccionado = priceId;
-        alert('Plan seleccionado (' + monto + ' USD). Redirigiendo a Stripe...');
+        alert('Plan seleccionado (' + monto + ' USD).');
     }
 
-    function pagarStripe() {
+    async function pagarStripe() {
         if(!planSeleccionado) {
             alert('⚠️ Seleccione un plan primero.');
             return;
         }
-        // Integración con Stripe Checkout pendiente de backend o redirección directa
-        alert('Conectando con pasarela segura de Stripe...');
+        try {
+            const response = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ price_id: planSeleccionado })
+            });
+            const data = await response.json();
+            if(response.ok && data.checkout_url) {
+                window.location.href = data.checkout_url;
+            } else {
+                alert('Error al iniciar pago: ' + (data.detail || 'Desconocido'));
+            }
+        } catch (error) {
+            alert('Error de conexión con la pasarela de pago.');
+        }
     }
 
     function cerrarSesion() {
@@ -199,9 +211,7 @@
         const tipo = document.getElementById('categoria_tramite').value;
         const seccionExtra = document.getElementById('seccion-extra');
         const lbl1 = document.getElementById('label-extra-1');
-        const inp1 = document.getElementById('extra_1');
         const lbl2 = document.getElementById('label-extra-2');
-        const inp2 = document.getElementById('extra_2');
 
         if (tipo === 'pasaporte' || tipo === 'ine') {
             seccionExtra.style.display = 'none';
@@ -249,10 +259,17 @@
         document.getElementById('vista-tramite').style.display = 'none';
         document.getElementById('loading-box').style.display = 'block';
 
+        const u = document.getElementById('login_user').value.trim();
+        const p = document.getElementById('login_pass').value.trim();
+        const credentials = btoa(u + ':' + p);
+
         try {
             const response = await fetch('/api/generar-guia-consular', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Basic ' + credentials
+                },
                 body: JSON.stringify(payload)
             });
 
