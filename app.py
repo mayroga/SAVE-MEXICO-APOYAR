@@ -4,23 +4,37 @@ import re
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
-from pypdf import PdfReader, PdfWriter
+from pypdf import PdfReader
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+import stripe
 
-app = FastAPI(title="AURA BY MAY ROGA LLC - Asistente Consular", version="2.1")
+# Importación de la librería oficial y actual para Gemini
+from google import genai
 
-PLANTILLAS_DIR = "plantillas"
+app = FastAPI(title="SAVE MÉXICO - Asistente Consular", version="3.1")
+
+# Credenciales y Configuración de Entorno desde Render
+DEV_USER = os.getenv("DEV_USER", "admin")
+DEV_PASS = os.getenv("DEV_PASS", "securepassword")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
+
+# Inicialización correcta del cliente oficial google-genai
+client_genai = None
+if GEMINI_API_KEY:
+    try:
+        client_genai = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception as e:
+        print(f"Aviso al inicializar cliente de GenAI: {e}")
+
 SALIDAS_DIR = "salidas"
-
-os.makedirs(PLANTILLAS_DIR, exist_ok=True)
 os.makedirs(SALIDAS_DIR, exist_ok=True)
 
-class DatosMexicano(BaseModel):
-    tipo_tramite: str
+class DatosTramiteConsular(BaseModel):
+    categoria_tramite: str
     primer_nombre: str
     segundo_nombre: str = ""
     primer_apellido: str
@@ -37,8 +51,8 @@ def limpiar_y_corregir(texto: str) -> str:
         return ""
     return re.sub(r'\s+', ' ', texto).strip().upper()
 
-@app.post("/api/generar-tramite-mexicano")
-async def generar_tramite(datos: DatosMexicano):
+@app.post("/api/generar-guia-consular")
+async def generar_guia_consular(datos: DatosTramiteConsular):
     p1 = limpiar_y_corregir(datos.primer_nombre)
     p2 = limpiar_y_corregir(datos.segundo_nombre)
     a1 = limpiar_y_corregir(datos.primer_apellido)
@@ -50,7 +64,7 @@ async def generar_tramite(datos: DatosMexicano):
     ex2 = limpiar_y_corregir(datos.extra_2)
     
     if not p1 or not a1 or not datos.fecha_nacimiento or not lugar or not direccion or not telefono:
-        raise HTTPException(status_code=400, detail="ALERTA: Faltan datos obligatorios. Verifique los campos antes de continuar.")
+        raise HTTPException(status_code=400, detail="Faltan datos obligatorios. Verifique los campos antes de continuar.")
     
     if "-" not in datos.fecha_nacimiento:
         raise HTTPException(status_code=400, detail="Formato de fecha no válido.")
@@ -58,7 +72,20 @@ async def generar_tramite(datos: DatosMexicano):
     ano, mes, dia = datos.fecha_nacimiento.split("-")
     fecha_formateada = f"{dia}/{mes}/{ano}"
 
-    # Configuración del PDF con ReportLab Flowables para máxima elegancia y cero amontonamiento
+    # Opcional: Si deseas consultar contenido inteligente adicional vía GenAI SDK
+    analisis_ia = ""
+    if client_genai:
+        try:
+            prompt_modelo = f"Genera una recomendación breve de una línea para un mexicano preparándose para el trámite de {datos.categoria_tramite} en Estados Unidos."
+            response = client_genai.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt_modelo,
+            )
+            if response and response.text:
+                analisis_ia = response.text.strip()
+        except Exception as e:
+            analisis_ia = "Verifique sus documentos originales directamente en el portal del consulado mexicano."
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -71,124 +98,121 @@ async def generar_tramite(datos: DatosMexicano):
     
     styles = getSampleStyleSheet()
     
-    # Estilos profesionales personalizados
     estilo_titulo = ParagraphStyle(
-        'TituloDoc',
-        parent=styles['Heading1'],
-        fontName='Helvetica-Bold',
-        fontSize=15,
-        leading=18,
-        textColor=colors.HexColor("#b32134"),
-        alignment=1, # Centrado
-        spaceAfter=15
+        'TituloDoc', parent=styles['Heading1'], fontName='Helvetica-Bold',
+        fontSize=14, leading=16, textColor=colors.HexColor("#b32134"),
+        alignment=1, spaceAfter=12
     )
     
     estilo_seccion = ParagraphStyle(
-        'SeccionDoc',
-        parent=styles['Heading2'],
-        fontName='Helvetica-Bold',
-        fontSize=11,
-        leading=14,
-        textColor=colors.HexColor("#1a1a1a"),
-        spaceBefore=12,
-        spaceAfter=6
+        'SeccionDoc', parent=styles['Heading2'], fontName='Helvetica-Bold',
+        fontSize=11, leading=14, textColor=colors.HexColor("#1a1a1a"),
+        spaceBefore=10, spaceAfter=6
     )
     
     estilo_texto = ParagraphStyle(
-        'TextoDoc',
-        parent=styles['Normal'],
-        fontName='Helvetica',
-        fontSize=10,
-        leading=14,
-        textColor=colors.HexColor("#333333"),
-        spaceAfter=4
+        'TextoDoc', parent=styles['Normal'], fontName='Helvetica',
+        fontSize=10, leading=14, textColor=colors.HexColor("#333333"), spaceAfter=4
     )
     
     estilo_aviso = ParagraphStyle(
-        'AvisoDoc',
-        parent=styles['Normal'],
-        fontName='Helvetica-Bold',
-        fontSize=9,
-        leading=12,
-        textColor=colors.HexColor("#856404"),
-        spaceBefore=6,
-        spaceAfter=6
+        'AvisoDoc', parent=styles['Normal'], fontName='Helvetica-Bold',
+        fontSize=9, leading=12, textColor=colors.HexColor("#856404"),
+        spaceBefore=6, spaceAfter=6
     )
 
     estilo_legal = ParagraphStyle(
-        'LegalDoc',
-        parent=styles['Normal'],
-        fontName='Helvetica-Oblique',
-        fontSize=8,
-        leading=10,
-        textColor=colors.HexColor("#666666"),
-        alignment=1,
-        spaceBefore=20
+        'LegalDoc', parent=styles['Normal'], fontName='Helvetica-Oblique',
+        fontSize=8, leading=10, textColor=colors.HexColor("#666666"),
+        alignment=1, spaceBefore=15
     )
 
     elementos = []
-
-    # Encabezado institucional
-    elementos.append(Paragraph("AURA BY MAY ROGA LLC", estilo_titulo))
+    elementos.append(Paragraph("SAVE MÉXICO", estilo_titulo))
     
-    if datos.tipo_tramite == "pasaporte":
-        nombre_base = "pasaporte"
-        titulo_tramite = "GUÍA OFICIAL DE PREPARACIÓN CONSULAR: PASAPORTE MEXICANO"
-        requisitos = [
-            "Acta de nacimiento mexicana original (Verificar que no sea extemporánea ni ilegible).",
-            "Identificación oficial vigente con fotografía (INE, Matrícula o Pasaporte anterior).",
-            "CURP certificada e impresa recientemente.",
-            "Comprobante de domicilio en EE. UU. con Código Postal visible."
-        ]
-        nota_importante = "AVISO IMPORTANTE: Si el recibo de domicilio está a nombre del propietario o rentador, lleve una carta de residencia firmada."
-    elif datos.tipo_tramite == "matricula":
-        nombre_base = "matricula"
-        titulo_tramite = "GUÍA OFICIAL DE PREPARACIÓN CONSULAR: MATRÍCULA CONSULAR"
-        requisitos = [
-            "Acta de nacimiento mexicana original.",
-            "Identificación oficial con fotografía vigente.",
-            "Comprobante de domicilio reciente en EE. UU. con Código Postal claro.",
-            "Datos de contacto de emergencia debidamente registrados."
-        ]
-        nota_importante = "AVISO IMPORTANTE: Asegúrese de que su comprobante refleje exactamente su dirección residencial actual."
-    elif datos.tipo_tramite == "registro":
-        nombre_base = "registro_nacimiento"
-        titulo_tramite = "GUÍA OFICIAL DE PREPARACIÓN: REGISTRO DE NACIMIENTO (DOBLE NACIONALIDAD)"
-        requisitos = [
-            "Certificado de nacimiento de EE. UU. (Formato Largo / Long Form original).",
-            "Actas de nacimiento mexicanas originales de los padres.",
-            "Identificaciones oficiales vigentes de ambos padres.",
-            "Acta de matrimonio de los padres (si aplica) o presencia de ambos."
-        ]
-        nota_importante = "AVISO IMPORTANTE: El certificado de EE. UU. debe ser el formato largo con firmas legibles."
-    else:
-        raise HTTPException(status_code=400, detail="Trámite no válido.")
+    # Mapeo de Trámites Consulares para Mexicanos en EE. UU.
+    tramites_config = {
+        "pasaporte": {
+            "nombre_base": "pasaporte",
+            "titulo": "GUÍA DE PREPARACIÓN: PASAPORTE MEXICANO EN EE. UU.",
+            "requisitos": [
+                "Acta de nacimiento mexicana original.",
+                "Identificación oficial vigente con fotografía (INE, Matrícula o Pasaporte anterior).",
+                "CURP certificada e impresa recientemente.",
+                "Comprobante de domicilio reciente en EE. UU. con código postal visible."
+            ],
+            "nota": f"RECOMENDACIÓN: {analisis_ia if analisis_ia else 'Verifique que su identificación y acta de nacimiento coincidan exactamente.'}"
+        },
+        "matricula": {
+            "nombre_base": "matricula_consular",
+            "titulo": "GUÍA DE PREPARACIÓN: MATRÍCULA CONSULAR DE ALTA SEGURIDAD",
+            "requisitos": [
+                "Acta de nacimiento mexicana original.",
+                "Identificación oficial con fotografía vigente.",
+                "Comprobante de domicilio reciente en EE. UU.",
+                "Datos de contacto de emergencia debidamente registrados."
+            ],
+            "nota": "RECOMENDACIÓN: Compruebe que el comprobante de domicilio refleje su residencia actual en el exterior."
+        },
+        "ine": {
+            "nombre_base": "credencial_ine",
+            "titulo": "GUÍA DE PREPARACIÓN: CREDENCIAL PARA VOTAR (INE DESDE EL EXTRANJERO)",
+            "requisitos": [
+                "Acta de nacimiento mexicana original.",
+                "Identificación oficial vigente con fotografía.",
+                "Comprobante de domicilio reciente en EE. UU."
+            ],
+            "nota": "RECOMENDACIÓN: Ingrese al portal oficial del INE para verificar el estatus de su solicitud postal."
+        },
+        "registro": {
+            "nombre_base": "registro_nacimiento",
+            "titulo": "GUÍA DE PREPARACIÓN: REGISTRO DE NACIMIENTO (DOBLE NACIONALIDAD)",
+            "requisitos": [
+                "Certificado de nacimiento de EE. UU. (Formato Largo / Long Form original).",
+                "Actas de nacimiento mexicanas originales de los padres.",
+                "Identificaciones oficiales vigentes de ambos padres.",
+                "Acta de matrimonio de los padres (si aplica)."
+            ],
+            "nota": "RECOMENDACIÓN: El certificado estadounidense debe ser el formato largo con firmas legibles."
+        },
+        "actas": {
+            "nombre_base": "copia_actas",
+            "titulo": "GUÍA DE PREPARACIÓN: SOLICITUD DE ACTAS DESDE MÉXICO",
+            "requisitos": [
+                "Datos precisos de la persona registrada (Nombre completo y fecha exacta).",
+                "Identificación oficial vigente del solicitante.",
+                "CURP o datos de referencia del documento buscado."
+            ],
+            "nota": "RECOMENDACIÓN: Confirme que los datos proporcionados coincidan con el archivo del Registro Civil en México."
+        },
+        "poderes": {
+            "nombre_base": "poderes_notariales",
+            "titulo": "GUÍA DE PREPARACIÓN: PODERES Y ACTOS NOTARIALES CONSULARES",
+            "requisitos": [
+                "Identificación oficial vigente del otorgante (mexicano).",
+                "Datos completos y generales de la persona que recibirá el poder en México.",
+                "Descripción clara de las facultades o actos que se van a delegar."
+            ],
+            "nota": "RECOMENDACIÓN: Redacte con claridad el propósito del poder antes de acudir al consulado."
+        }
+    }
 
-    elementos.append(Paragraph(titulo_tramite, estilo_seccion))
-    elementos.append(Spacer(1, 5))
+    config = tramites_config.get(datos.categoria_tramite)
+    if not config:
+        raise HTTPException(status_code=400, detail="Trámite consular no válido.")
 
-    # Tabla de datos limpios y profesionales
-    if datos.tipo_tramite == "pasaporte":
-        datos_tabla = [
-            [Paragraph("<b>Titular:</b>", estilo_texto), Paragraph(f"{p1} {p2} {a1} {a2}", estilo_texto)],
-            [Paragraph("<b>Nacimiento:</b>", estilo_texto), Paragraph(f"{fecha_formateada} ({lugar})", estilo_texto)],
-            [Paragraph("<b>Domicilio USA:</b>", estilo_texto), Paragraph(f"{direccion}", estilo_texto)],
-            [Paragraph("<b>Teléfono:</b>", estilo_texto), Paragraph(f"{telefono}", estilo_texto)]
-        ]
-    elif datos.tipo_tramite == "matricula":
-        datos_tabla = [
-            [Paragraph("<b>Titular:</b>", estilo_texto), Paragraph(f"{p1} {p2} {a1} {a2}", estilo_texto)],
-            [Paragraph("<b>Nacimiento:</b>", estilo_texto), Paragraph(f"{fecha_formateada} ({lugar})", estilo_texto)],
-            [Paragraph("<b>Domicilio USA:</b>", estilo_texto), Paragraph(f"{direccion} | Tel: {telefono}", estilo_texto)],
-            [Paragraph("<b>Emergencia:</b>", estilo_texto), Paragraph(f"{ex1} (Tel: {ex2})", estilo_texto)]
-        ]
-    else:
-        datos_tabla = [
-            [Paragraph("<b>Menor:</b>", estilo_texto), Paragraph(f"{p1} {p2} {a1} {a2}", estilo_texto)],
-            [Paragraph("<b>Nacimiento:</b>", estilo_texto), Paragraph(f"{fecha_formateada} en {lugar}", estilo_texto)],
-            [Paragraph("<b>Familiar:</b>", estilo_texto), Paragraph(f"Padre/Madre: {ex1}", estilo_texto)],
-            [Paragraph("<b>Hospital USA:</b>", estilo_texto), Paragraph(f"{ex2}", estilo_texto)]
-        ]
+    elementos.append(Paragraph(config["titulo"], estilo_seccion))
+    elementos.append(Spacer(1, 4))
+
+    datos_tabla = [
+        [Paragraph("<b>Titular / Solicitante:</b>", estilo_texto), Paragraph(f"{p1} {p2} {a1} {a2}", estilo_texto)],
+        [Paragraph("<b>Nacimiento:</b>", estilo_texto), Paragraph(f"{fecha_formateada} ({lugar})", estilo_texto)],
+        [Paragraph("<b>Domicilio USA:</b>", estilo_texto), Paragraph(f"{direccion}", estilo_texto)],
+        [Paragraph("<b>Teléfono:</b>", estilo_texto), Paragraph(f"{telefono}", estilo_texto)]
+    ]
+
+    if ex1 or ex2:
+        datos_tabla.append([Paragraph("<b>Referencia Extra:</b>", estilo_texto), Paragraph(f"{ex1} | {ex2}", estilo_texto)])
 
     t = Table(datos_tabla, colWidths=[110, 420])
     t.setStyle(TableStyle([
@@ -196,46 +220,44 @@ async def generar_tramite(datos: DatosMexicano):
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#d6d8db")),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor("#e9ecef")),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
         ('LEFTPADDING', (0,0), (-1,-1), 8),
         ('RIGHTPADDING', (0,0), (-1,-1), 8),
     ]))
     
     elementos.append(t)
-    elementos.append(Spacer(1, 15))
+    elementos.append(Spacer(1, 10))
 
-    # Sección de Checklist con diseño limpio
-    elementos.append(Paragraph("CHECKLIST DE REQUISITOS OBLIGATORIOS", estilo_seccion))
+    elementos.append(Paragraph("CHECKLIST DE DOCUMENTOS A PREPARAR", estilo_seccion))
     
     checklist_data = []
-    for req in requisitos:
+    for req in config["requisitos"]:
         checklist_data.append([Paragraph("[   ]", estilo_texto), Paragraph(req, estilo_texto)])
 
     t_check = Table(checklist_data, colWidths=[30, 500])
     t_check.setStyle(TableStyle([
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('TOPPADDING', (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('TOPPADDING', (0,0), (-1,-1), 3),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
     ]))
     
     elementos.append(t_check)
+    elementos.append(Spacer(1, 8))
+    elementos.append(Paragraph(config["nota"], estilo_aviso))
     elementos.append(Spacer(1, 10))
-    elementos.append(Paragraph(nota_importante, estilo_aviso))
-    elementos.append(Spacer(1, 20))
 
-    # Escudo Legal de AURA BY MAY ROGA LLC
     texto_legal = (
-        "AURA BY MAY ROGA LLC | Servicio de Orientación Consular Profesional.<br/>"
-        "Esta guía es una herramienta de apoyo administrativo independiente y no constituye un documento oficial gubernamental.<br/>"
-        "La responsabilidad de presentar correctamente los documentos ante la autoridad consular recae exclusivamente en el usuario."
+        "SAVE MÉXICO | Asistente de Trámites Consulares Independiente.<br/>"
+        "Operado por MAY ROGA LLC, Florida. No es una agencia del Gobierno de México ni representa a ningún consulado.<br/>"
+        "Esta guía ayuda a organizar su expediente. Los requisitos definitivos y la aprobación corresponden a la autoridad consular competente."
     )
     elementos.append(Paragraph(texto_legal, estilo_legal))
 
     doc.build(elementos)
     buffer.seek(0)
     
-    nombre_salida = f"{nombre_base}_mexicano_{os.urandom(4).hex()}.pdf"
+    nombre_salida = f"{config['nombre_base']}_mexico_{os.urandom(4).hex()}.pdf"
     ruta_salida = os.path.join(SALIDAS_DIR, nombre_salida)
     
     with open(ruta_salida, "wb") as f:
@@ -247,7 +269,7 @@ async def generar_tramite(datos: DatosMexicano):
 async def descargar(nombre_archivo: str):
     ruta = os.path.join(SALIDAS_DIR, nombre_archivo)
     if os.path.exists(ruta):
-        return FileResponse(ruta, media_type="application/pdf", filename="Guia_Oficial_Consular.pdf")
+        return FileResponse(ruta, media_type="application/pdf", filename="Guia_Preparacion_Consular.pdf")
     raise HTTPException(status_code=404, detail="Archivo no encontrado.")
 
 @app.get("/")
