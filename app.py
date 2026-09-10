@@ -1,8 +1,10 @@
+# app.py
 import os
 import io
 import re
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 from pypdf import PdfReader
 from reportlab.lib.pagesizes import letter
@@ -14,7 +16,9 @@ import stripe
 # Importación de la librería oficial y actual para Gemini
 from google import genai
 
-app = FastAPI(title="SAVE MÉXICO - Asistente Consular", version="3.1")
+app = FastAPI(title="SAVE MÉXICO AYUDAR - Asistente de Trámites Consulares", version="3.2")
+
+security = HTTPBasic()
 
 # Credenciales y Configuración de Entorno desde Render
 DEV_USER = os.getenv("DEV_USER", "admin")
@@ -46,13 +50,45 @@ class DatosTramiteConsular(BaseModel):
     extra_1: str = ""
     extra_2: str = ""
 
+class StripeCheckoutRequest(BaseModel):
+    price_id: str
+
+def verificar_credenciales(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = credentials.username == DEV_USER
+    correct_password = credentials.password == DEV_PASS
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Credenciales de acceso no válidas.",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
 def limpiar_y_corregir(texto: str) -> str:
     if not texto:
         return ""
     return re.sub(r'\s+', ' ', texto).strip().upper()
 
+@app.post("/api/create-checkout-session")
+async def create_checkout_session(data: StripeCheckoutRequest):
+    try:
+        domain_url = "https://save-mexico-ayudar.onrender.com"
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price': data.price_id,
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=domain_url + '/?success=true',
+            cancel_url=domain_url + '/?canceled=true',
+        )
+        return {"checkout_url": checkout_session.url}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @app.post("/api/generar-guia-consular")
-async def generar_guia_consular(datos: DatosTramiteConsular):
+async def generar_guia_consular(datos: DatosTramiteConsular, username: str = Depends(verificar_credenciales)):
     p1 = limpiar_y_corregir(datos.primer_nombre)
     p2 = limpiar_y_corregir(datos.segundo_nombre)
     a1 = limpiar_y_corregir(datos.primer_apellido)
@@ -72,11 +108,10 @@ async def generar_guia_consular(datos: DatosTramiteConsular):
     ano, mes, dia = datos.fecha_nacimiento.split("-")
     fecha_formateada = f"{dia}/{mes}/{ano}"
 
-    # Opcional: Si deseas consultar contenido inteligente adicional vía GenAI SDK
     analisis_ia = ""
     if client_genai:
         try:
-            prompt_modelo = f"Genera una recomendación breve de una línea para un mexicano preparándose para el trámite de {datos.categoria_tramite} en Estados Unidos."
+            prompt_modelo = f"Genera una recomendación breve de una línea para un ciudadano preparándose para el trámite de {datos.categoria_tramite} en Estados Unidos."
             response = client_genai.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=prompt_modelo,
@@ -84,7 +119,7 @@ async def generar_guia_consular(datos: DatosTramiteConsular):
             if response and response.text:
                 analisis_ia = response.text.strip()
         except Exception as e:
-            analisis_ia = "Verifique sus documentos originales directamente en el portal del consulado mexicano."
+            analisis_ia = "Verifique sus documentos originales directamente en el portal oficial correspondiente."
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -100,7 +135,7 @@ async def generar_guia_consular(datos: DatosTramiteConsular):
     
     estilo_titulo = ParagraphStyle(
         'TituloDoc', parent=styles['Heading1'], fontName='Helvetica-Bold',
-        fontSize=14, leading=16, textColor=colors.HexColor("#b32134"),
+        fontSize=14, leading=16, textColor=colors.HexColor("#1b365d"),
         alignment=1, spaceAfter=12
     )
     
@@ -128,78 +163,69 @@ async def generar_guia_consular(datos: DatosTramiteConsular):
     )
 
     elementos = []
-    elementos.append(Paragraph("SAVE MÉXICO", estilo_titulo))
+    elementos.append(Paragraph("SAVE MÉXICO AYUDAR", estilo_titulo))
     
-    # Mapeo de Trámites Consulares para Mexicanos en EE. UU.
     tramites_config = {
         "pasaporte": {
             "nombre_base": "pasaporte",
-            "titulo": "GUÍA DE PREPARACIÓN: PASAPORTE MEXICANO EN EE. UU.",
+            "titulo": "GUÍA DE PREPARACIÓN: TRÁMITE CONSULAR",
             "requisitos": [
-                "Acta de nacimiento mexicana original.",
-                "Identificación oficial vigente con fotografía (INE, Matrícula o Pasaporte anterior).",
-                "CURP certificada e impresa recientemente.",
+                "Documento de identidad oficial original.",
+                "Identificación oficial vigente con fotografía.",
                 "Comprobante de domicilio reciente en EE. UU. con código postal visible."
             ],
-            "nota": f"RECOMENDACIÓN: {analisis_ia if analisis_ia else 'Verifique que su identificación y acta de nacimiento coincidan exactamente.'}"
+            "nota": f"RECOMENDACIÓN: {analisis_ia if analisis_ia else 'Verifique que su documentación coincida exactamente.'}"
         },
         "matricula": {
             "nombre_base": "matricula_consular",
-            "titulo": "GUÍA DE PREPARACIÓN: MATRÍCULA CONSULAR DE ALTA SEGURIDAD",
+            "titulo": "GUÍA DE PREPARACIÓN: MATRÍCULA Y REGISTRO",
             "requisitos": [
-                "Acta de nacimiento mexicana original.",
-                "Identificación oficial con fotografía vigente.",
+                "Documento de identidad original.",
                 "Comprobante de domicilio reciente en EE. UU.",
                 "Datos de contacto de emergencia debidamente registrados."
             ],
-            "nota": "RECOMENDACIÓN: Compruebe que el comprobante de domicilio refleje su residencia actual en el exterior."
+            "nota": "RECOMENDACIÓN: Compruebe que el comprobante de domicilio refleje su residencia actual."
         },
         "ine": {
             "nombre_base": "credencial_ine",
-            "titulo": "GUÍA DE PREPARACIÓN: CREDENCIAL PARA VOTAR (INE DESDE EL EXTRANJERO)",
+            "titulo": "GUÍA DE PREPARACIÓN: CREDENCIAL Y REGISTRO ELECTORAL",
             "requisitos": [
-                "Acta de nacimiento mexicana original.",
-                "Identificación oficial vigente con fotografía.",
+                "Documento de identidad original.",
                 "Comprobante de domicilio reciente en EE. UU."
             ],
-            "nota": "RECOMENDACIÓN: Ingrese al portal oficial del INE para verificar el estatus de su solicitud postal."
+            "nota": "RECOMENDACIÓN: Ingrese al portal oficial para verificar el estatus de su solicitud."
         },
         "registro": {
             "nombre_base": "registro_nacimiento",
-            "titulo": "GUÍA DE PREPARACIÓN: REGISTRO DE NACIMIENTO (DOBLE NACIONALIDAD)",
+            "titulo": "GUÍA DE PREPARACIÓN: REGISTRO Y CERTIFICACIÓN",
             "requisitos": [
-                "Certificado de nacimiento de EE. UU. (Formato Largo / Long Form original).",
-                "Actas de nacimiento mexicanas originales de los padres.",
-                "Identificaciones oficiales vigentes de ambos padres.",
-                "Acta de matrimonio de los padres (si aplica)."
+                "Certificado de nacimiento original (Formato Largo / Long Form).",
+                "Identificaciones oficiales vigentes."
             ],
-            "nota": "RECOMENDACIÓN: El certificado estadounidense debe ser el formato largo con firmas legibles."
+            "nota": "RECOMENDACIÓN: El certificado debe contar con firmas legibles."
         },
         "actas": {
             "nombre_base": "copia_actas",
-            "titulo": "GUÍA DE PREPARACIÓN: SOLICITUD DE ACTAS DESDE MÉXICO",
+            "titulo": "GUÍA DE PREPARACIÓN: SOLICITUD DE ACTAS",
             "requisitos": [
                 "Datos precisos de la persona registrada (Nombre completo y fecha exacta).",
-                "Identificación oficial vigente del solicitante.",
-                "CURP o datos de referencia del documento buscado."
+                "Identificación oficial vigente del solicitante."
             ],
-            "nota": "RECOMENDACIÓN: Confirme que los datos proporcionados coincidan con el archivo del Registro Civil en México."
+            "nota": "RECOMENDACIÓN: Confirme que los datos proporcionados coincidan con el registro original."
         },
         "poderes": {
             "nombre_base": "poderes_notariales",
-            "titulo": "GUÍA DE PREPARACIÓN: PODERES Y ACTOS NOTARIALES CONSULARES",
+            "titulo": "GUÍA DE PREPARACIÓN: ACTOS NOTARIALES",
             "requisitos": [
-                "Identificación oficial vigente del otorgante (mexicano).",
-                "Datos completos y generales de la persona que recibirá el poder en México.",
-                "Descripción clara de las facultades o actos que se van a delegar."
+                "Identificación oficial vigente del otorgante.",
+                "Datos completos de la persona que recibirá la representación.",
+                "Descripción clara de las facultades."
             ],
-            "nota": "RECOMENDACIÓN: Redacte con claridad el propósito del poder antes de acudir al consulado."
+            "nota": "RECOMENDACIÓN: Redacte con claridad el propósito del trámite."
         }
     }
 
-    config = tramites_config.get(datos.categoria_tramite)
-    if not config:
-        raise HTTPException(status_code=400, detail="Trámite consular no válido.")
+    config = tramites_config.get(datos.categoria_tramite, tramites_config["pasaporte"])
 
     elementos.append(Paragraph(config["titulo"], estilo_seccion))
     elementos.append(Spacer(1, 4))
@@ -248,16 +274,16 @@ async def generar_guia_consular(datos: DatosTramiteConsular):
     elementos.append(Spacer(1, 10))
 
     texto_legal = (
-        "SAVE MÉXICO | Asistente de Trámites Consulares Independiente.<br/>"
-        "Operado por MAY ROGA LLC, Florida. No es una agencia del Gobierno de México ni representa a ningún consulado.<br/>"
-        "Esta guía ayuda a organizar su expediente. Los requisitos definitivos y la aprobación corresponden a la autoridad consular competente."
+        "SAVE MÉXICO AYUDAR | Asesoría Consular Independiente.<br/>"
+        "Operado por MAY ROGA LLC, Florida. El alcance legal se limita al comprador en USA.<br/>"
+        "Esta guía ayuda a organizar su expediente. Los requisitos definitivos corresponden a la autoridad competente."
     )
     elementos.append(Paragraph(texto_legal, estilo_legal))
 
     doc.build(elementos)
     buffer.seek(0)
     
-    nombre_salida = f"{config['nombre_base']}_mexico_{os.urandom(4).hex()}.pdf"
+    nombre_salida = f"{config['nombre_base']}_save_mexico_{os.urandom(4).hex()}.pdf"
     ruta_salida = os.path.join(SALIDAS_DIR, nombre_salida)
     
     with open(ruta_salida, "wb") as f:
@@ -269,7 +295,7 @@ async def generar_guia_consular(datos: DatosTramiteConsular):
 async def descargar(nombre_archivo: str):
     ruta = os.path.join(SALIDAS_DIR, nombre_archivo)
     if os.path.exists(ruta):
-        return FileResponse(ruta, media_type="application/pdf", filename="Guia_Preparacion_Consular.pdf")
+        return FileResponse(ruta, media_type="application/pdf", filename="Guia_Preparacion_Save_Mexico.pdf")
     raise HTTPException(status_code=404, detail="Archivo no encontrado.")
 
 @app.get("/")
