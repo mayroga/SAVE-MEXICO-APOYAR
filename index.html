@@ -1,301 +1,614 @@
-<!-- index.html -->
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAVE MÉXICO AYUDAR - Asistencia Privada de Gestión Documental</title>
-    <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 650px; background: #fff; margin: auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        h1 { color: #1b365d; text-align: center; font-size: 22px; margin-bottom: 5px; }
-        p.subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 13px; }
-        .section-view { display: none; }
-        .section-view.active { display: block; }
-        label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; color: #222; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 15px; background: #fff; }
-        .buttons { margin-top: 25px; display: flex; justify-content: space-between; gap: 10px; }
-        button { background: #1b365d; color: white; border: none; padding: 12px 20px; font-size: 15px; border-radius: 4px; cursor: pointer; flex: 1; }
-        button.secondary { background: #6c757d; }
-        button.stripe-btn { background: #635bff; font-weight: bold; }
-        button:hover { opacity: 0.9; }
-        .alert-box { background: #eef2f7; border: 1px solid #d1d9e0; color: #1b365d; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 13px; font-weight: bold; text-align: center; }
-        .pricing-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-        .pricing-card { border: 1px solid #d1d9e0; border-radius: 6px; padding: 15px; background: #fdfdfd; cursor: pointer; transition: 0.2s; }
-        .pricing-card:hover { border-color: #635bff; background: #f8f9ff; }
-        .pricing-card h3 { margin: 0 0 5px 0; color: #1b365d; font-size: 16px; }
-        .pricing-card p { margin: 0; font-size: 13px; color: #555; }
-        .loading { text-align: center; font-size: 16px; color: #1b365d; display: none; margin-top: 20px; font-weight: bold; }
-        .legal-footer { margin-top: 25px; font-size: 11px; color: #777; text-align: center; line-height: 1.4; border-top: 1px solid #eee; padding-top: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAVE MÉXICO AYUDAR</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f6f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:720px;margin:auto;padding:18px 12px}
+.card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 4px 18px #0001;margin-bottom:15px}
+.logo{text-align:center;font-size:27px;font-weight:800;color:#17456b}
+.sub{text-align:center;color:#68737d;font-size:14px;margin:6px 0 20px}
+h2{font-size:23px;margin:0 0 8px;color:#17202a}
+h3{font-size:18px;margin:0 0 8px}
+p{line-height:1.45}
+.small{font-size:13px;color:#68737d}
+.notice{background:#eef6fb;border-left:4px solid #2879b7;padding:13px;border-radius:9px;margin:13px 0;line-height:1.45}
+.warn{background:#fff7df;border-left:4px solid #d69b00;padding:13px;border-radius:9px;margin:13px 0;line-height:1.45}
+.center{text-align:center}
+.hidden{display:none!important}
+.lang{display:flex;gap:7px;margin-bottom:15px}
+.lang button{margin:0;padding:9px;background:#edf1f4;color:#23313c}
+.lang button.active{background:#1769aa;color:#fff}
+.progress{display:flex;gap:5px;margin-bottom:20px}
+.progress span{height:5px;flex:1;background:#dce3e8;border-radius:5px}
+.progress span.on{background:#2879b7}
+.step{display:none}
+.step.active{display:block}
+label{display:block;font-weight:700;font-size:15px;margin:14px 0 6px}
+input,select,textarea{width:100%;padding:13px;border:1px solid #cbd5df;border-radius:10px;font-size:16px;background:#fff}
+textarea{min-height:95px;resize:vertical}
+button{width:100%;border:0;border-radius:11px;padding:14px 15px;margin-top:11px;background:#1769aa;color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+button.secondary{background:#e8edf1;color:#253746}
+button.green{background:#25804d}
+button.red{background:#a92f2f}
+.choice{border:1px solid #ccd6df;border-radius:13px;padding:16px;margin:10px 0;cursor:pointer}
+.choice:hover{background:#f5f8fa}
+.choice strong{display:block;font-size:17px;margin-bottom:4px}
+.choice span{font-size:13px;color:#68737d}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.filebox{border:2px dashed #bdc9d3;border-radius:13px;padding:15px;text-align:center;margin-top:10px}
+.filebox input{border:0;padding:5px}
+.actions{display:flex;gap:9px}
+.actions button{flex:1}
+.summary{background:#f7f9fa;border-radius:11px;padding:13px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #e2e7ea}
+.row:last-child{border-bottom:0}
+.row b{max-width:40%}
+.row span{max-width:60%;text-align:right;word-break:break-word}
+.file-action{display:none;margin-top:12px}
+.file-action button{font-size:14px}
+#loading{position:fixed;inset:0;background:#0008;z-index:50;display:flex;align-items:center;justify-content:center}
+.loader{background:#fff;border-radius:15px;padding:24px;text-align:center;width:280px}
+.footer{text-align:center;color:#69737c;font-size:11px;line-height:1.5;margin:18px 5px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.card{padding:18px}.row{display:block}.row b,.row span{display:block;max-width:100%;text-align:left}.actions{display:block}}
+</style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="container">
-    <h1>SAVE MÉXICO AYUDAR</h1>
-    <p class="subtitle">Asistencia Privada para la Papelería de los Mexicanos en EE. UU.</p>
+<div class="card">
+<div class="logo">🇲🇽 SAVE MÉXICO AYUDAR</div>
+<div class="sub" id="subtitle">Tranquilo. Vamos paso por paso.</div>
 
-    <!-- VISTA 1: AUTENTICACIÓN / ACCESO -->
-    <div id="vista-login" class="section-view active">
-        <div class="alert-box">Acceso Seguro al Sistema de Trámites y Papelería</div>
-        
-        <label>Nombre de Usuario (Username):</label>
-        <input type="text" id="login_user" placeholder="Ingrese su usuario">
-        
-        <label>Contraseña (Password):</label>
-        <input type="password" id="login_pass" placeholder="Ingrese su contraseña">
+<div class="lang">
+<button id="esBtn" class="active" onclick="setLang('es')">ESPAÑOL</button>
+<button id="enBtn" onclick="setLang('en')">ENGLISH</button>
+</div>
 
-        <div class="buttons">
-            <button class="secondary" onclick="mostrarSeccion('vista-planes')">Ver Planes y Suscripción</button>
-            <button onclick="verificarAcceso()">Ingresar</button>
-        </div>
-    </div>
+<div class="notice">
+<strong>SAVE MÉXICO AYUDAR</strong> es un servicio privado e independiente de MAY ROGA LLC, Florida.<br>
+No es una agencia del Gobierno de México ni representa a ningún consulado mexicano.
+</div>
 
-    <!-- VISTA 2: PLANES Y PAGOS STRIPE -->
-    <div id="vista-planes" class="section-view">
-        <div class="alert-box">Selecciona tu plan para resolver tu papelería sin pagar gestores costosos</div>
-        
-        <div class="pricing-grid">
-            <div class="pricing-card" onclick="seleccionarPlan('price_1OtXYZ...', '35.99')">
-                <h3>Plan Diario — $35.99 USD</h3>
-                <p>Acceso único por 1 día de servicio para tus gestiones urgentes.</p>
-            </div>
-            <div class="pricing-card" onclick="seleccionarPlan('price_1OtXZa...', '69.99')">
-                <h3>Plan Mensual — $69.99 USD</h3>
-                <p>Suscripción por 1 mes (Hasta 3 consultas diarias).</p>
-            </div>
-            <div class="pricing-card" onclick="seleccionarPlan('price_1OtXac...', '300.00')">
-                <h3>Plan Anual — $300.00 USD</h3>
-                <p>Suscripción por 1 año completo (Hasta 10 consultas diarias).</p>
-            </div>
-        </div>
+<!-- ACCESO -->
+<div id="login">
+<h2 id="loginTitle">Acceso</h2>
+<p id="loginText">Entra si ya tienes acceso al servicio.</p>
 
-        <div class="buttons">
-            <button class="secondary" onclick="mostrarSeccion('vista-login')">Volver al Login</button>
-            <button class="stripe-btn" onclick="pagarStripe()">Proceder al Pago</button>
-        </div>
-    </div>
+<label id="userLabel">Usuario</label>
+<input id="usuario" autocomplete="username" placeholder="Escribe tu usuario">
 
-    <!-- VISTA 3: TRAMITE / PREGUNTA CENTRAL -->
-    <div id="vista-tramite" class="section-view">
-        <div class="alert-box">¿Qué trámite o documento consular necesitas resolver hoy?</div>
-        
-        <div id="paso-1" class="step-form">
-            <label>Trámite o Papelería:</label>
-            <select id="categoria_tramite" onchange="actualizarCamposDinamicos()">
-                <option value="pasaporte">🛂 Pasaporte Mexicano</option>
-                <option value="matricula">🪪 Matrícula Consular</option>
-                <option value="ine">🗳️ Credencial para Votar (INE)</option>
-                <option value="registro">👶 Registro de Nacimiento</option>
-                <option value="actas">📜 Copias de Actas desde México</option>
-                <option value="poderes">⚖️ Poderes Notariales</option>
-            </select>
+<label id="passLabel">Contraseña</label>
+<input id="password" type="password" autocomplete="current-password" placeholder="Escribe tu contraseña">
 
-            <label>Primer Nombre:</label>
-            <input type="text" id="primer_nombre" placeholder="Ej. JUAN">
-            
-            <label>Segundo Nombre (Opcional):</label>
-            <input type="text" id="segundo_nombre" placeholder="Ej. CARLOS">
+<button onclick="ingresar()" id="loginBtn">INGRESAR</button>
+<button class="secondary" onclick="togglePlanes()" id="plansBtn">VER PLANES</button>
 
-            <label>Primer Apellido:</label>
-            <input type="text" id="primer_apellido" placeholder="Ej. PÉREZ">
-            
-            <label>Segundo Apellido (Opcional):</label>
-            <input type="text" id="segundo_apellido" placeholder="Ej. GÓMEZ">
+<div id="planes" class="hidden">
+<h3 style="margin-top:20px">Elige tu acceso</h3>
 
-            <div class="buttons">
-                <button class="secondary" onclick="cerrarSesion()">Salir</button>
-                <button onclick="irPaso2()">Siguiente</button>
-            </div>
-        </div>
+<div class="choice" onclick="pagar('daily')">
+<strong>Uso diario — $35.99 USD</strong>
+<span>Acceso para una preparación.</span>
+</div>
 
-        <div id="paso-2" class="step-form" style="display: none;">
-            <label>Fecha de Nacimiento:</label>
-            <input type="date" id="fecha_nacimiento">
-            
-            <label>Lugar de Nacimiento en México:</label>
-            <input type="text" id="lugar_nacimiento" placeholder="Ej. JALISCO">
+<div class="choice" onclick="pagar('monthly')">
+<strong>Mensual — $69.99 USD</strong>
+<span>Acceso durante un mes.</span>
+</div>
 
-            <label>Dirección Actual en EE. UU. (Con Código Postal):</label>
-            <input type="text" id="direccion_usa" placeholder="Ej. 123 MAIN ST, MIAMI FL 33101">
-            
-            <label>Teléfono de Contacto (10 dígitos):</label>
-            <input type="text" id="telefono" placeholder="Ej. 7860000000">
+<div class="choice" onclick="pagar('annual')">
+<strong>Anual — $300.00 USD</strong>
+<span>Acceso durante un año.</span>
+</div>
 
-            <div id="seccion-extra" style="display: none;">
-                <label id="label-extra-1">Dato Adicional:</label>
-                <input type="text" id="extra_1" placeholder="">
-                
-                <label id="label-extra-2">Dato Opcional:</label>
-                <input type="text" id="extra_2" placeholder="">
-            </div>
+<p class="small">El pago se procesa mediante Stripe.</p>
+</div>
+</div>
 
-            <div class="buttons">
-                <button class="secondary" onclick="irPaso1()">Atrás</button>
-                <button onclick="enviarDatosTramite()" style="background: #28a745;">Generar Guía PDF</button>
-            </div>
-        </div>
-    </div>
+<!-- APLICACIÓN -->
+<div id="app" class="hidden">
 
-    <div class="loading" id="loading-box">
-        <p>Procesando su solicitud de papelería...</p>
-    </div>
+<div class="progress">
+<span id="pr1" class="on"></span><span id="pr2"></span><span id="pr3"></span>
+<span id="pr4"></span><span id="pr5"></span><span id="pr6"></span>
+</div>
 
-    <div class="legal-footer">
-        SAVE MÉXICO AYUDAR | MAY ROGA LLC, Florida.<br>
-        Servicio privado independiente de asistencia en trámites y papelería. El alcance legal se limita al comprador en USA.
-    </div>
+<!-- 1 -->
+<section id="step1" class="step active">
+<h2>¿Qué necesitas hacer?</h2>
+<p>Elige una sola opción.</p>
+
+<div class="choice" onclick="elegir('pasaporte')">
+<strong>🛂 Pasaporte Mexicano</strong>
+<span>Preparar información y documentos.</span>
+</div>
+
+<div class="choice" onclick="elegir('matricula')">
+<strong>🪪 Matrícula Consular</strong>
+<span>Preparar información y documentos.</span>
+</div>
+
+<div class="choice" onclick="elegir('ine')">
+<strong>🗳️ Credencial para Votar (INE)</strong>
+<span>Preparar información y documentos.</span>
+</div>
+
+<div class="choice" onclick="elegir('registro')">
+<strong>👶 Registro de Nacimiento</strong>
+<span>Preparar información y documentos.</span>
+</div>
+
+<div class="choice" onclick="elegir('actas')">
+<strong>📄 Actas</strong>
+<span>Organizar la información disponible.</span>
+</div>
+
+<div class="choice" onclick="elegir('poderes')">
+<strong>✍️ Poderes Notariales</strong>
+<span>Preparar la información necesaria.</span>
+</div>
+</section>
+
+<!-- 2 -->
+<section id="step2" class="step">
+<h2>¿Qué documento tienes?</h2>
+<p>Cuéntanos qué documentos ya tienes.</p>
+
+<label>Documentos disponibles</label>
+<textarea id="documentos_tenidos" placeholder="Ejemplo: pasaporte anterior, acta, identificación..."></textarea>
+
+<div class="filebox">
+<strong>📎 Agregar un archivo</strong>
+<p class="small">Puedes agregar una foto o un PDF.</p>
+<input id="archivo" type="file" accept=".pdf,image/jpeg,image/png">
+<div id="archivoInfo" class="small"></div>
+</div>
+
+<div id="fileActions" class="file-action">
+<p><strong>¿Qué quieres hacer con este archivo?</strong></p>
+<button onclick="accionArchivo('insertar')">① Insertarlo en mi PDF</button>
+<button onclick="accionArchivo('extraer')">② Extraer información</button>
+<button class="secondary" onclick="accionArchivo('sesion')">③ Conservarlo durante esta sesión</button>
+<button class="red" onclick="accionArchivo('eliminar')">④ Eliminarlo</button>
+</div>
+
+<button onclick="continuarDocumentos()">CONTINUAR</button>
+<button class="secondary" onclick="go(1)">ATRÁS</button>
+</section>
+
+<!-- 3 -->
+<section id="step3" class="step">
+<h2>¿Qué te falta?</h2>
+<p>Escribe lo que todavía no tienes.</p>
+
+<label>Documentos faltantes</label>
+<textarea id="documentos_faltantes" placeholder="Ejemplo: comprobante de domicilio..."></textarea>
+
+<div class="notice">
+<strong>¿No estás seguro?</strong><br>
+Puedes escribir tu duda en el cajón de preguntas.
+</div>
+
+<button onclick="go(4)">CONTINUAR</button>
+<button class="secondary" onclick="go(2)">ATRÁS</button>
+</section>
+
+<!-- 4 -->
+<section id="step4" class="step">
+<h2>Ahora necesitamos tus datos</h2>
+<p>Escribe la información con cuidado.</p>
+
+<div class="grid">
+<div><label>Primer nombre *</label><input id="primer_nombre"></div>
+<div><label>Segundo nombre</label><input id="segundo_nombre"></div>
+</div>
+
+<div class="grid">
+<div><label>Primer apellido *</label><input id="primer_apellido"></div>
+<div><label>Segundo apellido</label><input id="segundo_apellido"></div>
+</div>
+
+<label>Fecha de nacimiento *</label>
+<input id="fecha_nacimiento" type="date">
+
+<label>Lugar de nacimiento en México *</label>
+<input id="lugar_nacimiento" placeholder="Ciudad y Estado">
+
+<label>Dirección actual en EE. UU. *</label>
+<input id="direccion_usa">
+
+<label>Teléfono *</label>
+<input id="telefono" type="tel">
+
+<label>Nacionalidad</label>
+<input id="nacionalidad" value="Mexicana">
+
+<label>Consulado</label>
+<input id="consulado" placeholder="Si ya lo sabes">
+
+<label>Cita</label>
+<input id="cita" placeholder="Si ya tienes una cita">
+
+<div id="extras"></div>
+
+<div class="notice">
+<strong>Revisa antes de continuar.</strong><br>
+La aplicación organiza los datos que tú proporcionas.
+</div>
+
+<button onclick="revisar()">REVISAR DATOS</button>
+<button class="secondary" onclick="go(3)">ATRÁS</button>
+</section>
+
+<!-- 5 -->
+<section id="step5" class="step">
+<h2>Revisa todo</h2>
+<p>Comprueba que tu información esté correcta.</p>
+
+<div id="resumen" class="summary"></div>
+
+<div class="warn">
+<strong>VERIFICAR → PREPARAR → CONFIRMAR → GENERAR</strong><br>
+Los requisitos finales y las decisiones corresponden a la autoridad competente.
+</div>
+
+<label>
+<input id="confirmar" type="checkbox" style="width:auto">
+ Confirmo que revisé mis datos.
+</label>
+
+<button class="green" onclick="generar()">GENERAR GUÍA PDF</button>
+<button class="secondary" onclick="go(4)">CORREGIR</button>
+</section>
+
+<!-- 6 -->
+<section id="step6" class="step">
+<h2>Tu guía está lista</h2>
+<p>Ya puedes descargar tu documento de preparación.</p>
+
+<div class="notice center">
+<strong>📄 GUÍA DE PREPARACIÓN</strong><br>
+Este documento fue generado con la información que proporcionaste.
+</div>
+
+<a id="descarga" href="#" target="_blank">
+<button class="green">DESCARGAR PDF</button>
+</a>
+
+<h3 style="margin-top:25px">¿Qué ocurrió con tu trámite?</h3>
+<p>Elige lo que ocurrió después.</p>
+
+<div class="choice" onclick="resultado('aprobado')">
+<strong>✅ Aprobado / completado</strong>
+<span>Ya terminé.</span>
+</div>
+
+<div class="choice" onclick="resultado('otro_documento')">
+<strong>⚠️ Me pidieron otro documento</strong>
+<span>Necesito continuar.</span>
+</div>
+
+<div class="choice" onclick="resultado('no_pude')">
+<strong>❌ No pude completarlo</strong>
+<span>Necesito revisar el siguiente paso.</span>
+</div>
+
+<div class="choice" onclick="resultado('continuar')">
+<strong>🔄 Necesito continuar</strong>
+<span>Quiero seguir preparando mi trámite.</span>
+</div>
+
+<div id="resultadoBox" class="notice hidden"></div>
+</section>
+
+<!-- DUDAS -->
+<div class="card" style="padding:17px;margin-top:15px">
+<h3>❓ ¿TIENES UNA DUDA?</h3>
+<p class="small">Pregunta solamente sobre el trámite y los documentos que estás preparando.</p>
+
+<textarea id="pregunta" placeholder="Ejemplo: ¿Qué es la matrícula consular?"></textarea>
+
+<button onclick="preguntar()">PREGUNTAR</button>
+
+<div id="respuesta" class="notice hidden"></div>
+</div>
+
+</div>
+</div>
+
+<div class="footer">
+<strong>SAVE MÉXICO AYUDAR | MAY ROGA LLC, Florida</strong><br>
+Servicio privado e independiente de apoyo documental.<br>
+No es una agencia del Gobierno de México ni representa a ningún consulado mexicano.<br>
+La información oficial, los requisitos, la aceptación de documentos y las decisiones finales corresponden a la autoridad competente.
+</div>
+
+</div>
+
+<div id="loading" class="hidden">
+<div class="loader">
+<strong id="loadTitle">Un momento...</strong>
+<p id="loadText">Estamos preparando tu información.</p>
+</div>
 </div>
 
 <script>
-    let planSeleccionado = '';
+let lang="es",step=1,tramite="",credentials="",archivo=null,accion="";
 
-    function mostrarSeccion(id) {
-        document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
+const nombres={
+pasaporte:"Pasaporte Mexicano",
+matricula:"Matrícula Consular",
+ine:"Credencial para Votar (INE)",
+registro:"Registro de Nacimiento",
+actas:"Actas",
+poderes:"Poderes Notariales"
+};
 
-    function verificarAcceso() {
-        const u = document.getElementById('login_user').value.trim();
-        const p = document.getElementById('login_pass').value.trim();
-        if(!u || !p) {
-            alert('⚠️ Ingrese su usuario y contraseña.');
-            return;
-        }
-        mostrarSeccion('vista-tramite');
-    }
+function setLang(l){
+ lang=l;
+ document.documentElement.lang=l;
+ document.getElementById("esBtn").classList.toggle("active",l==="es");
+ document.getElementById("enBtn").classList.toggle("active",l==="en");
+ if(l==="en"){
+  document.getElementById("subtitle").textContent="Stay calm. We will go step by step.";
+  document.getElementById("loginTitle").textContent="Access";
+  document.getElementById("loginText").textContent="Enter if you already have access.";
+  document.getElementById("userLabel").textContent="Username";
+  document.getElementById("passLabel").textContent="Password";
+  document.getElementById("loginBtn").textContent="SIGN IN";
+  document.getElementById("plansBtn").textContent="VIEW PLANS";
+ }else{
+  document.getElementById("subtitle").textContent="Tranquilo. Vamos paso por paso.";
+  document.getElementById("loginTitle").textContent="Acceso";
+  document.getElementById("loginText").textContent="Entra si ya tienes acceso al servicio.";
+  document.getElementById("userLabel").textContent="Usuario";
+  document.getElementById("passLabel").textContent="Contraseña";
+  document.getElementById("loginBtn").textContent="INGRESAR";
+  document.getElementById("plansBtn").textContent="VER PLANES";
+ }
+}
 
-    function seleccionarPlan(priceId, monto) {
-        planSeleccionado = priceId;
-        alert('Plan seleccionado (' + monto + ' USD).');
-    }
+function togglePlanes(){
+ document.getElementById("planes").classList.toggle("hidden");
+}
 
-    async function pagarStripe() {
-        if(!planSeleccionado) {
-            alert('⚠️ Seleccione un plan primero.');
-            return;
-        }
-        try {
-            const response = await fetch('/api/create-checkout-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ price_id: planSeleccionado })
-            });
-            const data = await response.json();
-            if(response.ok && data.checkout_url) {
-                window.location.href = data.checkout_url;
-            } else {
-                alert('Error al iniciar pago: ' + (data.detail || 'Desconocido'));
-            }
-        } catch (error) {
-            alert('Error de conexión con la pasarela de pago.');
-        }
-    }
+function ingresar(){
+ const u=document.getElementById("usuario").value.trim();
+ const p=document.getElementById("password").value;
+ if(!u||!p){alert(lang==="es"?"Escribe usuario y contraseña.":"Enter username and password.");return}
+ credentials=btoa(u+":"+p);
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("app").classList.remove("hidden");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
 
-    function cerrarSesion() {
-        document.getElementById('login_user').value = '';
-        document.getElementById('login_pass').value = '';
-        mostrarSeccion('vista-login');
-    }
+async function pagar(plan){
+ try{
+  cargar(true,"Abriendo el pago seguro...");
+  const r=await fetch("/api/create-checkout-session",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({plan:plan})
+  });
+  const d=await r.json();
+  if(!r.ok)throw Error(d.detail||"No se pudo iniciar el pago.");
+  if(!d.checkout_url)throw Error("Stripe no devolvió la dirección de pago.");
+  location.href=d.checkout_url;
+ }catch(e){alert(e.message)}
+ finally{cargar(false)}
+}
 
-    function irPaso2() {
-        if(!document.getElementById('primer_nombre').value.trim() || !document.getElementById('primer_apellido').value.trim()) {
-            alert('⚠️ Complete su primer nombre y primer apellido.');
-            return;
-        }
-        document.getElementById('paso-1').style.display = 'none';
-        document.getElementById('paso-2').style.display = 'block';
-        actualizarCamposDinamicos();
-    }
+function elegir(t){
+ tramite=t;
+ const x=document.getElementById("extras");
+ x.innerHTML="";
+ if(t==="matricula")x.innerHTML='<label>Contacto de emergencia</label><input id="extra_1"><label>Teléfono de emergencia</label><input id="extra_2" type="tel">';
+ if(t==="registro")x.innerHTML='<label>Nombre del padre o madre mexicano</label><input id="extra_1"><label>Hospital en EE. UU.</label><input id="extra_2">';
+ if(t==="actas")x.innerHTML='<label>Tipo de acta</label><input id="extra_1"><label>CURP u otro dato del registro</label><input id="extra_2">';
+ if(t==="poderes")x.innerHTML='<label>Nombre de la persona en México</label><input id="extra_1"><label>¿Para qué necesitas el poder?</label><textarea id="extra_2"></textarea>';
+ go(2);
+}
 
-    function irPaso1() {
-        document.getElementById('paso-2').style.display = 'none';
-        document.getElementById('paso-1').style.display = 'block';
-    }
+document.getElementById("archivo").addEventListener("change",function(){
+ archivo=this.files[0]||null;
+ const info=document.getElementById("archivoInfo");
+ const box=document.getElementById("fileActions");
+ if(!archivo){info.textContent="";box.style.display="none";return}
+ if(!["application/pdf","image/jpeg","image/png"].includes(archivo.type)){
+  alert("Solo puedes agregar PDF, JPG o PNG.");
+  this.value="";archivo=null;box.style.display="none";return
+ }
+ if(archivo.size>10*1024*1024){
+  alert("El archivo no puede superar 10 MB.");
+  this.value="";archivo=null;box.style.display="none";return
+ }
+ info.textContent="Archivo: "+archivo.name;
+ box.style.display="block";
+});
 
-    function actualizarCamposDinamicos() {
-        const tipo = document.getElementById('categoria_tramite').value;
-        const seccionExtra = document.getElementById('seccion-extra');
-        const lbl1 = document.getElementById('label-extra-1');
-        const lbl2 = document.getElementById('label-extra-2');
+async function accionArchivo(a){
+ accion=a;
+ if(!archivo)return;
+ if(a==="eliminar"){
+  document.getElementById("archivo").value="";
+  document.getElementById("archivoInfo").textContent="Archivo eliminado.";
+  document.getElementById("fileActions").style.display="none";
+  archivo=null;accion="";
+  return
+ }
+ if(a==="extraer"){
+  if(archivo.type!=="application/pdf"){
+   alert("Las fotografías no se leen ni se analizan. Puedes incorporarlas al PDF.");
+   return
+  }
+  try{
+   cargar(true,"Extrayendo el texto del PDF...");
+   const fd=new FormData();
+   fd.append("file",archivo);
+   const r=await fetch("/api/extraer-pdf",{method:"POST",headers:{"Authorization":"Basic "+credentials},body:fd});
+   const d=await r.json();
+   if(!r.ok)throw Error(d.detail||"No se pudo extraer el texto.");
+   const texto=(d.texto||"").trim();
+   if(texto){
+    const area=document.getElementById("documentos_tenidos");
+    area.value+=(area.value?"\n":"")+texto;
+    alert("Texto extraído y colocado en tus documentos disponibles.");
+   }else alert("El PDF no contiene texto que pueda extraerse.");
+  }catch(e){alert(e.message)}
+  finally{cargar(false)}
+ }else if(a==="insertar"){
+  alert("El archivo quedó seleccionado para incorporarlo al documento de preparación.");
+ }else if(a==="sesion"){
+  alert("El archivo queda seleccionado solamente para esta sesión.");
+ }
+}
 
-        if (tipo === 'pasaporte' || tipo === 'ine') {
-            seccionExtra.style.display = 'none';
-        } else {
-            seccionExtra.style.display = 'block';
-            if (tipo === 'matricula') {
-                lbl1.innerText = "Contacto de Emergencia:";
-                lbl2.innerText = "Teléfono de Emergencia:";
-            } else if (tipo === 'registro') {
-                lbl1.innerText = "Nombre del Padre/Madre Mexicano:";
-                lbl2.innerText = "Hospital en EE. UU.:";
-            } else if (tipo === 'actas') {
-                lbl1.innerText = "Tipo de Acta:";
-                lbl2.innerText = "CURP o Datos de Registro:";
-            } else if (tipo === 'poderes') {
-                lbl1.innerText = "Nombre en México:";
-                lbl2.innerText = "Propósito del Poder:";
-            }
-        }
-    }
+function continuarDocumentos(){
+ go(3);
+}
 
-    async function enviarDatosTramite() {
-        const dir = document.getElementById('direccion_usa').value.trim();
-        const tel = document.getElementById('telefono').value.trim();
-        const fecha = document.getElementById('fecha_nacimiento').value;
-        const lugar = document.getElementById('lugar_nacimiento').value.trim();
+function val(id){
+ const e=document.getElementById(id);
+ return e?e.value.trim():"";
+}
 
-        if (!dir || !tel || !fecha || !lugar) {
-            alert('⚠️ Todos los campos obligatorios deben estar llenos.');
-            return;
-        }
+function go(n){
+ step=n;
+ document.querySelectorAll(".step").forEach(x=>x.classList.remove("active"));
+ const s=document.getElementById("step"+n);
+ if(s)s.classList.add("active");
+ for(let i=1;i<=6;i++){
+  const p=document.getElementById("pr"+i);
+  if(p)p.classList.toggle("on",i<=n);
+ }
+ if(n===5)crearResumen();
+ window.scrollTo({top:0,behavior:"smooth"});
+}
 
-        const payload = {
-            categoria_tramite: document.getElementById('categoria_tramite').value,
-            primer_nombre: document.getElementById('primer_nombre').value,
-            segundo_nombre: document.getElementById('segundo_nombre').value,
-            primer_apellido: document.getElementById('primer_apellido').value,
-            segundo_apellido: document.getElementById('segundo_apellido').value,
-            fecha_nacimiento: fecha,
-            lugar_nacimiento: lugar,
-            direccion_usa: dir,
-            telefono: tel,
-            extra_1: document.getElementById('extra_1').value,
-            extra_2: document.getElementById('extra_2').value
-        };
+function revisar(){
+ if(!val("primer_nombre")||!val("primer_apellido")||!val("fecha_nacimiento")||!val("lugar_nacimiento")||!val("direccion_usa")||!val("telefono")){
+  alert("Completa los datos obligatorios antes de continuar.");
+  return
+ }
+ go(5);
+}
 
-        document.getElementById('vista-tramite').style.display = 'none';
-        document.getElementById('loading-box').style.display = 'block';
+function crearResumen(){
+ const nombre=[val("primer_nombre"),val("segundo_nombre"),val("primer_apellido"),val("segundo_apellido")].filter(Boolean).join(" ");
+ const datos=[
+ ["Trámite",nombres[tramite]||tramite],
+ ["Nombre",nombre],
+ ["Fecha de nacimiento",val("fecha_nacimiento")],
+ ["Lugar de nacimiento",val("lugar_nacimiento")],
+ ["Nacionalidad",val("nacionalidad")||"Mexicana"],
+ ["Dirección en EE. UU.",val("direccion_usa")],
+ ["Teléfono",val("telefono")],
+ ["Consulado",val("consulado")||"No indicado"],
+ ["Cita",val("cita")||"No indicada"],
+ ["Documentos que tienes",val("documentos_tenidos")||"No indicado"],
+ ["Documentos que faltan",val("documentos_faltantes")||"No indicado"]
+ ];
+ if(val("extra_1"))datos.push(["Dato adicional",val("extra_1")]);
+ if(val("extra_2"))datos.push(["Dato adicional",val("extra_2")]);
+ document.getElementById("resumen").innerHTML=datos.map(x=>'<div class="row"><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></div>').join("");
+}
 
-        const u = document.getElementById('login_user').value.trim();
-        const p = document.getElementById('login_pass').value.trim();
-        const credentials = btoa(u + ':' + p);
+function esc(x){
+ return String(x||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
 
-        try {
-            const response = await fetch('/api/generar-guia-consular', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Basic ' + credentials
-                },
-                body: JSON.stringify(payload)
-            });
+function cargar(on,text){
+ document.getElementById("loading").classList.toggle("hidden",!on);
+ if(text)document.getElementById("loadText").textContent=text;
+}
 
-            const resultado = await response.json();
-            if (response.ok) {
-                window.location.href = resultado.archivo;
-            } else {
-                alert('Error: ' + resultado.detail);
-                document.getElementById('loading-box').style.display = 'none';
-                document.getElementById('vista-tramite').style.display = 'block';
-            }
-        } catch (error) {
-            alert('Error de conexión.');
-            document.getElementById('loading-box').style.display = 'none';
-            document.getElementById('vista-tramite').style.display = 'block';
-        }
-    }
+async function generar(){
+ if(!document.getElementById("confirmar").checked){
+  alert("Primero confirma que revisaste tus datos.");
+  return
+ }
+ const datos={
+  categoria_tramite:tramite,
+  primer_nombre:val("primer_nombre"),
+  segundo_nombre:val("segundo_nombre"),
+  primer_apellido:val("primer_apellido"),
+  segundo_apellido:val("segundo_apellido"),
+  fecha_nacimiento:val("fecha_nacimiento"),
+  lugar_nacimiento:val("lugar_nacimiento"),
+  direccion_usa:val("direccion_usa"),
+  telefono:val("telefono"),
+  documentos_tenidos:val("documentos_tenidos"),
+  documentos_faltantes:val("documentos_faltantes"),
+  estado_posterior:"pendiente",
+  extra_1:val("extra_1"),
+  extra_2:val("extra_2"),
+  nacionalidad:val("nacionalidad")||"Mexicana",
+  consulado:val("consulado"),
+  cita:val("cita")
+ };
+ try{
+  cargar(true,"Preparando tu guía PDF...");
+  const r=await fetch("/api/generar-guia-consular",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","Authorization":"Basic "+credentials},
+   body:JSON.stringify(datos)
+  });
+  const d=await r.json();
+  if(!r.ok)throw Error(d.detail||"No se pudo generar la guía.");
+  document.getElementById("descarga").href=d.archivo;
+  go(6);
+ }catch(e){alert(e.message)}
+ finally{cargar(false)}
+}
+
+async function preguntar(){
+ const q=val("pregunta");
+ if(!q){alert("Escribe tu duda.");return}
+ if(!credentials){alert("Primero debes entrar al servicio.");return}
+ const box=document.getElementById("respuesta");
+ box.classList.remove("hidden");
+ box.textContent="Un momento...";
+ try{
+  const r=await fetch("/api/pregunta",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","Authorization":"Basic "+credentials},
+   body:JSON.stringify({pregunta:q,categoria_tramite:tramite||"general"})
+  });
+  const d=await r.json();
+  if(!r.ok)throw Error(d.detail||"No se pudo responder.");
+  box.textContent=d.respuesta||"No encontramos una respuesta.";
+ }catch(e){box.textContent=e.message}
+}
+
+async function resultado(estado){
+ const box=document.getElementById("resultadoBox");
+ box.classList.remove("hidden");
+ box.textContent="Guardando tu resultado...";
+ try{
+  const r=await fetch("/api/resultado-tramite",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","Authorization":"Basic "+credentials},
+   body:JSON.stringify({categoria_tramite:tramite,estado:estado})
+  });
+  const d=await r.json();
+  if(!r.ok)throw Error(d.detail||"No se pudo guardar.");
+  box.innerHTML="<strong>Listo.</strong><br>"+esc(d.siguiente_paso||"Puedes continuar con la preparación.");
+ }catch(e){box.textContent=e.message}
+}
+
+(function(){
+ const q=new URLSearchParams(location.search);
+ if(q.get("success")==="true"){
+  alert("Pago recibido. El acceso se habilita cuando el servidor confirma el pago.");
+ }
+ if(q.get("canceled")==="true")alert("El pago fue cancelado.");
+})();
 </script>
-
 </body>
 </html>
+```
