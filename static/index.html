@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
-<meta name="description" content="MEXICANO APOYA MEXICANO - prepara tu trámite consular de forma sencilla.">
+<meta name="description" content="MEXICANO APOYA MEXICANO - prepara tu trámite consular de forma sencilla y clara.">
 <title>MEXICANO APOYA MEXICANO</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <main>
+
 <header>
 <h1>MEXICANO APOYA MEXICANO</h1>
 <p>Prepara tu trámite antes de ir al Consulado.</p>
@@ -17,68 +18,169 @@
 
 <section id="inicio" class="card">
 <h2>ANTES DE IR AL CONSULADO</h2>
+
 <div class="caja">
 <p><strong>Evita perder un día de trabajo, gastar dinero y regresar porque te falta algo.</strong></p>
-<p>Cuéntanos con tus propias palabras qué necesitas. Puedes escribir, hablar o pegar información que tengas.</p>
-<p>La aplicación organiza tu caso y te muestra <strong>qué tienes, qué te falta y qué debes confirmar</strong>.</p>
+<p>Cuéntanos con tus propias palabras qué necesitas.</p>
+<p>Puedes <strong>escribir, hablar o pegar información</strong> que ya tengas.</p>
+<p>La aplicación organiza tu caso y te muestra claramente:</p>
+<ul>
+<li>qué tienes;</li>
+<li>qué te falta;</li>
+<li>qué debes confirmar;</li>
+<li>qué debes hacer antes de acudir.</li>
+</ul>
 </div>
+
 <button id="entrar" class="principal" type="button">ENTRAR</button>
-<p class="legal">Esta aplicación es independiente. No es el Gobierno de México ni representa a ningún Consulado.</p>
+
+<p class="legal">
+Esta aplicación es independiente. No es el Gobierno de México
+ni representa a ningún Consulado.
+</p>
 </section>
 
-<section id="servicios" class="card">
+<section id="servicios" class="card oculto">
 <h2>¿QUÉ NECESITAS?</h2>
-<p class="grande">Elige la opción que más se parece a tu situación.</p>
-<button id="servicioCita" class="opcion" type="button">QUIERO PREPARAR UN TRÁMITE</button>
-<button id="servicioDocumento" class="opcion" type="button">NECESITO UN DOCUMENTO</button>
+
+<p class="grande">
+Elige la opción que más se parece a tu situación.
+</p>
+
+<button id="servicioCita" class="opcion" type="button">
+QUIERO PREPARAR UN TRÁMITE
+</button>
+
+<button id="servicioDocumento" class="opcion" type="button">
+NECESITO UN DOCUMENTO
+</button>
 </section>
 
-<section id="pregunta" class="card">
+<section id="pregunta" class="card oculto">
+
 <div class="paso" id="paso"></div>
+
 <h2 id="preguntaTexto">¿Qué necesitas?</h2>
+
 <div id="opciones"></div>
+
 <div id="textoEntrada">
-<textarea id="textoUsuario" autocomplete="off" placeholder="Escribe aquí con tus propias palabras..."></textarea>
+
+<textarea
+id="textoUsuario"
+autocomplete="off"
+spellcheck="true"
+placeholder="Escribe aquí con tus propias palabras..."
+></textarea>
+
 <div class="acciones">
-<button id="voz" class="voz" type="button">🎤 HABLAR</button>
-<button id="continuar" class="continuar" type="button">CONTINUAR</button>
+<button id="voz" class="voz" type="button">
+🎤 HABLAR
+</button>
+
+<button id="continuar" class="continuar" type="button">
+CONTINUAR
+</button>
 </div>
-<p class="nota">Puedes escribir o hablar. No necesitas saber el nombre oficial del trámite.</p>
+
+<p class="nota">
+Puedes escribir o hablar. No necesitas saber el nombre oficial del trámite.
+</p>
+
 </div>
 </section>
 
-<section id="resultado" class="card">
+<section id="resultado" class="card oculto">
+
 <div class="check">✓</div>
+
 <h2>TU HOJA DE RUTA</h2>
+
 <div id="respuesta"></div>
+
 <div id="accionesResultado" class="acciones resultadoAcciones">
-<button id="pdf" class="principal" type="button">DESCARGAR HOJA DE RUTA PDF</button>
-<button id="oficial" class="opcion" type="button">VER INFORMACIÓN OFICIAL</button>
-<button id="nuevo" class="continuar" type="button">EMPEZAR DE NUEVO</button>
-<button id="salir" class="salir" type="button">SALIR</button>
+
+<button id="pdf" class="principal" type="button">
+DESCARGAR HOJA DE RUTA PDF
+</button>
+
+<button id="oficial" class="opcion" type="button">
+VER INFORMACIÓN OFICIAL
+</button>
+
+<button id="nuevo" class="continuar" type="button">
+EMPEZAR DE NUEVO
+</button>
+
+<button id="salir" class="salir" type="button">
+SALIR
+</button>
+
 </div>
 </section>
 
-<div id="infoOficial" class="modal oculto" role="dialog" aria-modal="true">
+<div
+id="infoOficial"
+class="modal oculto"
+role="dialog"
+aria-modal="true"
+aria-labelledby="tituloOficial"
+>
 <div class="modalCaja">
-<h2>INFORMACIÓN OFICIAL</h2>
-<p>Consulta directamente la información oficial relacionada con tu trámite.</p>
-<a id="fuenteOficial" href="#" target="_blank" rel="noopener noreferrer">ABRIR INFORMACIÓN OFICIAL</a>
-<button id="cerrarOficial" class="salir" type="button">CERRAR</button>
+
+<h2 id="tituloOficial">INFORMACIÓN OFICIAL</h2>
+
+<p>
+Consulta directamente la información oficial relacionada con tu trámite.
+</p>
+
+<a
+id="fuenteOficial"
+href="#"
+target="_blank"
+rel="noopener noreferrer"
+>
+ABRIR INFORMACIÓN OFICIAL
+</a>
+
+<button id="cerrarOficial" class="salir" type="button">
+CERRAR
+</button>
+
 </div>
 </div>
 
-<div id="salida" class="modal oculto" role="dialog" aria-modal="true">
+<div
+id="salida"
+class="modal oculto"
+role="dialog"
+aria-modal="true"
+aria-labelledby="tituloSalida"
+>
 <div class="modalCaja">
-<h2>¿SALIR?</h2>
-<p>Si sales, esta consulta se cerrará.</p>
+
+<h2 id="tituloSalida">¿SALIR?</h2>
+
+<p>
+Si sales, esta consulta se cerrará.
+</p>
+
 <div class="acciones">
-<button id="confirmarSalida" class="salir" type="button">SALIR</button>
-<button id="cancelarSalida" class="continuar" type="button">CONTINUAR</button>
+
+<button id="confirmarSalida" class="salir" type="button">
+SALIR
+</button>
+
+<button id="cancelarSalida" class="continuar" type="button">
+CONTINUAR
+</button>
+
 </div>
 </div>
 </div>
+
 </main>
+
 <script src="/static/app.js"></script>
 </body>
 </html>
