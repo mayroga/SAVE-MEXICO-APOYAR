@@ -2,1551 +2,757 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<meta name="theme-color" content="#07111f">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SAVE MÉXICO AYUDAR</title>
 <style>
-:root{--bg:#07111f;--card:#0d1b2a;--card2:#112438;--line:#21384e;--txt:#f5f7fa;--muted:#aebdcc;--blue:#38bdf8;--blue2:#0ea5e9;--green:#34d399;--red:#fb7185;--yellow:#fbbf24}
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:Arial,Helvetica,sans-serif}
+html,body{margin:0;padding:0;background:#f5f6f8;color:#18202a;font-family:Arial,Helvetica,sans-serif}
 body{min-height:100vh}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
-#app{width:100%;max-width:900px;margin:auto;padding:18px}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
-.logo{font-weight:800;font-size:20px;letter-spacing:.4px}
-.logo span{color:var(--blue)}
-.lang{border:1px solid var(--line);background:var(--card);color:var(--txt);padding:8px 12px;border-radius:9px}
+.hidden{display:none!important}
+#app{max-width:760px;margin:auto;min-height:100vh;background:#fff}
+header{padding:20px 18px 12px;border-bottom:1px solid #ddd;position:sticky;top:0;background:#fff;z-index:10}
+.brand{font-size:22px;font-weight:800}
+.sub{font-size:13px;color:#666;margin-top:5px}
+.langs{display:flex;gap:8px;margin-top:12px}
+.langs button{border:1px solid #bbb;background:#fff;border-radius:8px;padding:7px 12px}
+.langs button.active{background:#111;color:#fff}
+main{padding:22px 18px 100px}
 .screen{display:none}
 .screen.active{display:block}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px;box-shadow:0 8px 30px #0003}
-h1,h2,h3{margin:0 0 12px;line-height:1.2}
-h1{font-size:30px}
-h2{font-size:23px}
-h3{font-size:18px}
+h1{font-size:27px;line-height:1.2;margin:0 0 12px}
+h2{font-size:22px;line-height:1.25;margin:0 0 12px}
+h3{font-size:17px;margin:0 0 10px}
 p{line-height:1.55}
-.muted{color:var(--muted)}
-.small{font-size:13px}
-.center{text-align:center}
-.notice{border-left:4px solid var(--blue);background:#0a1929;padding:14px;margin:15px 0;border-radius:8px;line-height:1.5}
-.warning{border-left-color:var(--yellow)}
-.danger{border-left-color:var(--red)}
-.success{border-left-color:var(--green)}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.choice{width:100%;text-align:left;border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:13px;padding:17px;min-height:75px;transition:.15s}
-.choice:hover{border-color:var(--blue);transform:translateY(-1px)}
-.choice strong{display:block;margin-bottom:5px}
-.choice small{color:var(--muted);line-height:1.4}
-.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.btn{border:0;border-radius:10px;padding:12px 18px;background:var(--blue2);color:white;font-weight:700}
-.btn:hover{filter:brightness(1.1)}
-.btn.secondary{background:#24384b}
-.btn.green{background:#059669}
-.btn.red{background:#be123c}
+.note{background:#f1f3f5;border-left:4px solid #333;padding:12px;margin:14px 0;border-radius:5px;line-height:1.5}
+.warning{background:#fff4d6;border-left:4px solid #d89b00;padding:12px;margin:14px 0;border-radius:5px}
+.error{background:#ffe3e3;border-left:4px solid #c62828;padding:12px;margin:14px 0;border-radius:5px}
+.success{background:#e6f6e9;border-left:4px solid #27863d;padding:12px;margin:14px 0;border-radius:5px}
+.card{border:1px solid #ddd;border-radius:12px;padding:16px;margin:12px 0;background:#fff}
+.cards{display:grid;gap:12px}
+.choice{display:block;width:100%;text-align:left;border:1px solid #ccc;background:#fff;border-radius:11px;padding:15px;margin:9px 0;line-height:1.4}
+.choice:hover{border-color:#555}
+.choice.selected{border:2px solid #111;background:#f0f1f3}
+.choice small{display:block;color:#666;margin-top:4px}
+.choice input{margin-right:9px}
+label.field{display:block;font-weight:700;margin:17px 0 7px}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],select,textarea{
+width:100%;padding:13px;border:1px solid #bbb;border-radius:8px;background:#fff
+}
+textarea{min-height:120px;resize:vertical}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.btn{border:0;border-radius:9px;padding:13px 18px;background:#111;color:#fff;font-weight:700}
+.btn.secondary{background:#e9eaec;color:#111}
+.btn.danger{background:#a92323}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.field{margin:15px 0}
-label{display:block;font-weight:700;margin-bottom:7px}
-input,select,textarea{width:100%;background:#081521;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:12px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--blue)}
-textarea{min-height:100px;resize:vertical}
-.option-list{display:grid;gap:9px;margin-top:15px}
-.option{display:flex;align-items:flex-start;gap:10px;background:#091725;border:1px solid var(--line);border-radius:9px;padding:13px;cursor:pointer}
-.option:hover{border-color:var(--blue)}
-.option input{width:auto;margin-top:3px}
-.option span{display:block;line-height:1.45}
-.option small{display:block;color:var(--muted);margin-top:3px;font-weight:400}
-.progress{height:7px;background:#132638;border-radius:10px;overflow:hidden;margin:0 0 20px}
-.progress i{display:block;height:100%;width:0;background:var(--blue);transition:.2s}
-.step{font-size:13px;color:var(--muted);margin-bottom:8px}
-.question-counter{font-size:12px;color:var(--blue);margin-bottom:12px}
-.doc{background:#091725;border:1px solid var(--line);border-radius:11px;padding:14px;margin:10px 0}
-.doc-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.doc-name{flex:1;line-height:1.45;font-weight:700}
-.doc-category{font-size:11px;color:var(--muted);margin-top:4px}
-.doc-note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.45}
-.doc-status{display:flex;gap:5px;flex-wrap:wrap;margin-top:11px}
-.doc-status button{border:1px solid var(--line);background:#15283a;color:var(--txt);border-radius:7px;padding:8px 9px;font-size:12px}
-.doc-status button.active.have{background:#047857}
-.doc-status button.active.missing{background:#be123c}
-.doc-status button.active.unsure{background:#a16207}
-.doc-status button.active.na{background:#475569}
-.tag{display:inline-block;padding:5px 9px;border-radius:99px;background:#17324a;color:#bfe9ff;font-size:12px;margin:3px}
-.summary{background:#091725;border:1px solid var(--line);border-radius:10px;padding:14px;margin:10px 0}
-.summary>b{display:block;margin-bottom:7px}
-.summary-row{padding:5px 0;border-bottom:1px solid #ffffff0b;line-height:1.45}
-.summary-row:last-child{border-bottom:0}
-.status-box{padding:15px;border-radius:10px;margin:12px 0;border:1px solid var(--line);line-height:1.5}
-.status-ready{border-color:#047857;background:#06291f}
-.status-warning{border-color:#a16207;background:#302207}
-.status-danger{border-color:#be123c;background:#350914}
-.alert{padding:14px;border-radius:10px;margin:10px 0;border:1px solid var(--yellow);background:#302207;line-height:1.5}
-.alert.danger{border-color:var(--red);background:#350914}
-.alert.success{border-color:var(--green);background:#06291f}
-.plan{border:1px solid var(--line);background:var(--card2);border-radius:13px;padding:17px}
-.plan strong{font-size:20px}
-hr{border:0;border-top:1px solid var(--line);margin:18px 0}
-#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#12263a;border:1px solid var(--line);padding:12px 16px;border-radius:10px;display:none;z-index:99;max-width:90%;text-align:center}
-#loading{display:none;position:fixed;inset:0;background:#0009;z-index:90;align-items:center;justify-content:center}
-#loading div{background:var(--card);border:1px solid var(--line);padding:22px;border-radius:14px;max-width:90%;text-align:center}
-.hidden{display:none!important}
-@media(max-width:650px){
-#app{padding:12px}
-.card{padding:17px}
-h1{font-size:25px}
-.grid{grid-template-columns:1fr}
-.doc-top{display:block}
-.doc-status{margin-top:11px}
+.progress{font-size:13px;color:#666;margin-bottom:15px}
+.qhelp{font-size:14px;color:#666;margin:7px 0 14px}
+.option-list{margin-top:12px}
+.document{border:1px solid #ddd;border-radius:10px;padding:14px;margin:10px 0}
+.document-title{font-weight:800}
+.document-note{font-size:14px;color:#555;margin:7px 0 12px;line-height:1.45}
+.doc-buttons{display:grid;gap:7px}
+.doc-buttons button{padding:11px;border:1px solid #bbb;background:#fff;border-radius:8px;text-align:left}
+.doc-buttons button.active{border:2px solid #111;background:#f0f1f3}
+.badge{display:inline-block;padding:5px 8px;border-radius:6px;font-size:12px;background:#eee;margin:3px 3px 3px 0}
+.badge.red{background:#ffdada}
+.badge.green{background:#dff4e3}
+.badge.yellow{background:#fff0c7}
+.summary-row{padding:11px 0;border-bottom:1px solid #eee}
+.summary-row b{display:block;margin-bottom:3px}
+footer{font-size:12px;color:#777;text-align:center;padding:20px}
+.loader{text-align:center;padding:35px;color:#666}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:12px 16px;border-radius:8px;display:none;z-index:99;max-width:90%}
+.paybox{border:1px solid #ddd;border-radius:12px;padding:18px;margin-top:18px}
+@media(max-width:500px){
+main{padding:18px 14px 80px}
+h1{font-size:24px}
+h2{font-size:20px}
+header{padding:16px 14px 10px}
 .btn{width:100%}
-.btns{display:grid}
+.actions{display:grid}
 }
 </style>
 </head>
 <body>
-
-<div id="loading"><div id="loadingText">Procesando...</div></div>
-<div id="toast"></div>
-
 <div id="app">
-
 <header>
-<div class="logo">SAVE MÉXICO <span>AYUDAR</span></div>
-<button class="lang" id="langBtn" onclick="toggleLang()">EN</button>
+<div class="brand">SAVE MÉXICO AYUDAR</div>
+<div class="sub" id="subtitle">Preparación documental para trámites mexicanos</div>
+<div class="langs">
+<button id="esBtn" class="active" onclick="setLang('es')">ESPAÑOL</button>
+<button id="enBtn" onclick="setLang('en')">ENGLISH</button>
+</div>
 </header>
 
-<div class="progress"><i id="progressBar"></i></div>
-
-<section class="screen active" id="s0">
-<div class="card center">
-<h1>SAVE MÉXICO AYUDAR</h1>
-<p>Preparación clara de trámites mexicanos desde Estados Unidos.</p>
-<div class="notice">
-Te ayudamos a ordenar tus respuestas, identificar los documentos que corresponden a tu caso y preparar una guía individual.
-</div>
-<div class="notice warning">
-<b>Importante</b><br>
-Este es un servicio privado de preparación documental. No representa al Gobierno de México, al Consulado de México ni al INE. La autoridad correspondiente toma la decisión final y puede solicitar información adicional.
-</div>
-<div class="btns">
-<button class="btn" onclick="go(1)">Comenzar</button>
-</div>
+<main>
+<section id="s0" class="screen active">
+<h1 id="welcomeTitle">Prepare su trámite paso a paso</h1>
+<p id="welcomeText">Le haremos una pregunta a la vez. Primero identificaremos exactamente lo que necesita y después revisaremos los documentos que corresponden a su caso.</p>
+<div class="note" id="privateNote">SAVE MÉXICO AYUDAR es una herramienta privada. No es el Gobierno de México, la SRE ni el INE.</div>
+<div class="actions">
+<button class="btn" onclick="go(1)" id="startBtn">COMENZAR</button>
 </div>
 </section>
 
-<section class="screen" id="s1">
-<div class="card">
-<h2>Acceso</h2>
-<p class="muted">Selecciona una forma de entrar.</p>
+<section id="s1" class="screen">
+<h2 id="procedureTitle">¿Qué trámite necesita?</h2>
+<p class="qhelp" id="procedureHelp">Seleccione una sola opción.</p>
+<div id="tramitesBox" class="cards"><div class="loader">Cargando...</div></div>
+</section>
 
-<div class="grid">
-<div class="plan">
-<strong>Acceso individual</strong>
-<p class="small">Preparación de un trámite.</p>
-<div class="btns">
-<button class="btn" onclick="checkout('daily')">Individual · $35.99</button>
-</div>
-</div>
+<section id="s2" class="screen">
+<h2 id="modalityTitle">¿Qué necesita hacer?</h2>
+<p class="qhelp" id="modalityHelp"></p>
+<div id="modalidadesBox" class="cards"></div>
+</section>
 
-<div class="plan">
-<strong>Acceso mensual</strong>
-<p class="small">Acceso para preparar trámites durante el periodo contratado.</p>
-<div class="btns">
-<button class="btn secondary" onclick="checkout('monthly')">Mensual · $69.99</button>
-</div>
-</div>
-
-<div class="plan">
-<strong>Acceso anual</strong>
-<p class="small">Acceso durante el periodo anual contratado.</p>
-<div class="btns">
-<button class="btn secondary" onclick="checkout('annual')">Anual · $300</button>
-</div>
-</div>
-
-<div class="plan">
-<strong>Acceso administrativo</strong>
-<p class="small">Acceso gratuito para el administrador autorizado.</p>
-<div class="field">
-<label>Usuario</label>
-<input id="adminUser" autocomplete="username">
-</div>
-<div class="field">
-<label>Contraseña</label>
-<input id="adminPass" type="password" autocomplete="current-password">
-</div>
-<button class="btn green" onclick="adminLogin()">Entrar como administrador</button>
-</div>
-</div>
-
-<div class="notice small">
-El pago se procesa mediante Stripe. No introduzcas aquí datos de tarjeta.
-</div>
+<section id="s3" class="screen">
+<div id="questionProgress" class="progress"></div>
+<h2 id="questionTitle"></h2>
+<div id="questionHelp" class="qhelp"></div>
+<div id="questionBox"></div>
+<div id="questionError"></div>
+<div class="actions">
+<button class="btn secondary" onclick="previousQuestion()" id="backQuestion">ATRÁS</button>
+<button class="btn" onclick="nextQuestion()" id="nextQuestion">CONTINUAR</button>
 </div>
 </section>
 
-<section class="screen" id="s2">
-<div class="card">
-<div class="step">PASO 1 DE 7</div>
-<h2>¿Qué trámite necesitas?</h2>
-<p class="muted">Selecciona solamente el trámite que realmente necesitas.</p>
-<div id="tramitesBox" class="grid"></div>
-<div class="btns">
-<button class="btn secondary" onclick="go(1)">Atrás</button>
-</div>
-</div>
-</section>
-
-<section class="screen" id="s3">
-<div class="card">
-<div class="step">PASO 2 DE 7</div>
-<h2 id="modalidadTitle">¿Qué necesitas hacer?</h2>
-<p class="muted">Escoge la situación que más se parezca a tu caso.</p>
-<div id="modalidadesBox" class="grid"></div>
-<div class="btns">
-<button class="btn secondary" onclick="go(2)">Atrás</button>
-</div>
-</div>
-</section>
-
-<section class="screen" id="s4">
-<div class="card">
-<div class="step">PASO 3 DE 7</div>
-<div class="question-counter" id="questionCounter"></div>
-<h2 id="preguntaTitle">Información del trámite</h2>
-<p id="preguntaHelp" class="muted">Una pregunta a la vez.</p>
-<div id="questionAlert"></div>
-<div id="preguntaBox"></div>
-<div class="btns">
-<button class="btn secondary" onclick="preguntaBack()">Atrás</button>
-<button class="btn" id="preguntaNext" onclick="preguntaNext()">Siguiente</button>
-</div>
-</div>
-</section>
-
-<section class="screen" id="s5">
-<div class="card">
-<div class="step">PASO 4 DE 7</div>
-<h2>Documentos de tu caso</h2>
-<p class="muted">Aquí solamente deben aparecer los documentos relacionados con la situación que indicaste.</p>
-
-<div class="notice small">
-<b>Importante:</b> si un documento depende de tu situación, la aplicación te lo indicará. No marques “Lo tengo” solamente porque el documento existe: debes tenerlo realmente y en la forma indicada.
-</div>
-
-<div id="docsBox"></div>
-
-<div class="btns">
-<button class="btn secondary" onclick="go(4)">Atrás</button>
-<button class="btn" onclick="saveDocsAndContinue()">Continuar</button>
-</div>
-</div>
-</section>
-
-<section class="screen" id="s6">
-<div class="card">
-<div class="step">PASO 5 DE 7</div>
-<h2>Tus datos</h2>
-<p class="muted">Estos datos se utilizarán para personalizar la guía.</p>
+<section id="s4" class="screen">
+<h2 id="personalTitle">Sus datos</h2>
+<p class="qhelp" id="personalHelp">Escriba la información exactamente como aparece en sus documentos.</p>
 <div id="personalBox"></div>
-
-<div class="btns">
-<button class="btn secondary" onclick="go(5)">Atrás</button>
-<button class="btn" onclick="savePersonalAndContinue()">Continuar</button>
-</div>
+<div class="actions">
+<button class="btn secondary" onclick="go(3)">ATRÁS</button>
+<button class="btn" onclick="savePersonal()">CONTINUAR</button>
 </div>
 </section>
 
-<section class="screen" id="s7">
-<div class="card">
-<div class="step">PASO 6 DE 7</div>
-<h2>Revisión de tu caso</h2>
-<p class="muted">Aquí se revisa la información antes de generar el PDF.</p>
+<section id="s5" class="screen">
+<h2 id="docsTitle">Documentos</h2>
+<p id="docsHelp" class="qhelp">Indique qué tiene actualmente. No marque un documento como disponible si no lo tiene.</p>
+<div id="docsBox"></div>
+<div id="docsError"></div>
+<div class="actions">
+<button class="btn secondary" onclick="go(4)">ATRÁS</button>
+<button class="btn" onclick="finishDocuments()">CONTINUAR</button>
+</div>
+</section>
+
+<section id="s6" class="screen">
+<h2 id="consulateTitle">Consulado</h2>
+<p id="consulateHelp" class="qhelp">Necesitamos saber dónde realizará el trámite.</p>
+<div id="consulateBox"></div>
+<div class="actions">
+<button class="btn secondary" onclick="go(5)">ATRÁS</button>
+<button class="btn" onclick="saveConsulate()">CONTINUAR</button>
+</div>
+</section>
+
+<section id="s7" class="screen">
+<h2 id="reviewTitle">Revise su información</h2>
+<p id="reviewHelp" class="qhelp">Antes de generar su guía, revise que sus respuestas sean correctas.</p>
 <div id="reviewBox"></div>
-
-<div class="btns">
-<button class="btn secondary" onclick="go(6)">Atrás</button>
-<button class="btn green" id="generateBtn" onclick="generatePDF()">Generar guía PDF</button>
-</div>
-</div>
-</section>
-
-<section class="screen" id="s8">
-<div class="card center">
-<div class="step">PASO 7 DE 7</div>
-<h2>Tu guía está lista</h2>
-<p>La información de tu caso fue organizada en un PDF.</p>
-
-<div class="notice success">
-La guía contiene la información que proporcionaste y los documentos que corresponden a tu situación según las reglas configuradas.
-</div>
-
-<div class="notice warning small">
-Antes de acudir, verifica cualquier requisito que la guía marque como “POR CONFIRMAR CON LA AUTORIDAD”.
-</div>
-
-<div id="pdfInfo"></div>
-
-<div class="btns">
-<button class="btn green" id="downloadBtn">Descargar PDF</button>
-<button class="btn secondary" onclick="startOver()">Comenzar otro trámite</button>
-<button class="btn red" onclick="logout()">Cerrar sesión</button>
-</div>
+<div id="resultBox"></div>
+<div class="actions">
+<button class="btn secondary" onclick="go(6)">ATRÁS</button>
+<button class="btn" onclick="generateGuide()">GENERAR GUÍA PDF</button>
 </div>
 </section>
 
+<section id="s8" class="screen">
+<h2 id="pdfTitle">Su guía está lista</h2>
+<div id="pdfBox"></div>
+<div class="actions">
+<button class="btn" onclick="downloadPdf()">DESCARGAR PDF</button>
+<button class="btn secondary" onclick="location.reload()">NUEVO TRÁMITE</button>
 </div>
+</section>
+</main>
+
+<footer id="footerText">Información orientativa. Confirme los requisitos finales con la autoridad correspondiente.</footer>
+</div>
+
+<div id="toast"></div>
 
 <script>
 "use strict";
 
 const state={
 lang:"es",
-access:false,
-admin:false,
-tramite:"",
-modalidad:"",
-tramiteNombre:"",
-modalidadNombre:"",
+tramites:[],
+modalidades:[],
+tramite:null,
+modalidad:null,
 ficha:null,
 preguntas:[],
-preguntaIndex:0,
 respuestas:{},
+questionIndex:0,
+personal:{},
 documentos:[],
 docEstados:{},
-personal:{},
+consulado:{estado:"",ciudad:""},
 resultado:null,
-pdf:""
+pdf:null
 };
 
-const fallbackModalidades={
-pasaporte:{
-primera_vez_adulto:"Primera vez - adulto",
-renovacion:"Renovación / canje",
-robo_extravio:"Robo o extravío",
-menor:"Pasaporte para menor de edad",
-emergencia:"Situación urgente / emergencia"
-},
-matricula_consular:{
-primera_vez_adulto:"Primera vez - adulto",
-renovacion:"Renovación",
-robo_extravio:"Robo o extravío",
-menor:"Matrícula Consular para menor de edad"
-},
-ine_extranjero:{
-primera_vez:"Primera vez",
-correccion:"Corrección o actualización de datos",
-cambio_domicilio:"Cambio de domicilio",
-reposicion:"Reposición",
-vigencia:"Consulta de vigencia y situación de la credencial"
-}
-};
+const $=id=>document.getElementById(id);
+const norm=v=>String(v??"").trim().toUpperCase();
+const arr=v=>Array.isArray(v)?v:(v==null?[]:[v]);
 
-function $(id){return document.getElementById(id)}
-
-function esc(v){
-return String(v??"").replace(/[&<>"']/g,m=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[m]));
-}
-
-function normalize(v){
-return String(v??"").trim().toLowerCase()
-.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-}
-
-function loading(v,text="Procesando..."){
-$("loading").style.display=v?"flex":"none";
-if(text)$("loadingText").textContent=text;
-}
-
-function toast(text){
-$("toast").textContent=text;
-$("toast").style.display="block";
-clearTimeout(window.toastTimer);
-window.toastTimer=setTimeout(()=>$("toast").style.display="none",3500);
-}
-
-async function api(url,opt={}){
-const r=await fetch(url,opt);
-let d={};
-try{d=await r.json()}catch(e){}
-if(!r.ok)throw new Error(d.detail||d.error||"No fue posible completar la operación.");
-return d;
+function toast(msg){
+const t=$("toast");t.textContent=msg;t.style.display="block";
+setTimeout(()=>t.style.display="none",2800);
 }
 
 function go(n){
 document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
 $("s"+n).classList.add("active");
-$("progressBar").style.width=Math.min(100,(n/8)*100)+"%";
 window.scrollTo({top:0,behavior:"smooth"});
-
-if(n===2)loadTramites();
-if(n===3)loadModalidades();
-if(n===5)renderDocs();
-if(n===6)renderPersonal();
-if(n===7)renderReview();
 }
 
-function toggleLang(){
-state.lang=state.lang==="es"?"en":"es";
-$("langBtn").textContent=state.lang==="es"?"EN":"ES";
-toast(state.lang==="es"?"Idioma español seleccionado":"English selected");
+function setLang(lang){
+state.lang=lang;
+$("esBtn").classList.toggle("active",lang==="es");
+$("enBtn").classList.toggle("active",lang==="en");
+applyLanguage();
+if(state.ficha&&state.preguntas.length)renderQuestion();
 }
 
-async function checkAccess(){
-try{
-const d=await api("/api/check-access");
-state.access=!!d.access;
-state.admin=!!d.admin;
-if(state.access)go(2);
-}catch(e){}
+function textOf(obj){
+if(obj==null)return"";
+if(typeof obj==="string")return obj;
+return obj[state.lang]??obj.es??obj.en??Object.values(obj)[0]??"";
 }
 
-async function adminLogin(){
-const username=$("adminUser").value.trim();
-const password=$("adminPass").value;
-
-if(!username||!password){
-toast("Escribe usuario y contraseña.");
-return;
+function applyLanguage(){
+const en=state.lang==="en";
+$("subtitle").textContent=en?"Document preparation for Mexican procedures":"Preparación documental para trámites mexicanos";
+$("welcomeTitle").textContent=en?"Prepare your procedure step by step":"Prepare su trámite paso a paso";
+$("welcomeText").textContent=en?
+"We will ask one question at a time. First we identify exactly what you need and then review the documents that apply to your case.":
+"Le haremos una pregunta a la vez. Primero identificaremos exactamente lo que necesita y después revisaremos los documentos que corresponden a su caso.";
+$("privateNote").textContent=en?
+"SAVE MÉXICO AYUDAR is a private tool. It is not the Government of Mexico, SRE or INE.":
+"SAVE MÉXICO AYUDAR es una herramienta privada. No es el Gobierno de México, la SRE ni el INE.";
+$("startBtn").textContent=en?"START":"COMENZAR";
+$("procedureTitle").textContent=en?"Which procedure do you need?":"¿Qué trámite necesita?";
+$("procedureHelp").textContent=en?"Select one option.":"Seleccione una sola opción.";
+$("modalityTitle").textContent=en?"What do you need to do?":"¿Qué necesita hacer?";
+$("backQuestion").textContent=en?"BACK":"ATRÁS";
+$("nextQuestion").textContent=en?"CONTINUE":"CONTINUAR";
+$("personalTitle").textContent=en?"Your information":"Sus datos";
+$("personalHelp").textContent=en?"Enter the information exactly as shown on your documents.":"Escriba la información exactamente como aparece en sus documentos.";
+$("docsTitle").textContent=en?"Documents":"Documentos";
+$("docsHelp").textContent=en?"Indicate what you currently have. Do not mark a document as available if you do not have it.":"Indique qué tiene actualmente. No marque un documento como disponible si no lo tiene.";
+$("consulateTitle").textContent=en?"Consulate":"Consulado";
+$("consulateHelp").textContent=en?"We need to know where you will complete the procedure.":"Necesitamos saber dónde realizará el trámite.";
+$("reviewTitle").textContent=en?"Review your information":"Revise su información";
+$("reviewHelp").textContent=en?"Before generating your guide, verify that your answers are correct.":"Antes de generar su guía, revise que sus respuestas sean correctas.";
+$("pdfTitle").textContent=en?"Your guide is ready":"Su guía está lista";
+$("footerText").textContent=en?"General guidance. Confirm final requirements with the appropriate authority.":"Información orientativa. Confirme los requisitos finales con la autoridad correspondiente.";
 }
 
-loading(true,"Verificando acceso...");
-
-try{
-const d=await api("/api/admin-login",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username,password})
-});
-
-state.access=true;
-state.admin=true;
-toast(d.message||"Acceso autorizado.");
-go(2);
-}catch(e){
-toast(e.message);
-}finally{
-loading(false);
-}
-}
-
-async function checkout(plan){
-loading(true,"Preparando pago seguro...");
-
-try{
-const d=await api("/api/create-checkout-session",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({plan})
-});
-
-if(d.url){
-location.href=d.url;
-return;
-}
-
-if(d.checkout_url){
-location.href=d.checkout_url;
-return;
-}
-
-if(d.id){
-location.href="https://checkout.stripe.com/c/pay/"+d.id;
-return;
-}
-
-throw new Error("Stripe no devolvió una sesión de pago.");
-}catch(e){
-toast(e.message);
-loading(false);
-}
-}
-
-async function verifyPayment(){
-const params=new URLSearchParams(location.search);
-const session=params.get("session_id")||params.get("checkout_session_id");
-
-if(!session)return;
-
-loading(true,"Verificando el pago...");
-
-try{
-const d=await api("/api/verify-payment?session_id="+encodeURIComponent(session));
-
-if(d.access){
-state.access=true;
-history.replaceState({},document.title,location.pathname);
-toast("Pago verificado. Acceso autorizado.");
-go(2);
-}else{
-toast("El pago todavía no está confirmado.");
-}
-}catch(e){
-toast(e.message);
-}finally{
-loading(false);
-}
+async function api(url,options={}){
+const r=await fetch(url,{headers:{"Content-Type":"application/json",...(options.headers||{})},...options});
+let data={};
+try{data=await r.json()}catch(e){}
+if(!r.ok)throw new Error(data.detail||data.message||"Error");
+return data;
 }
 
 async function loadTramites(){
-if(!state.access){
-go(1);
-return;
-}
-
-const box=$("tramitesBox");
-box.innerHTML="<p class='muted'>Cargando trámites...</p>";
-
 try{
-const d=await api("/api/tramites");
-const list=d.tramites||d.data||d;
-let arr=[];
-
-if(Array.isArray(list)){
-arr=list;
-}else if(list&&typeof list==="object"){
-arr=Object.entries(list).map(([id,v])=>({
-id,
-...(typeof v==="object"?v:{nombre:String(v)})
-}));
+const data=await api("/api/tramites");
+state.tramites=data.tramites||data||[];
+renderTramites();
+}catch(e){
+$("tramitesBox").innerHTML='<div class="error">No se pudieron cargar los trámites.</div>';
+}
 }
 
-box.innerHTML="";
-
-arr.forEach(t=>{
-const id=t.id||t.key||t.codigo;
-const name=t.nombre||t.name||t.titulo||id;
-const desc=t.descripcion||t.objetivo||"";
-
-if(!id)return;
-
+function renderTramites(){
+$("tramitesBox").innerHTML="";
+state.tramites.forEach(t=>{
 const b=document.createElement("button");
 b.className="choice";
-b.innerHTML="<strong>"+esc(name)+"</strong>"+
-(desc?"<small>"+esc(desc)+"</small>":"<small>Preparar este trámite</small>");
-
-b.onclick=()=>selectTramite(id,name);
-box.appendChild(b);
+b.textContent=textOf(t.nombre||t.titulo||t.texto)||t.id;
+b.onclick=()=>selectTramite(t);
+$("tramitesBox").appendChild(b);
 });
-
-if(!arr.length)throw new Error("No se encontraron trámites.");
-
-}catch(e){
-box.innerHTML="<div class='notice danger'>No se pudieron cargar los trámites.</div>";
-toast(e.message);
-}
 }
 
-async function selectTramite(id,name){
-state.tramite=id;
-state.tramiteNombre=name||id;
-state.modalidad="";
-state.modalidadNombre="";
+async function selectTramite(t){
+state.tramite=t.id||t.codigo;
+state.modalidad=null;
 state.ficha=null;
-state.preguntas=[];
-state.preguntaIndex=0;
+try{
+const data=await api("/api/modalidades?tramite="+encodeURIComponent(state.tramite));
+state.modalidades=data.modalidades||data||[];
+$("modalidadesBox").innerHTML="";
+state.modalidades.forEach(m=>{
+const b=document.createElement("button");
+b.className="choice";
+b.innerHTML="<strong>"+escapeHtml(textOf(m.nombre||m.titulo||m.texto)||m.id)+"</strong>"+
+(m.descripcion?("<small>"+escapeHtml(textOf(m.descripcion))+"</small>"):"");
+b.onclick=()=>selectModalidad(m);
+$("modalidadesBox").appendChild(b);
+});
+go(2);
+}catch(e){toast(e.message)}
+}
+
+async function selectModalidad(m){
+state.modalidad=m.id||m.codigo;
+try{
+const data=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite)+"&modalidad="+encodeURIComponent(state.modalidad));
+state.ficha=data;
+state.preguntas=extractQuestions(data);
+state.questionIndex=0;
 state.respuestas={};
+state.personal={};
 state.docEstados={};
 state.documentos=[];
-state.personal={};
-state.resultado=null;
-
-$("modalidadTitle").textContent=name||"¿Qué necesitas hacer?";
-await loadModalidades();
+renderQuestion();
 go(3);
+}catch(e){toast(e.message)}
 }
 
-async function loadModalidades(){
-const box=$("modalidadesBox");
-box.innerHTML="<p class='muted'>Cargando opciones...</p>";
-
-let data=null;
-
-try{
-data=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite));
-}catch(e){}
-
-let mods=
-data?.modalidades||
-data?.ficha?.modalidades||
-data?.data?.modalidades||
-null;
-
-if(!mods)mods=fallbackModalidades[state.tramite]||{};
-
-box.innerHTML="";
-
-Object.entries(mods).forEach(([id,v])=>{
-const name=typeof v==="string"
-?v
-:(v.nombre||v.titulo||id);
-
-const desc=typeof v==="object"
-?(v.descripcion||v.objetivo||"")
-:"";
-
-const b=document.createElement("button");
-b.className="choice";
-b.innerHTML="<strong>"+esc(name)+"</strong>"+
-(desc?"<small>"+esc(desc)+"</small>":"");
-
-b.onclick=()=>selectModalidad(id,name);
-box.appendChild(b);
-});
-
-if(!Object.keys(mods).length){
-box.innerHTML="<div class='notice danger'>No hay modalidades configuradas para este trámite.</div>";
-}
+function extractQuestions(data){
+let q=data?.preguntas||data?.questions||data?.ficha?.preguntas||[];
+if(!Array.isArray(q)&&data?.tramite?.preguntas)q=data.tramite.preguntas;
+return Array.isArray(q)?q:[];
 }
 
-async function selectModalidad(id,name){
-state.modalidad=id;
-state.modalidadNombre=name||id;
-
-loading(true,"Preparando las preguntas de tu caso...");
-
-try{
-const d=await api(
-"/api/ficha-tramite?tramite="+
-encodeURIComponent(state.tramite)+
-"&modalidad="+
-encodeURIComponent(id)
-);
-
-state.ficha=d.ficha||d.data||d;
-
-state.modalidadNombre=
-state.ficha.nombre||
-state.ficha.titulo||
-name||
-id;
-
-state.preguntas=Array.isArray(state.ficha.preguntas)
-?state.ficha.preguntas
-:[];
-
-state.documentos=Array.isArray(state.ficha.documentos)
-?state.ficha.documentos
-:[];
-
-state.preguntaIndex=0;
-state.respuestas={};
-state.docEstados={};
-state.resultado=null;
-
-go(4);
-renderPregunta();
-
-}catch(e){
-toast(e.message);
-}finally{
-loading(false);
-}
-}
-
-function questionVisible(q){
-if(!q)return false;
-
-if(q.oculta===true)return false;
-
-if(q.mostrar_si){
-return conditionMatch(q.mostrar_si);
-}
-
-if(q.cuando){
-return conditionMatch(q.cuando);
-}
-
-return true;
-}
-
-function conditionMatch(rule){
-if(!rule)return true;
-
-if(Array.isArray(rule)){
-return rule.every(conditionMatch);
-}
-
-if(typeof rule!=="object")return true;
-
-return Object.entries(rule).every(([id,expected])=>{
+function conditionMatch(c){
+if(!c)return true;
+if(Array.isArray(c))return c.every(conditionMatch);
+const id=c.respuesta||c.pregunta||c.id;
+if(!id)return true;
 const actual=state.respuestas[id];
-
-if(Array.isArray(expected)){
-return expected.map(normalize).includes(normalize(actual));
-}
-
-if(expected&&typeof expected==="object"){
-if(expected.existe===true)return actual!==undefined&&actual!=="";
-if(expected.vacio===true)return actual===undefined||actual==="";
-}
-
-return normalize(actual)===normalize(expected);
-});
+if(Object.prototype.hasOwnProperty.call(c,"incluye"))return arr(actual).map(norm).includes(norm(c.incluye));
+if(Object.prototype.hasOwnProperty.call(c,"contiene"))return norm(actual).includes(norm(c.contiene));
+if(Object.prototype.hasOwnProperty.call(c,"no_incluye"))return !arr(actual).map(norm).includes(norm(c.no_incluye));
+if(Object.prototype.hasOwnProperty.call(c,"alguno_de"))return arr(c.alguno_de).some(x=>arr(actual).map(norm).includes(norm(x)));
+if(Object.prototype.hasOwnProperty.call(c,"todos_de"))return arr(c.todos_de).every(x=>arr(actual).map(norm).includes(norm(x)));
+if(Object.prototype.hasOwnProperty.call(c,"es"))return arr(actual).map(norm).includes(norm(c.es));
+if(Object.prototype.hasOwnProperty.call(c,"no_es"))return !arr(actual).map(norm).includes(norm(c.no_es));
+if(Object.prototype.hasOwnProperty.call(c,"distinto_de"))return norm(actual)!==norm(c.distinto_de);
+if(Object.prototype.hasOwnProperty.call(c,"igual_a"))return norm(actual)===norm(c.igual_a);
+if(Object.prototype.hasOwnProperty.call(c,"y"))return arr(c.y).every(conditionMatch);
+return true;
 }
 
 function visibleQuestions(){
-return state.preguntas.filter(questionVisible);
+return state.preguntas.filter(q=>conditionMatch(q.mostrar_si||q.mostrarCuando||q.condicion));
 }
 
-function renderPregunta(){
+function renderQuestion(){
 const qs=visibleQuestions();
-const q=qs[state.preguntaIndex];
-const box=$("preguntaBox");
-const alert=$("questionAlert");
-
-alert.innerHTML="";
-
-if(!q){
-go(5);
+if(state.questionIndex>=qs.length){
+preparePersonal();
 return;
 }
-
-$("questionCounter").textContent=
-"Pregunta "+(state.preguntaIndex+1)+" de "+qs.length;
-
-$("preguntaTitle").textContent=
-q.titulo||
-q.texto||
-q.pregunta||
-"Información del trámite";
-
-$("preguntaHelp").textContent=
-q.ayuda||
-q.descripcion||
-"Responde esta pregunta con la información real de tu caso.";
-
+const q=qs[state.questionIndex];
+$("questionProgress").textContent=(state.lang==="en"?"Question ":"Pregunta ")+(state.questionIndex+1)+" / "+qs.length;
+$("questionTitle").textContent=textOf(q.texto||q.pregunta||q.titulo);
+$("questionHelp").textContent=textOf(q.ayuda||q.help||"");
+$("questionError").innerHTML="";
+const box=$("questionBox");
 box.innerHTML="";
+const type=norm(q.tipo);
+let current=state.respuestas[q.id];
 
-const type=q.tipo||"texto";
-const previous=state.respuestas[q.id]??"";
-
-if(q.alerta){
-alert.innerHTML="<div class='alert'>"+esc(q.alerta)+"</div>";
+if(["MULTIPLE","CASILLAS"].includes(type)){
+let values=arr(current);
+if(norm(q.id).includes("datos_corregir"))values=values.filter(v=>norm(v)!=="NO_SE");
+(q.opciones||[]).forEach(o=>{
+const b=document.createElement("button");
+b.className="choice "+(values.map(norm).includes(norm(o.valor))?"selected":"");
+b.type="button";
+const text=textOf(o.texto||o.label||o.nombre)||o.valor;
+b.innerHTML='<input type="checkbox" '+(values.map(norm).includes(norm(o.valor))?"checked":"")+' tabindex="-1"> '+escapeHtml(text);
+if(o.ayuda)b.innerHTML+='<small>'+escapeHtml(textOf(o.ayuda))+'</small>';
+b.onclick=()=>{
+let a=arr(state.respuestas[q.id]).slice();
+const val=o.valor;
+if(norm(val)==="NO_SE")a=[val];
+else{
+a=a.filter(x=>norm(x)!=="NO_SE");
+if(a.map(norm).includes(norm(val)))a=a.filter(x=>norm(x)!==norm(val));
+else a.push(val);
 }
-
-if(type==="si_no"||type==="boolean"){
-renderOptions(q,[
-{valor:"SI",texto:"Sí"},
-{valor:"NO",texto:"No"},
-{valor:"NO_SE",texto:"No estoy seguro"},
-{valor:"NO_APLICA",texto:"No aplica"}
-],previous);
-return;
-}
-
-if(type==="opciones"||type==="select"){
-const options=(q.opciones||[]).map(x=>{
-if(typeof x==="string")return{valor:x,texto:x};
-return{
-valor:x.valor??x.id??x.codigo??x.nombre,
-texto:x.texto??x.nombre??x.titulo??x.valor,
-ayuda:x.ayuda??x.descripcion??""
+state.respuestas[q.id]=a;
+renderQuestion();
 };
+box.appendChild(b);
 });
-
-if(type==="select"){
-box.innerHTML=
-'<div class="field"><select id="qSelect">'+
-'<option value="">Selecciona una opción</option>'+
-options.map(x=>
-'<option value="'+esc(x.valor)+'" '+
-(String(previous)===String(x.valor)?"selected":"")+
-">"+esc(x.texto)+"</option>"
-).join("")+
-"</select></div>";
-}else{
-renderOptions(q,options,previous);
-}
 return;
 }
 
-if(type==="multiple"||type==="casillas"){
-const values=Array.isArray(previous)?previous:[];
-box.innerHTML=
-'<div class="option-list">'+
-(q.opciones||[]).map(x=>{
-const o=typeof x==="string"
-?{valor:x,texto:x}
-:{valor:x.valor??x.id??x.nombre,texto:x.texto??x.nombre??x.valor,ayuda:x.ayuda??""};
-
-return '<label class="option">'+
-'<input type="checkbox" name="qmulti" value="'+esc(o.valor)+'" '+
-(values.includes(o.valor)?"checked":"")+
-">"+
-"<span><b>"+esc(o.texto)+"</b>"+
-(o.ayuda?"<small>"+esc(o.ayuda)+"</small>":"")+
-"</span></label>";
-}).join("")+
-"</div>";
+if(type==="SI_NO"||type==="BOOLEAN"){
+(q.opciones||[{valor:"SI",texto:"Sí"},{valor:"NO",texto:"No"}]).forEach(o=>{
+const b=document.createElement("button");
+b.className="choice "+(norm(current)===norm(o.valor)?"selected":"");
+b.textContent=textOf(o.texto||o.label)||o.valor;
+b.onclick=()=>{state.respuestas[q.id]=o.valor;nextQuestion()};
+box.appendChild(b);
+});
 return;
 }
 
-if(type==="texto_largo"||type==="textarea"){
-box.innerHTML=
-'<div class="field"><textarea id="qInput" autocomplete="off">'+
-esc(previous)+
-"</textarea></div>";
+if(type==="SELECT"||type==="OPCIONES"){
+const select=document.createElement("select");
+select.id="answerInput";
+select.innerHTML='<option value="">'+(state.lang==="en"?"Select an option":"Seleccione una opción")+'</option>';
+(q.opciones||[]).forEach(o=>{
+const op=document.createElement("option");
+op.value=o.valor;
+op.textContent=textOf(o.texto||o.label)||o.valor;
+if(norm(current)===norm(o.valor))op.selected=true;
+select.appendChild(op);
+});
+box.appendChild(select);
 return;
 }
 
-let inputType="text";
-
-if(type==="numero")inputType="number";
-if(type==="fecha")inputType="date";
-if(type==="email")inputType="email";
-if(type==="telefono")inputType="tel";
-
-box.innerHTML=
-'<div class="field"><input id="qInput" type="'+inputType+
-'" autocomplete="off" value="'+esc(previous)+'"></div>';
+const input=document.createElement(type==="TEXTAREA"||type==="TEXTO_LARGO"?"textarea":"input");
+input.id="answerInput";
+if(type==="FECHA")input.type="date";
+else if(type==="EMAIL")input.type="email";
+else if(type==="TELEFONO")input.type="tel";
+else if(type==="NUMERO")input.type="number";
+else input.type="text";
+input.value=current??"";
+box.appendChild(input);
 }
 
-function renderOptions(q,options,previous){
-$("preguntaBox").innerHTML=
-'<div class="option-list">'+
-options.map(o=>
-'<label class="option">'+
-'<input type="radio" name="q" value="'+esc(o.valor)+'" '+
-(String(previous)===String(o.valor)?"checked":"")+
-">"+
-"<span><b>"+esc(o.texto)+"</b>"+
-(o.ayuda?"<small>"+esc(o.ayuda)+"</small>":"")+
-"</span></label>"
-).join("")+
-"</div>";
+function saveCurrentQuestion(){
+const qs=visibleQuestions(),q=qs[state.questionIndex];
+if(!q)return true;
+const type=norm(q.tipo);
+if(["MULTIPLE","CASILLAS","SI_NO","BOOLEAN","SELECT","OPCIONES"].includes(type))return true;
+const el=$("answerInput");
+if(!el)return true;
+const v=el.value.trim();
+if(q.obligatoria&&v===""){
+showQuestionError(state.lang==="en"?"Please answer this question.":"Por favor responda esta pregunta.");
+return false;
 }
-
-function getPreguntaValue(){
-const qs=visibleQuestions();
-const q=qs[state.preguntaIndex];
-
-if(!q)return null;
-
-if(q.tipo==="multiple"||q.tipo==="casillas"){
-return [...document.querySelectorAll("input[name='qmulti']:checked")].map(x=>x.value);
-}
-
-if(q.tipo==="si_no"||q.tipo==="boolean"||q.tipo==="opciones"){
-const r=document.querySelector("input[name='q']:checked");
-return r?r.value:"";
-}
-
-if(q.tipo==="select"){
-return $("qSelect")?.value||"";
-}
-
-return $("qInput")?.value.trim()||"";
-}
-
-function requiredQuestion(q,v){
-if(q.obligatoria===false)return false;
-
-if(Array.isArray(v))return v.length===0;
-
-return v===""||v===null||v===undefined;
-}
-
-function runClientQuestionRules(q,v){
-const rules=[
-...(Array.isArray(q.reglas)?q.reglas:[]),
-...(Array.isArray(q.validaciones)?q.validaciones:[])
-];
-
-for(const rule of rules){
-if(!rule||typeof rule!=="object")continue;
-
-let applies=true;
-
-if(rule.si)applies=conditionMatch(rule.si);
-
-if(rule.respuesta){
-const expected=Array.isArray(rule.respuesta)
-?rule.respuesta.map(normalize)
-:[normalize(rule.respuesta)];
-
-const actual=normalize(v);
-applies=expected.includes(actual);
-}
-
-if(!applies)continue;
-
-if(rule.mensaje){
-$("questionAlert").innerHTML=
-"<div class='alert "+(rule.bloquea?"danger":"")+"'>"+
-esc(rule.mensaje)+
-"</div>";
-}
-
-if(rule.bloquea)return false;
-
-if(rule.accion==="DETENER")return false;
-}
-
-return true;
-}
-
-function preguntaNext(){
-const qs=visibleQuestions();
-const q=qs[state.preguntaIndex];
-
-if(!q)return;
-
-const v=getPreguntaValue();
-
-if(requiredQuestion(q,v)){
-toast("Responde esta pregunta antes de continuar.");
-return;
-}
-
-if(!runClientQuestionRules(q,v)){
-return;
-}
-
 state.respuestas[q.id]=v;
-
-if(state.preguntaIndex<qs.length-1){
-state.preguntaIndex++;
-renderPregunta();
-}else{
-loading(true,"Revisando tu caso...");
-validateCase();
-}
-}
-
-function preguntaBack(){
-if(state.preguntaIndex>0){
-state.preguntaIndex--;
-renderPregunta();
-}else{
-go(3);
-}
-}
-
-async function validateCase(){
-try{
-const d=await api("/api/resultado-tramite",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-tramite:state.tramite,
-modalidad:state.modalidad,
-datos_especificos:state.respuestas,
-documentos:{},
-idioma:state.lang
-})
-});
-
-state.resultado=d.resultado||d.data||d;
-
-const status=String(
-state.resultado?.estado||
-state.resultado?.status||
-state.resultado?.resultado||
-""
-).toUpperCase();
-
-if(
-status.includes("CAMBIAR")||
-status.includes("INCONSIST")||
-status.includes("INCORRECT")||
-status.includes("BLOQUE")
-){
-showValidationResult();
-}else{
-state.documentos=extractDocuments(state.resultado,state.documentos);
-go(5);
-renderDocs();
-}
-
-}catch(e){
-toast(e.message);
-}finally{
-loading(false);
-}
-}
-
-function showValidationResult(){
-const r=state.resultado||{};
-
-const message=
-r.mensaje||
-r.message||
-r.explicacion||
-"La información necesita ser revisada antes de continuar.";
-
-const status=
-String(r.estado||r.status||"REQUIERE_REVISION").toUpperCase();
-
-let cls=status.includes("INCONSIST")||status.includes("BLOQUE")
-?"danger":"warning";
-
-$("preguntaBox").innerHTML=
-'<div class="status-box status-'+cls+'">'+
-"<h3>Debemos revisar tu caso</h3>"+
-"<p>"+esc(message)+"</p>"+
-"</div>";
-
-if(r.accion||r.recomendacion){
-$("preguntaBox").innerHTML+=
-'<div class="notice">'+
-esc(r.accion||r.recomendacion)+
-"</div>";
-}
-
-$("questionAlert").innerHTML=
-'<div class="alert '+(cls==="danger"?"danger":"")+'">'+
-"Corrige o completa la información indicada antes de generar una guía."+
-"</div>";
-
-$("preguntaNext").textContent="Volver a revisar";
-$("preguntaNext").onclick=()=>{
-$("preguntaNext").onclick=preguntaNext;
-renderPregunta();
-};
-}
-
-function extractDocuments(result,fallback){
-const docs=
-result?.documentos_correspondientes||
-result?.documentos||
-result?.documentos_requeridos||
-result?.data?.documentos||
-null;
-
-return Array.isArray(docs)?docs:fallback||[];
-}
-
-function normalizeDocument(doc,index){
-if(typeof doc==="string"){
-return{
-id:"doc_"+index,
-nombre:doc,
-categoria:"",
-prioridad:"",
-nota:"",
-obligatorio:true,
-confirmar:true
-};
-}
-
-return{
-id:doc.id||doc.codigo||"doc_"+index,
-nombre:doc.nombre||doc.titulo||doc.texto||"Documento",
-categoria:doc.categoria||"",
-prioridad:doc.prioridad||"",
-nota:doc.nota||doc.ayuda||doc.descripcion||"",
-obligatorio:doc.obligatorio!==false,
-confirmar:doc.confirmar!==false,
-alternativas:doc.alternativas||[]
-};
-}
-
-function documentVisible(doc){
-if(doc.oculto===true)return false;
-if(doc.mostrar_si)return conditionMatch(doc.mostrar_si);
-if(doc.cuando)return conditionMatch(doc.cuando);
 return true;
 }
 
-function renderDocs(){
-const box=$("docsBox");
+function showQuestionError(msg){$("questionError").innerHTML='<div class="error">'+escapeHtml(msg)+'</div>'}
 
-let docs=(Array.isArray(state.documentos)?state.documentos:[])
-.map(normalizeDocument)
-.filter(documentVisible);
-
-state.documentos=docs;
-
-if(!docs.length){
-box.innerHTML=
-'<div class="notice warning">'+
-"No se encontraron documentos específicos configurados para esta situación. "+
-"Antes de acudir, confirma directamente con la autoridad correspondiente."+
-"</div>";
+function nextQuestion(){
+if(!saveCurrentQuestion())return;
+const qs=visibleQuestions(),q=qs[state.questionIndex];
+if(q){
+const value=state.respuestas[q.id];
+if(q.obligatoria&&(!Array.isArray(value)?String(value??"").trim()==="":value.length===0)){
+showQuestionError(state.lang==="en"?"Please select an option.":"Seleccione una opción.");
 return;
 }
-
-box.innerHTML=docs.map((doc,i)=>{
-const id=doc.id;
-const s=state.docEstados[id]||"";
-
-let alternatives="";
-
-if(Array.isArray(doc.alternativas)&&doc.alternativas.length){
-alternatives=
-"<div class='doc-note'><b>Puede existir una alternativa:</b> "+
-doc.alternativas.map(x=>typeof x==="string"?x:(x.nombre||x.texto||"")).join(", ")+
-"</div>";
-}
-
-return '<div class="doc">'+
-'<div class="doc-top">'+
-'<div class="doc-name">'+esc(doc.nombre)+
-(doc.categoria?"<div class='doc-category'>"+esc(doc.categoria)+"</div>":"")+
-"</div>"+
-(doc.obligatorio?'<span class="tag">Necesario según tu caso</span>':'<span class="tag">Condicional</span>')+
-"</div>"+
-(doc.nota?"<div class='doc-note'>"+esc(doc.nota)+"</div>":"")+
-alternatives+
-'<div class="doc-status">'+
-'<button class="'+(s==="have"?"active have":"")+'" onclick="setDoc(\''+esc(id)+'\',\'have\')">Lo tengo</button>'+
-'<button class="'+(s==="missing"?"active missing":"")+'" onclick="setDoc(\''+esc(id)+'\',\'missing\')">No lo tengo</button>'+
-'<button class="'+(s==="unsure"?"active unsure":"")+'" onclick="setDoc(\''+esc(id)+'\',\'unsure\')">No estoy seguro</button>'+
-'<button class="'+(s==="na"?"active na":"")+'" onclick="setDoc(\''+esc(id)+'\',\'na\')">No aplica</button>'+
-"</div>"+
-"</div>";
-}).join("");
-}
-
-function setDoc(id,status){
-state.docEstados[id]=status;
-renderDocs();
-}
-
-function saveDocsAndContinue(){
-const docs=state.documentos||[];
-
-const unanswered=docs.filter(d=>
-d.obligatorio!==false&&!state.docEstados[d.id]
-);
-
-if(unanswered.length){
-toast("Revisa los documentos necesarios antes de continuar.");
+if(q.validacion&&q.validacion.obligatoria_si&&conditionMatch(q.validacion.obligatoria_si)&&!value){
+showQuestionError(state.lang==="en"?"This answer is required.":"Esta respuesta es obligatoria.");
 return;
 }
-
-validateDocuments();
+}
+state.questionIndex++;
+renderQuestion();
 }
 
-async function validateDocuments(){
-loading(true,"Revisando los documentos de tu caso...");
+function previousQuestion(){
+if(state.questionIndex>0){
+state.questionIndex--;
+renderQuestion();
+}else go(2);
+}
 
+function preparePersonal(){
+const fields=state.ficha?.datos_personales?.campos||state.ficha?.personal_fields||[
+"nombres","apellido_paterno","apellido_materno","fecha_nacimiento",
+"lugar_nacimiento","entidad_nacimiento","nacionalidad",
+"estado_residencia_usa","ciudad_residencia_usa","domicilio_usa",
+"codigo_postal","telefono","email"
+];
+$("personalBox").innerHTML="";
+fields.forEach(f=>{
+const id=typeof f==="string"?f:(f.id||f.nombre);
+const label=typeof f==="string"?labelFor(id):textOf(f.texto||f.label)||labelFor(id);
+const required=typeof f==="object"?f.obligatorio!==false:true;
+const wrap=document.createElement("div");
+wrap.innerHTML='<label class="field">'+escapeHtml(label)+(required?" *":"")+'</label>';
+const input=document.createElement("input");
+input.type=id.includes("email")?"email":id.includes("telefono")?"tel":id.includes("fecha")?"date":"text";
+input.value=state.personal[id]||"";
+input.dataset.field=id;
+input.required=required;
+wrap.appendChild(input);
+$("personalBox").appendChild(wrap);
+});
+go(4);
+}
+
+function savePersonal(){
+const inputs=$("personalBox").querySelectorAll("[data-field]");
+for(const el of inputs){
+if(el.required&&!el.value.trim()){
+toast(state.lang==="en"?"Complete all required fields.":"Complete todos los campos obligatorios.");
+el.focus();return;
+}
+state.personal[el.dataset.field]=el.value.trim();
+}
+prepareDocuments();
+}
+
+async function prepareDocuments(){
 try{
-const d=await api("/api/resultado-tramite",{
+const data=await api("/api/perfil-tramite",{
 method:"POST",
-headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 tramite:state.tramite,
 modalidad:state.modalidad,
-datos_especificos:state.respuestas,
-documentos:state.docEstados,
+respuestas:state.respuestas,
+datos_personales:state.personal,
 idioma:state.lang
 })
 });
-
-state.resultado=d.resultado||d.data||d;
-
-const status=String(
-state.resultado?.estado||
-state.resultado?.status||
-""
-).toUpperCase();
-
-if(
-status.includes("CAMBIAR")||
-status.includes("INCONSIST")||
-status.includes("BLOQUE")
-){
-go(7);
-renderReview();
-return;
-}
-
-go(6);
-
+state.documentos=data.documentos||data.documentos_requeridos||[];
 }catch(e){
-toast(e.message);
-}finally{
-loading(false);
+state.documentos=extractDocuments(state.ficha);
 }
-}
-
-function personalFields(){
-const configured=state.ficha?.datos_personales||
-state.ficha?.campos_personales||
-state.resultado?.datos_personales;
-
-if(Array.isArray(configured)&&configured.length){
-return configured.map((x,i)=>({
-id:x.id||x.codigo||"campo_"+i,
-label:x.label||x.nombre||x.texto||x.id,
-type:x.tipo||"text",
-required:x.obligatorio!==false,
-help:x.ayuda||x.descripcion||""
-}));
+renderDocuments();
+go(5);
 }
 
-return[
-{id:"nombre",label:"Nombre(s)",type:"text",required:true},
-{id:"apellido_paterno",label:"Apellido paterno",type:"text",required:true},
-{id:"apellido_materno",label:"Apellido materno",type:"text",required:false},
-{id:"fecha_nacimiento",label:"Fecha de nacimiento",type:"date",required:true},
-{id:"lugar_nacimiento",label:"Lugar de nacimiento",type:"text",required:false},
-{id:"nacionalidad",label:"Nacionalidad",type:"text",required:false},
-{id:"telefono",label:"Teléfono",type:"tel",required:false},
-{id:"correo",label:"Correo electrónico",type:"email",required:false},
-{id:"domicilio",label:"Domicilio actual",type:"text",required:false},
-{id:"ciudad",label:"Ciudad",type:"text",required:false},
-{id:"estado",label:"Estado",type:"text",required:false},
-{id:"codigo_postal",label:"Código postal",type:"text",required:false},
-{id:"consulado_ciudad",label:"Ciudad del Consulado de México al que acudirás",type:"text",required:true},
-{id:"consulado_estado",label:"Estado donde está ese Consulado",type:"text",required:true}
-];
+function extractDocuments(data){
+return data?.documentos||data?.documentos_requeridos||data?.control_documentos?.documentos||[];
 }
 
-function renderPersonal(){
-const fields=personalFields();
-
-$("personalBox").innerHTML=fields.map(f=>
-'<div class="field">'+
-'<label>'+esc(f.label)+(f.required?" *":"")+"</label>"+
-(f.help?"<div class='muted small' style='margin-bottom:7px'>"+esc(f.help)+"</div>":"")+
-'<input id="p_'+esc(f.id)+'" type="'+esc(f.type==="numero"?"number":f.type||"text")+
-'" value="'+esc(state.personal[f.id]||"")+
-'" '+(f.required?"required":"")+">"+
-"</div>"
-).join("");
-}
-
-function savePersonalAndContinue(){
-const fields=personalFields();
-
-for(const f of fields){
-const el=$("p_"+f.id);
-
-if(f.required&&!el?.value.trim()){
-toast("Completa: "+f.label);
-el?.focus();
+function renderDocuments(){
+const box=$("docsBox");
+box.innerHTML="";
+if(!state.documentos.length){
+box.innerHTML='<div class="warning">'+(state.lang==="en"?"No document list was returned. Confirm requirements with the authority.":"No se recibió una lista específica de documentos. Confirme los requisitos con la autoridad.")+'</div>';
 return;
 }
-
-if(el)state.personal[f.id]=el.value.trim();
+state.documentos.forEach((d,i)=>{
+const id=d.id||d.codigo||("doc_"+i);
+const title=textOf(d.nombre||d.titulo||d.texto)||id;
+const required=d.obligatorio===true;
+const div=document.createElement("div");
+div.className="document";
+div.innerHTML='<div class="document-title">'+escapeHtml(title)+(required?' <span class="badge red">'+(state.lang==="en"?"REQUIRED":"OBLIGATORIO")+'</span>':"")+'</div>'+
+(d.nota?'<div class="document-note">'+escapeHtml(textOf(d.nota))+'</div>':"");
+const actions=document.createElement("div");
+actions.className="doc-buttons";
+[
+["LO_TENGO",state.lang==="en"?"I HAVE IT":"LO TENGO"],
+["NO_LO_TENGO",state.lang==="en"?"I DO NOT HAVE IT":"NO LO TENGO"],
+["NO_ESTOY_SEGURO",state.lang==="en"?"I AM NOT SURE":"NO ESTOY SEGURO"],
+["NO_APLICA",state.lang==="en"?"NOT APPLICABLE":"NO APLICA"]
+].forEach(([v,label])=>{
+const b=document.createElement("button");
+b.textContent=label;
+b.className=state.docEstados[id]===v?"active":"";
+b.onclick=()=>{
+state.docEstados[id]=v;
+renderDocuments();
+};
+actions.appendChild(b);
+});
+div.appendChild(actions);
+box.appendChild(div);
+});
 }
 
-if(
-!state.personal.consulado_ciudad||
-!state.personal.consulado_estado
-){
-toast("Indica la ciudad y el estado donde está el Consulado de México.");
+async function finishDocuments(){
+const missing=state.documentos.filter(d=>d.obligatorio===true&&state.docEstados[d.id||d.codigo]!=="LO_TENGO");
+if(missing.length){
+$("docsError").innerHTML='<div class="warning">'+
+(state.lang==="en"?"Some required documents are missing or uncertain. The guide will identify them.":"Hay documentos obligatorios que faltan o que usted no puede confirmar. La guía los identificará.")+
+'</div>';
+}else $("docsError").innerHTML="";
+go(6);
+renderConsulate();
+}
+
+function renderConsulate(){
+$("consulateBox").innerHTML="";
+const wrap=document.createElement("div");
+wrap.innerHTML='<label class="field">'+(state.lang==="en"?"U.S. state where you live":"Estado de EE. UU. donde vive")+' *</label>';
+const st=document.createElement("input");
+st.type="text";st.id="consState";st.value=state.consulado.estado||"";
+wrap.appendChild(st);
+const wrap2=document.createElement("div");
+wrap2.innerHTML='<label class="field">'+(state.lang==="en"?"City / consular area":"Ciudad / zona consular")+' *</label>';
+const city=document.createElement("input");
+city.type="text";city.id="consCity";city.value=state.consulado.ciudad||"";
+wrap2.appendChild(city);
+$("consulateBox").append(wrap,wrap2);
+}
+
+function saveConsulate(){
+const st=$("consState").value.trim(),city=$("consCity").value.trim();
+if(!st||!city){
+toast(state.lang==="en"?"Complete the consulate information.":"Complete la información del consulado.");
 return;
 }
-
+state.consulado={estado:st,ciudad:city};
+buildReview();
 go(7);
 }
 
-function labelPersonal(k){
-const fields=personalFields();
-const f=fields.find(x=>x.id===k);
-return f?.label||k;
+async function buildReview(){
+$("reviewBox").innerHTML='<div class="loader">'+(state.lang==="en"?"Checking your case...":"Revisando su caso...")+'</div>';
+try{
+state.resultado=await api("/api/resultado-tramite",{
+method:"POST",
+body:JSON.stringify({
+tramite:state.tramite,
+modalidad:state.modalidad,
+respuestas:state.respuestas,
+datos_personales:state.personal,
+documentos:state.documentos,
+documentos_disponibles:Object.entries(state.docEstados).filter(([k,v])=>v==="LO_TENGO").map(([k])=>k),
+documentos_faltantes:Object.entries(state.docEstados).filter(([k,v])=>v==="NO_LO_TENGO").map(([k])=>k),
+documentos_dudosos:Object.entries(state.docEstados).filter(([k,v])=>v==="NO_ESTOY_SEGURO").map(([k])=>k),
+consulado:state.consulado,
+idioma:state.lang
+})
+});
+}catch(e){
+state.resultado={
+estado:"REQUIERE_CONFIRMACION",
+documentos_faltantes:Object.entries(state.docEstados).filter(([k,v])=>v!=="LO_TENGO").map(([k])=>k),
+mensaje:e.message
+};
 }
-
-function questionLabel(id){
-const q=state.preguntas.find(x=>x.id===id);
-return q?.texto||q?.pregunta||q?.titulo||id;
-}
-
-function getTramiteName(){
-return state.tramiteNombre||
-state.ficha?.tramite_nombre||
-state.ficha?.nombre_tramite||
-({
-pasaporte:"Pasaporte mexicano",
-matricula_consular:"Matrícula Consular",
-ine_extranjero:"Credencial para Votar desde el Extranjero"
-}[state.tramite]||
-state.tramite);
-}
-
-function getModalidadName(){
-return state.modalidadNombre||
-state.ficha?.nombre||
-fallbackModalidades[state.tramite]?.[state.modalidad]||
-state.modalidad;
+renderReview();
 }
 
 function renderReview(){
 const r=state.resultado||{};
 let html="";
-
-const status=String(
-r.estado||
-r.status||
-"LISTO_PARA_CONFIRMAR"
-).toUpperCase();
-
-let statusClass="status-ready";
-let statusText="La información puede pasar a la preparación de la guía.";
-
-if(
-status.includes("FALT")||
-status.includes("CONFIRM")
-){
-statusClass="status-warning";
-statusText=r.mensaje||r.message||
-"Hay información que debe confirmarse antes de acudir.";
-}
-
-if(
-status.includes("INCONSIST")||
-status.includes("BLOQUE")||
-status.includes("ERROR")
-){
-statusClass="status-danger";
-statusText=r.mensaje||r.message||
-"Existe una inconsistencia que debe corregirse antes de continuar.";
-}
-
-html+=
-'<div class="status-box '+statusClass+'">'+
-"<b>Estado de tu caso</b><br>"+
-esc(statusText)+
-"</div>";
-
-if(r.alertas&&Array.isArray(r.alertas)){
-r.alertas.forEach(a=>{
-html+=
-'<div class="alert '+(a.tipo==="error"?"danger":"")+'">'+
-esc(typeof a==="string"?a:(a.mensaje||a.texto||""))+
-"</div>";
-});
-}
-
-html+=
-'<div class="summary"><b>Trámite</b>'+
-esc(getTramiteName())+
-"</div>";
-
-html+=
-'<div class="summary"><b>Modalidad</b>'+
-esc(getModalidadName())+
-"</div>";
-
-html+="<div class='summary'><b>Consulado seleccionado</b>"+
-"<div class='summary-row'>Ciudad: "+
-esc(state.personal.consulado_ciudad||"No indicado")+
-"</div>"+
-"<div class='summary-row'>Estado: "+
-esc(state.personal.consulado_estado||"No indicado")+
-"</div></div>";
-
-html+="<div class='summary'><b>Datos personales</b>";
-
+html+='<div class="card"><h3>'+escapeHtml(state.tramite||"")+'</h3><div>'+escapeHtml(state.modalidad||"")+'</div></div>';
+html+='<div class="card"><h3>'+(state.lang==="en"?"Personal information":"Datos personales")+'</h3>';
 Object.entries(state.personal).forEach(([k,v])=>{
-if(v){
-html+=
-"<div class='summary-row'>"+
-"<b style='display:inline'>"+esc(labelPersonal(k))+":</b> "+
-esc(v)+
-"</div>";
-}
+if(v)html+='<div class="summary-row"><b>'+escapeHtml(labelFor(k))+'</b>'+escapeHtml(Array.isArray(v)?v.join(", "):v)+'</div>';
 });
-
-html+="</div>";
-
-html+="<div class='summary'><b>Información específica</b>";
-
-const entries=Object.entries(state.respuestas);
-
-if(!entries.length){
-html+="<div class='muted'>No hay respuestas registradas.</div>";
-}else{
-entries.forEach(([k,v])=>{
-let text=Array.isArray(v)?v.join(", "):v;
-
-html+=
-"<div class='summary-row'>"+
-"<b style='display:inline'>"+esc(questionLabel(k))+":</b> "+
-esc(text||"Sin respuesta")+
-"</div>";
+html+='</div>';
+html+='<div class="card"><h3>'+(state.lang==="en"?"Documents":"Documentos")+'</h3>';
+state.documentos.forEach(d=>{
+const id=d.id||d.codigo;
+const st=state.docEstados[id]||"";
+html+='<div class="summary-row"><b>'+escapeHtml(textOf(d.nombre||d.titulo)||id)+'</b><span class="badge '+statusClass(st)+'">'+escapeHtml(statusText(st))+'</span></div>';
 });
-}
-
-html+="</div>";
-
-html+="<div class='summary'><b>Documentos de este caso</b>";
-
-const docs=state.documentos||[];
-
-if(!docs.length){
-html+="<div class='muted'>No se encontraron documentos específicos.</div>";
-}else{
-docs.forEach(d=>{
-const id=d.id;
-const s=state.docEstados[id];
-const text=
-s==="have"?"Lo tengo":
-s==="missing"?"No lo tengo":
-s==="unsure"?"No estoy seguro":
-s==="na"?"No aplica":
-"Sin indicar";
-
-html+=
-"<div class='summary-row'>"+
-esc(d.nombre)+
-" — <span class='tag'>"+text+"</span>"+
-"</div>";
-});
-}
-
-html+="</div>";
-
-if(r.documentos_faltantes?.length){
-html+=
-'<div class="alert danger"><b>Documentos pendientes</b><br>'+
-r.documentos_faltantes.map(x=>
-esc(typeof x==="string"?x:(x.nombre||x.texto||""))
-).join("<br>")+
-"</div>";
-}
-
-if(r.documentos_dudosos?.length){
-html+=
-'<div class="alert"><b>Documentos que necesitan confirmación</b><br>'+
-r.documentos_dudosos.map(x=>
-esc(typeof x==="string"?x:(x.nombre||x.texto||""))
-).join("<br>")+
-"</div>";
-}
-
-html+=
-'<div class="notice warning small">'+
-"<b>Revisión final</b><br>"+
-"El PDF organizará solamente la información proporcionada para este caso. "+
-"No significa que la autoridad haya aprobado el trámite. "+
-"Todo requisito marcado como “POR CONFIRMAR CON LA AUTORIDAD” debe verificarse antes de acudir."+
-"</div>";
-
+html+='</div>';
+html+='<div class="card"><h3>'+(state.lang==="en"?"Consulate":"Consulado")+'</h3>'+
+escapeHtml(state.consulado.ciudad)+", "+escapeHtml(state.consulado.estado)+'</div>';
 $("reviewBox").innerHTML=html;
-
-const blocked=
-status.includes("BLOQUE")||
-status.includes("INCONSIST")||
-status.includes("ERROR");
-
-$("generateBtn").disabled=blocked;
-
-if(blocked){
-$("generateBtn").textContent="Corrige la información primero";
+let resultHtml="";
+const status=norm(r.estado||r.resultado||"");
+if(status==="FALTAN_DOCUMENTOS"){
+resultHtml='<div class="warning"><strong>'+(state.lang==="en"?"DOCUMENTS ARE MISSING":"FALTAN DOCUMENTOS")+'</strong><p>'+
+escapeHtml(textOf(r.mensaje)||"Revise la lista de documentos faltantes antes de acudir.")+'</p></div>';
+}else if(status==="HAY_INCONSISTENCIAS"){
+resultHtml='<div class="error"><strong>'+(state.lang==="en"?"INCONSISTENCIES":"HAY INCONSISTENCIAS")+'</strong><p>'+
+escapeHtml(textOf(r.mensaje)||"Revise las respuestas indicadas.")+'</p></div>';
+}else if(status==="REQUIERE_CONFIRMACION"){
+resultHtml='<div class="warning"><strong>'+(state.lang==="en"?"REQUIRES CONFIRMATION":"REQUIERE CONFIRMACIÓN")+'</strong><p>'+
+escapeHtml(textOf(r.mensaje)||"Hay información que debe confirmarse con la autoridad.")+'</p></div>';
 }else{
-$("generateBtn").textContent="Generar guía PDF";
+resultHtml='<div class="success"><strong>'+(state.lang==="en"?"READY TO CONFIRM":"LISTO PARA CONFIRMAR")+'</strong><p>'+
+escapeHtml(textOf(r.mensaje)||"Revise la guía y confirme los requisitos finales.")+'</p></div>';
 }
-}
-
-async function generatePDF(){
-if($("generateBtn").disabled){
-toast("Corrige primero la información indicada.");
-return;
+$("resultBox").innerHTML=resultHtml;
 }
 
-loading(true,"Generando tu guía PDF...");
-
+async function generateGuide(){
+const box=$("pdfBox");
+box.innerHTML='<div class="loader">'+(state.lang==="en"?"Generating your individualized PDF...":"Generando su PDF individualizado...")+'</div>';
 try{
-const payload={
+state.pdf=await api("/api/generar-guia-consular",{
+method:"POST",
+body:JSON.stringify({
 tramite:state.tramite,
 modalidad:state.modalidad,
 datos_personales:state.personal,
-datos_especificos:state.respuestas,
-documentos:state.docEstados,
-documentos_disponibles:(state.documentos||[])
-.filter(d=>state.docEstados[d.id]==="have")
-.map(d=>d.id||d.nombre),
-documentos_faltantes:(state.documentos||[])
-.filter(d=>state.docEstados[d.id]==="missing")
-.map(d=>d.id||d.nombre),
-documentos_dudosos:(state.documentos||[])
-.filter(d=>state.docEstados[d.id]==="unsure")
-.map(d=>d.id||d.nombre),
-documentos_no_aplican:(state.documentos||[])
-.filter(d=>state.docEstados[d.id]==="na")
-.map(d=>d.id||d.nombre),
-resultado:state.resultado||{},
+respuestas:state.respuestas,
+documentos:state.documentos,
+documentos_estados:state.docEstados,
+documentos_disponibles:Object.entries(state.docEstados).filter(([k,v])=>v==="LO_TENGO").map(([k])=>k),
+documentos_faltantes:Object.entries(state.docEstados).filter(([k,v])=>v==="NO_LO_TENGO").map(([k])=>k),
+documentos_dudosos:Object.entries(state.docEstados).filter(([k,v])=>v==="NO_ESTOY_SEGURO").map(([k])=>k),
+consulado:state.consulado,
+resultado:state.resultado,
 idioma:state.lang
-};
-
-const d=await api("/api/generar-guia-consular",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify(payload)
+})
 });
-
-state.pdf=d.filename||d.file||d.pdf||"";
-
-if(!state.pdf){
-throw new Error("El servidor no devolvió el archivo PDF.");
+const url=state.pdf.url||state.pdf.download_url;
+if(url){
+box.innerHTML='<div class="success">'+
+(state.lang==="en"?"Your individualized guide was generated successfully.":"Su guía individualizada fue generada correctamente.")+
+'</div>';
+state.pdf.url=url;
+}else{
+box.innerHTML='<div class="warning">'+
+(state.lang==="en"?"The server generated a response, but no download link was returned.":"El servidor respondió, pero no devolvió un enlace de descarga.")+
+'</div>';
 }
-
-$("pdfInfo").innerHTML=
-'<div class="summary"><b>Trámite</b>'+
-esc(getTramiteName())+
-"</div>"+
-'<div class="summary"><b>Modalidad</b>'+
-esc(getModalidadName())+
-"</div>"+
-'<div class="summary"><b>Consulado</b>'+
-esc(state.personal.consulado_ciudad)+
-", "+
-esc(state.personal.consulado_estado)+
-"</div>"+
-'<p class="muted small">PDF preparado correctamente.</p>';
-
-$("downloadBtn").onclick=()=>downloadPDF(state.pdf);
-
 go(8);
-
 }catch(e){
-toast(e.message);
-}finally{
-loading(false);
+box.innerHTML='<div class="error">'+escapeHtml(e.message)+'</div>';
+go(8);
 }
 }
 
-function downloadPDF(name){
-if(!name){
-toast("No hay PDF disponible.");
-return;
+function downloadPdf(){
+if(!state.pdf?.url){toast(state.lang==="en"?"No PDF is available.":"No hay PDF disponible.");return;}
+window.open(state.pdf.url,"_blank");
 }
 
-location.href="/descargar/"+encodeURIComponent(name);
+function statusClass(s){
+return s==="LO_TENGO"?"green":s==="NO_LO_TENGO"?"red":s==="NO_ESTOY_SEGURO"?"yellow":"";
+}
+function statusText(s){
+const map={
+LO_TENGO:state.lang==="en"?"I HAVE IT":"LO TENGO",
+NO_LO_TENGO:state.lang==="en"?"MISSING":"NO LO TENGO",
+NO_ESTOY_SEGURO:state.lang==="en"?"UNCERTAIN":"NO ESTOY SEGURO",
+NO_APLICA:state.lang==="en"?"NOT APPLICABLE":"NO APLICA"
+};
+return map[s]||"";
+}
+function labelFor(id){
+const m={
+nombres:["Nombre(s)","First name(s)"],
+apellido_paterno:["Apellido paterno","Paternal surname"],
+apellido_materno:["Apellido materno","Maternal surname"],
+fecha_nacimiento:["Fecha de nacimiento","Date of birth"],
+lugar_nacimiento:["Lugar de nacimiento","Place of birth"],
+entidad_nacimiento:["Entidad de nacimiento","Birth state/entity"],
+sexo:["Sexo","Sex"],
+nacionalidad:["Nacionalidad","Nationality"],
+estado_residencia_usa:["Estado de residencia en EE. UU.","U.S. state of residence"],
+ciudad_residencia_usa:["Ciudad de residencia","City of residence"],
+domicilio_usa:["Domicilio","Address"],
+codigo_postal:["Código postal","ZIP code"],
+telefono:["Teléfono","Phone"],
+email:["Correo electrónico","Email"]
+};
+return m[id]?m[id][state.lang==="en"?1:0]:id.replaceAll("_"," ");
+}
+function escapeHtml(v){
+return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-async function logout(){
-try{
-await api("/api/logout",{method:"POST"});
-}catch(e){}
-
-state.access=false;
-state.admin=false;
-
-startOver();
-go(1);
-}
-
-function startOver(){
-state.tramite="";
-state.tramiteNombre="";
-state.modalidad="";
-state.modalidadNombre="";
-state.ficha=null;
-state.preguntas=[];
-state.preguntaIndex=0;
-state.respuestas={};
-state.documentos=[];
-state.docEstados={};
-state.personal={};
-state.resultado=null;
-state.pdf="";
-
-if($("adminUser"))$("adminUser").value="";
-if($("adminPass"))$("adminPass").value="";
-
-$("progressBar").style.width="0%";
-}
-
-window.addEventListener("load",async()=>{
-await verifyPayment();
-await checkAccess();
-});
+applyLanguage();
+loadTramites();
 </script>
 </body>
 </html>
