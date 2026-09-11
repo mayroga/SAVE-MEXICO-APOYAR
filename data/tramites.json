@@ -1,569 +1,1459 @@
 {
-  "version":"4.0.0",
+  "version":"5.0.0",
   "actualizado":"2026-09-11",
-  "pais":"Estados Unidos",
+  "pais":"México",
   "idioma_principal":"es",
-  "modo":"preparacion_personalizada",
-  "principio":"La aplicación debe analizar las respuestas de cada persona y determinar qué información, documentos y situaciones son relevantes para su caso antes de permitirle continuar. No debe tratar todos los casos como iguales.",
-  "regla_principal":"NO INVENTAR. NO GENERALIZAR. NO MARCAR COMO OBLIGATORIO UN DOCUMENTO QUE NO CORRESPONDA AL CASO. Si la respuesta puede cambiar el procedimiento, detenerse y pedir la información necesaria antes de continuar.",
-  "regla_autoridad":"SAVE MÉXICO AYUDAR organiza y prepara información con base en fuentes oficiales, pero no se presenta como gobierno, Consulado, SRE o INE y no garantiza la aceptación del trámite.",
-  "regla_pantalla":"Una pregunta principal por pantalla. Mostrar únicamente la información necesaria para responder esa pregunta. No mostrar listas largas mientras el usuario todavía está contestando.",
-  "regla_documentos":"Cada documento debe clasificarse como BASE, CONDICIONAL, RESPALDO, IDENTIDAD, DOMICILIO, INCIDENTE, CAMBIO_DE_DATOS o POR_CONFIRMAR. Nunca mostrar todos los documentos como si todos fueran obligatorios.",
-  "regla_correccion":"Si una respuesta revela que la modalidad seleccionada puede ser incorrecta o incompleta, informar al usuario y permitir cambiar de modalidad antes de continuar.",
-  "regla_conflicto":"Si existen diferencias entre documentos, nombres, apellidos, fechas, lugares de nacimiento, nacionalidad, domicilio o identidad, la aplicación debe detectarlo y solicitar información adicional antes de generar la guía final.",
-  "regla_consulado":"El usuario debe seleccionar el Consulado de México correspondiente. No aceptar solamente un estado como si fuera automáticamente el nombre del Consulado. Si el usuario escribe un dato ambiguo, mostrar POR CONFIRMAR CON LA AUTORIDAD.",
-  "tramites":{
-    "pasaporte":{
-      "nombre":"Pasaporte mexicano",
-      "nombre_corto":"Pasaporte",
-      "autoridad":"Secretaría de Relaciones Exteriores (SRE) / Consulado de México",
-      "costo":"Depende de la vigencia y del Consulado. Confirmar tarifa vigente antes del pago.",
-      "moneda":"USD",
-      "vigencia":{
-        "menor_3":"1 o 3 años",
-        "3_a_17":"3 o 6 años",
-        "adulto":"3, 6 o 10 años"
+  "nota_general":"SAVE MÉXICO AYUDAR es una herramienta privada de preparación documental. No es el Gobierno de México, la SRE ni el INE. La información debe verificarse con la autoridad competente antes de acudir.",
+  "regla":"Nunca mostrar automáticamente todos los documentos. Primero determinar exactamente qué trámite necesita la persona, qué quiere modificar o solicitar, qué documentos tiene y qué situaciones especiales existen. Mostrar únicamente los documentos pertinentes al caso.",
+  "estados_respuesta":["SI","NO","NO_SE","NO_APLICA"],
+  "estados_documento":["LO_TENGO","NO_LO_TENGO","NO_ESTOY_SEGURO","NO_APLICA"],
+  "estados_resultado":["LISTO_PARA_CONFIRMAR","FALTAN_DOCUMENTOS","HAY_INCONSISTENCIAS","REQUIERE_CONFIRMACION"],
+  "motor_logico":{
+    "principios":[
+      "Una pregunta por pantalla.",
+      "Las preguntas de selección múltiple permiten seleccionar varias respuestas cuando más de un dato puede cambiar.",
+      "NO_SE no puede considerarse una respuesta suficiente para cerrar un caso.",
+      "OTRO obliga a explicar qué otro dato o situación existe.",
+      "Una respuesta posterior puede depender de una o varias respuestas anteriores.",
+      "Nunca eliminar una respuesta anterior porque exista otra respuesta posterior.",
+      "Nunca convertir una selección múltiple en una sola opción.",
+      "No mostrar documentos que no correspondan al caso.",
+      "Si una persona declara pérdida o robo, no tratar el documento perdido como documento disponible.",
+      "Si existen diferencias entre documentos, preguntar cuál documento contiene el dato correcto.",
+      "Si existe cambio de nombre, apellidos, fecha, lugar de nacimiento, sexo u otro dato, identificar qué dato cambia y qué documento respalda el cambio.",
+      "Si existe cambio de domicilio, preguntar si es cambio físico de domicilio o solamente corrección de los datos del domicilio.",
+      "Si falta un documento obligatorio, el resultado no puede ser LISTO_PARA_CONFIRMAR.",
+      "Si existe una contradicción importante, detener el avance hasta aclararla.",
+      "Cuando una condición dependa del consulado, marcar POR CONFIRMAR CON LA AUTORIDAD.",
+      "No inventar costos, citas, documentos alternativos ni excepciones.",
+      "El PDF debe reflejar las respuestas reales de la persona y no una lista genérica."
+    ],
+    "orden":[
+      "TRAMITE",
+      "MODALIDAD",
+      "PERSONA",
+      "SITUACION_ACTUAL",
+      "DATOS_A_CAMBIAR",
+      "DOCUMENTOS",
+      "DOMICILIO",
+      "CONSULADO",
+      "VALIDACION",
+      "RESULTADO"
+    ],
+    "reglas_respuesta":{
+      "multiple":{
+        "permite_varias":true,
+        "nota":"Puedes seleccionar varias opciones.",
+        "no_se_exclusivo":true
       },
-      "cita":"Consultar exclusivamente los canales oficiales del Consulado correspondiente.",
-      "reglas":{
-        "menor_18":"Si la persona tiene menos de 18 años no utilizar primera_vez_adulto.",
-        "perdido_robado":"Si el pasaporte fue robado o extraviado utilizar robo_extravio.",
-        "cambio_datos":"Si existen diferencias importantes de nombre, apellidos, fecha o lugar de nacimiento, solicitar documentos de respaldo antes de continuar.",
-        "danado":"Si el pasaporte está deteriorado, analizar como renovación/canje o la modalidad que corresponda.",
-        "urgencia":"Una urgencia no significa automáticamente que el Consulado aprobará un trámite de emergencia."
+      "otro":{
+        "requiere_detalle":true
       },
-      "modalidades":{
-        "primera_vez_adulto":{
-          "nombre":"Primera vez - adulto",
-          "descripcion":"Persona de 18 años o más que solicita pasaporte mexicano por primera vez.",
-          "preguntas":[
-            {"id":"edad","texto":"¿Tienes 18 años o más?","tipo":"opciones","opciones":["Sí","No"],"obligatoria":true,"si":"continuar","no":"cambiar_modalidad:menor"},
-            {"id":"nacionalidad","texto":"¿Cómo puedes comprobar tu nacionalidad mexicana?","tipo":"opciones","opciones":["Acta de nacimiento mexicana","Carta de naturalización","Certificado de nacionalidad mexicana","Declaratoria de nacionalidad mexicana","Otro documento","No estoy seguro"],"obligatoria":true},
-            {"id":"identidad","texto":"¿Qué identificación oficial con fotografía tienes?","tipo":"opciones","opciones":["Pasaporte mexicano","Matrícula Consular","Licencia de conducir","Identificación estatal","Otra identificación","Ninguna","No estoy seguro"],"obligatoria":true},
-            {"id":"diferencia_datos","texto":"¿Tus documentos tienen exactamente el mismo nombre, apellidos, fecha y lugar de nacimiento?","tipo":"opciones","opciones":["Sí, coinciden","No, hay diferencias","No estoy seguro"],"obligatoria":true,"si":"continuar","no":"revisar_diferencias","duda":"revisar_diferencias"},
-            {"id":"tipo_diferencia","texto":"¿Qué diferencia existe entre tus documentos?","tipo":"multi_opciones","opciones":["Nombre","Apellido paterno","Apellido materno","Fecha de nacimiento","Lugar de nacimiento","Nacionalidad","Otro dato","No sé cuál"],"obligatoria":false,"mostrar_si":"diferencia_datos!=Sí, coinciden"},
-            {"id":"doble_nacionalidad","texto":"¿Tienes otra nacionalidad además de la mexicana?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"acta_extemporanea","texto":"¿Tu acta de nacimiento mexicana fue registrada mucho tiempo después de tu nacimiento?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"cambio_nombre","texto":"¿Alguna vez cambiaste legalmente tu nombre o apellidos?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México atenderá tu trámite?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "BASE":["Documento que acredite la nacionalidad mexicana, según corresponda."],
-            "IDENTIDAD":["Identificación oficial con fotografía, cuando corresponda."],
-            "CAMBIO_DE_DATOS":["Documento que respalde el cambio o diferencia de datos, si aplica."],
-            "RESPALDO":["Documento adicional de identidad o nacionalidad cuando la autoridad lo requiera."],
-            "PAGO":["Comprobante de pago de derechos conforme a la tarifa vigente."]
-          },
-          "condiciones":[
-            {"si":"diferencia_datos!=Sí, coinciden","accion":"agregar","categoria":"CAMBIO_DE_DATOS","mensaje":"Hay diferencias entre tus documentos. Antes de continuar necesitamos identificar exactamente qué documento respalda la diferencia."},
-            {"si":"acta_extemporanea==Sí","accion":"revisar","mensaje":"Tu acta puede requerir una revisión adicional. No continúes sin confirmar qué documentos acepta el Consulado correspondiente."},
-            {"si":"cambio_nombre==Sí","accion":"agregar","categoria":"CAMBIO_DE_DATOS","mensaje":"Necesitas informar el documento que demuestra el cambio legal de nombre o apellidos."},
-            {"si":"nacionalidad==No estoy seguro","accion":"detener","mensaje":"Primero debemos aclarar cómo puedes comprobar tu nacionalidad mexicana."}
-          ],
-          "casos_especiales":[
-            "Diferencias entre documentos.",
-            "Cambio legal de nombre o apellidos.",
-            "Acta de nacimiento extemporánea.",
-            "Doble nacionalidad.",
-            "Naturalización.",
-            "Documento de nacionalidad con datos que requieren aclaración."
-          ]
-        },
-        "renovacion":{
-          "nombre":"Renovación / canje",
-          "descripcion":"Persona que tiene o tuvo un pasaporte mexicano y necesita renovarlo o canjearlo.",
-          "preguntas":[
-            {"id":"pasaporte_anterior","texto":"¿Conservas tu pasaporte mexicano anterior?","tipo":"opciones","opciones":["Sí","No","Está dañado","Fue robado","Lo extravié"],"obligatoria":true},
-            {"id":"vigencia","texto":"¿El pasaporte anterior está vigente?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"estado","texto":"¿Cómo se encuentra físicamente tu pasaporte?","tipo":"opciones","opciones":["En buen estado","Dañado","Muy deteriorado","No lo tengo"],"obligatoria":true},
-            {"id":"cambio_datos","texto":"¿Necesitas cambiar o corregir algún dato personal?","tipo":"opciones","opciones":["No","Nombre","Apellidos","Fecha de nacimiento","Lugar de nacimiento","Otro dato","No estoy seguro"],"obligatoria":true},
-            {"id":"diferencias","texto":"¿Tus documentos tienen diferencias entre sí?","tipo":"opciones","opciones":["No","Sí","No estoy seguro"],"obligatoria":true},
-            {"id":"doble_nacionalidad","texto":"¿Tienes otra nacionalidad además de la mexicana?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México atenderá tu trámite?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "BASE":["Pasaporte mexicano anterior, cuando se conserve."],
-            "IDENTIDAD":["Identificación oficial cuando sea requerida."],
-            "CAMBIO_DE_DATOS":["Documento que justifique la modificación o corrección, si aplica."],
-            "RESPALDO":["Documento adicional de nacionalidad o identidad cuando corresponda."],
-            "PAGO":["Comprobante de pago de derechos."]
-          },
-          "condiciones":[
-            {"si":"pasaporte_anterior==Fue robado","accion":"cambiar_modalidad","modalidad":"robo_extravio"},
-            {"si":"pasaporte_anterior==Lo extravié","accion":"cambiar_modalidad","modalidad":"robo_extravio"},
-            {"si":"estado==No lo tengo","accion":"revisar","mensaje":"Si no conservas el pasaporte, debemos determinar por qué no lo tienes antes de continuar."},
-            {"si":"cambio_datos!=No","accion":"agregar","categoria":"CAMBIO_DE_DATOS","mensaje":"El cambio de datos puede requerir documentación adicional."}
-          ],
-          "casos_especiales":["Pasaporte deteriorado","Cambio de nombre","Corrección de datos","Diferencias entre documentos","Robo","Extravío","Doble nacionalidad"]
-        },
-        "robo_extravio":{
-          "nombre":"Robo o extravío",
-          "descripcion":"Pasaporte mexicano robado, perdido o no disponible.",
-          "preguntas":[
-            {"id":"tipo","texto":"¿Qué ocurrió con tu pasaporte?","tipo":"opciones","opciones":["Robo","Extravío"],"obligatoria":true},
-            {"id":"fecha_incidente","texto":"¿Cuándo ocurrió?","tipo":"fecha","obligatoria":true},
-            {"id":"lugar_incidente","texto":"¿Dónde ocurrió?","tipo":"texto","obligatoria":true},
-            {"id":"reporte","texto":"¿Realizaste algún reporte o acta relacionado con el incidente?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"identidad","texto":"¿Qué identificación con fotografía tienes disponible?","tipo":"opciones","opciones":["Pasaporte anterior en copia","Matrícula Consular","Licencia de conducir","Identificación estatal","Otra","Ninguna","No estoy seguro"],"obligatoria":true},
-            {"id":"nacionalidad","texto":"¿Qué documento puedes utilizar para acreditar tu nacionalidad mexicana?","tipo":"opciones","opciones":["Acta de nacimiento","Carta de naturalización","Certificado de nacionalidad","Otro","Ninguno","No estoy seguro"],"obligatoria":true},
-            {"id":"urgencia","texto":"¿Existe una situación urgente relacionada con un viaje o necesidad inmediata?","tipo":"opciones","opciones":["Sí","No"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México atenderá tu caso?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "INCIDENTE":["Reporte o documentación relacionada con robo o extravío, cuando corresponda."],
-            "BASE":["Documento de nacionalidad mexicana."],
-            "IDENTIDAD":["Identificación oficial con fotografía."],
-            "PAGO":["Comprobante de pago de derechos."]
-          },
-          "condiciones":[
-            {"si":"urgencia==Sí","accion":"agregar","mensaje":"La situación puede requerir contacto directo con el Consulado. La aplicación no garantiza atención de emergencia."},
-            {"si":"identidad==Ninguna","accion":"detener","mensaje":"No tienes identificador disponible. Debemos revisar qué documentos alternativos puede aceptar el Consulado."}
-          ],
-          "casos_especiales":["Robo","Extravío","Falta de identificación","Falta de documento de nacionalidad","Urgencia","Diferencias de identidad"]
-        },
-        "menor":{
-          "nombre":"Pasaporte para menor de edad",
-          "descripcion":"Solicitud de pasaporte mexicano para persona menor de 18 años.",
-          "preguntas":[
-            {"id":"edad","texto":"¿Qué edad tiene el menor?","tipo":"numero","obligatoria":true},
-            {"id":"nacionalidad","texto":"¿Cómo se acredita la nacionalidad mexicana del menor?","tipo":"opciones","opciones":["Acta de nacimiento mexicana","Otro documento válido","No estoy seguro"],"obligatoria":true},
-            {"id":"identidad_menor","texto":"¿El menor tiene una identificación con fotografía aceptable para su edad?","tipo":"opciones","opciones":["Sí","No","No estoy seguro","No aplica por su edad"],"obligatoria":true},
-            {"id":"comparecencia","texto":"¿Quiénes pueden comparecer con el menor?","tipo":"multi_opciones","opciones":["Madre","Padre","Ambos padres","Tutor","Representante legal","Ninguno"],"obligatoria":true},
-            {"id":"ausente","texto":"¿Alguna persona que deba comparecer no puede hacerlo?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"patria_potestad","texto":"¿Existe alguna situación de patria potestad, tutela o resolución judicial?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"diferencias","texto":"¿El nombre del menor coincide con los documentos de sus padres o tutor?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México atenderá el trámite?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "BASE":["Documento que acredite la nacionalidad mexicana del menor."],
-            "IDENTIDAD":["Identificación del menor cuando corresponda."],
-            "RESPALDO":["Identificación de quienes ejercen patria potestad o tutela.","Documento de filiación, patria potestad o tutela cuando corresponda."],
-            "JUDICIAL":["Resolución judicial o documentación de tutela cuando corresponda."],
-            "PAGO":["Comprobante de pago de derechos."]
-          },
-          "condiciones":[
-            {"si":"ausente==Sí","accion":"revisar","mensaje":"La ausencia de una persona que deba comparecer puede cambiar los documentos necesarios. Debemos aclarar la situación antes de continuar."},
-            {"si":"patria_potestad==Sí","accion":"agregar","categoria":"JUDICIAL","mensaje":"Existe una situación legal especial. Se debe revisar la documentación correspondiente."},
-            {"si":"diferencias==No","accion":"agregar","categoria":"CAMBIO_DE_DATOS","mensaje":"Existen diferencias entre los documentos del menor y de sus padres/tutor."}
-          ],
-          "casos_especiales":["Menor de 7 años","Ausencia de uno de los padres","Patria potestad","Tutela","Fallecimiento","Resolución judicial","Diferencias de nombre","Doble nacionalidad"]
-        },
-        "emergencia":{
-          "nombre":"Situación urgente / emergencia",
-          "descripcion":"Caso que requiere análisis individual y posible contacto directo con el Consulado.",
-          "preguntas":[
-            {"id":"motivo","texto":"¿Qué situación necesitas resolver?","tipo":"texto","obligatoria":true},
-            {"id":"viaje","texto":"¿Tienes un viaje próximo?","tipo":"opciones","opciones":["Sí","No"],"obligatoria":true},
-            {"id":"fecha_viaje","texto":"¿Cuándo es el viaje?","tipo":"fecha","obligatoria":false},
-            {"id":"documento","texto":"¿Qué documento necesitas y qué ocurrió con él?","tipo":"opciones","opciones":["Pasaporte perdido","Pasaporte robado","Pasaporte vencido","Pasaporte dañado","No tengo pasaporte","Otro"],"obligatoria":true},
-            {"id":"nacionalidad","texto":"¿Puedes comprobar tu nacionalidad mexicana?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"identidad","texto":"¿Tienes alguna identificación con fotografía?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México puede atenderte?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "BASE":["Documentos de nacionalidad e identidad disponibles."],
-            "INCIDENTE":["Documentos que acrediten la situación urgente cuando corresponda."]
-          },
-          "casos_especiales":["Emergencia de viaje","Robo","Extravío","Situación humanitaria","Necesidad urgente de documentación"],
-          "advertencia":"La existencia de una emergencia no garantiza expedición inmediata. La autoridad consular determina la atención y documentación aplicable."
-        }
-      },
-      "fuentes":["SRE - Trámite de Pasaporte desde el extranjero","SRE - Pasaporte Mexicano","SRE - Menores de edad","SRE - Doble nacionalidad","Consulado de México correspondiente"]
+      "no_se":{
+        "requiere_clarificacion":true,
+        "permite_finalizar":false
+      }
     },
-    "matricula_consular":{
-      "nombre":"Matrícula Consular de Alta Seguridad",
-      "nombre_corto":"Matrícula Consular",
-      "autoridad":"Secretaría de Relaciones Exteriores (SRE) / Consulado de México",
-      "vigencia":"5 años",
-      "costo":"Depende del Consulado y de la tarifa vigente. Confirmar antes de pagar.",
-      "moneda":"USD",
-      "cita":"Consultar el canal oficial del Consulado correspondiente.",
-      "reglas":{
-        "domicilio":"El comprobante debe corresponder al domicilio que se declare y a la jurisdicción aplicable.",
-        "cambio_datos":"Las diferencias de identidad requieren revisión antes de continuar.",
-        "perdida":"Robo o extravío debe analizarse por separado.",
-        "menor":"Los requisitos para menores pueden depender de edad, filiación, tutela y comparecencia."
+    "reglas_documentales":[
+      {
+        "id":"DOC001",
+        "regla":"Si documento.estado=NO_LO_TENGO y documento es obligatorio, resultado=FALTAN_DOCUMENTOS."
       },
-      "modalidades":{
-        "primera_vez_adulto":{
-          "nombre":"Primera vez - adulto",
-          "descripcion":"Persona adulta que solicita por primera vez su Matrícula Consular.",
-          "preguntas":[
-            {"id":"edad","texto":"¿Tienes 18 años o más?","tipo":"opciones","opciones":["Sí","No"],"obligatoria":true,"no":"cambiar_modalidad:menor"},
-            {"id":"nacionalidad","texto":"¿Cómo puedes comprobar tu nacionalidad mexicana?","tipo":"opciones","opciones":["Acta de nacimiento","Pasaporte mexicano","Carta de naturalización","Certificado de nacionalidad","Otro documento","No estoy seguro"],"obligatoria":true},
-            {"id":"identidad","texto":"¿Qué identificación con fotografía tienes?","tipo":"opciones","opciones":["Pasaporte","Licencia","Identificación estatal","Matrícula anterior","Otra","Ninguna","No estoy seguro"],"obligatoria":true},
-            {"id":"domicilio","texto":"¿Tienes comprobante de tu domicilio actual?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"jurisdiccion","texto":"¿Tu domicilio está dentro de la jurisdicción del Consulado seleccionado?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"diferencias","texto":"¿Tus documentos tienen diferencias de nombre, apellidos, fecha o lugar de nacimiento?","tipo":"opciones","opciones":["No","Sí","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México atenderá tu trámite?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "BASE":["Documento que acredite nacionalidad mexicana."],
-            "IDENTIDAD":["Identificación oficial con fotografía."],
-            "DOMICILIO":["Comprobante de domicilio dentro de la jurisdicción correspondiente."],
-            "CAMBIO_DE_DATOS":["Documento adicional cuando existan diferencias de identidad o datos."],
-            "PAGO":["Comprobante de pago."]
-          },
-          "condiciones":[
-            {"si":"jurisdiccion==No","accion":"detener","mensaje":"El domicilio indicado puede no corresponder a la jurisdicción seleccionada. Debemos revisar el Consulado correcto."},
-            {"si":"jurisdiccion==No estoy seguro","accion":"confirmar","mensaje":"Antes de continuar debemos confirmar qué Consulado corresponde a tu domicilio."},
-            {"si":"diferencias==Sí","accion":"revisar","mensaje":"Tus documentos tienen diferencias. Debemos identificar exactamente cuáles son."}
-          ],
-          "casos_especiales":["Diferencia de nombres","Doble nacionalidad","Naturalización","Domicilio fuera de jurisdicción","Documentos con datos diferentes"]
-        },
-        "renovacion":{
-          "nombre":"Renovación",
-          "descripcion":"Renovación de una Matrícula Consular anterior.",
-          "preguntas":[
-            {"id":"matricula","texto":"¿Conservas tu Matrícula Consular anterior?","tipo":"opciones","opciones":["Sí","No","Está dañada","Fue robada","La extravié"],"obligatoria":true},
-            {"id":"vigencia","texto":"¿La matrícula está vigente?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"domicilio_cambio","texto":"¿Cambió tu domicilio?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"datos","texto":"¿Cambió algún dato personal?","tipo":"opciones","opciones":["No","Nombre","Apellidos","Fecha de nacimiento","Otro","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado atenderá la renovación?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "BASE":["Matrícula Consular anterior cuando se conserve."],
-            "DOMICILIO":["Comprobante de domicilio actualizado cuando corresponda."],
-            "CAMBIO_DE_DATOS":["Documento que respalde modificación o corrección cuando corresponda."],
-            "RESPALDO":["Documento de nacionalidad o identidad cuando sea requerido."],
-            "PAGO":["Comprobante de pago."]
-          },
-          "condiciones":[
-            {"si":"matricula==Fue robada","accion":"cambiar_modalidad","modalidad":"robo_extravio"},
-            {"si":"matricula==La extravié","accion":"cambiar_modalidad","modalidad":"robo_extravio"},
-            {"si":"domicilio_cambio==Sí","accion":"agregar","categoria":"DOMICILIO"},
-            {"si":"datos!=No","accion":"agregar","categoria":"CAMBIO_DE_DATOS"}
-          ],
-          "casos_especiales":["Cambio de domicilio","Cambio de nombre","Diferencias de datos","Matrícula vencida","Robo","Extravío"]
-        },
-        "robo_extravio":{
-          "nombre":"Robo o extravío",
-          "descripcion":"Matrícula Consular perdida o robada.",
-          "preguntas":[
-            {"id":"tipo","texto":"¿Qué ocurrió?","tipo":"opciones","opciones":["Robo","Extravío"],"obligatoria":true},
-            {"id":"fecha","texto":"¿Cuándo ocurrió?","tipo":"fecha","obligatoria":true},
-            {"id":"lugar","texto":"¿Dónde ocurrió?","tipo":"texto","obligatoria":true},
-            {"id":"reporte","texto":"¿Realizaste algún reporte?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"nacionalidad","texto":"¿Tienes documento de nacionalidad mexicana?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"identidad","texto":"¿Tienes otra identificación con fotografía?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"domicilio","texto":"¿Tienes comprobante de domicilio actual?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado atenderá el caso?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "INCIDENTE":["Reporte o documentación relacionada con el robo o extravío cuando corresponda."],
-            "BASE":["Documento de nacionalidad mexicana."],
-            "IDENTIDAD":["Identificación con fotografía."],
-            "DOMICILIO":["Comprobante de domicilio."],
-            "PAGO":["Comprobante de pago."]
-          }
-        },
-        "menor":{
-          "nombre":"Matrícula Consular para menor de edad",
-          "descripcion":"Solicitud para persona menor de 18 años.",
-          "preguntas":[
-            {"id":"edad","texto":"¿Qué edad tiene el menor?","tipo":"numero","obligatoria":true},
-            {"id":"nacionalidad","texto":"¿Cómo se acredita la nacionalidad mexicana del menor?","tipo":"opciones","opciones":["Acta de nacimiento","Otro documento","No estoy seguro"],"obligatoria":true},
-            {"id":"identidad","texto":"¿El menor tiene identificación?","tipo":"opciones","opciones":["Sí","No","No estoy seguro","No aplica por edad"],"obligatoria":true},
-            {"id":"acompanante","texto":"¿Quién acompañará al menor?","tipo":"multi_opciones","opciones":["Madre","Padre","Ambos padres","Tutor","Representante legal","Otro"],"obligatoria":true},
-            {"id":"domicilio","texto":"¿Tienes comprobante de domicilio?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"tutela","texto":"¿Existe tutela, patria potestad especial o resolución judicial?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado atenderá el trámite?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "BASE":["Documento de nacionalidad mexicana del menor."],
-            "IDENTIDAD":["Identificación del menor según edad y documentos aceptados."],
-            "RESPALDO":["Identificación de padres o tutor.","Documento de filiación, tutela o patria potestad cuando corresponda."],
-            "DOMICILIO":["Comprobante de domicilio."],
-            "PAGO":["Comprobante de pago."]
-          }
-        }
+      {
+        "id":"DOC002",
+        "regla":"Si documento.estado=NO_ESTOY_SEGURO, resultado=REQUIERE_CONFIRMACION."
       },
-      "fuentes":["SRE - Matrícula Consular","Consulado de México correspondiente","Tarifas oficiales del Consulado correspondiente"]
-    },
-    "ine_extranjero":{
-      "nombre":"Credencial para Votar desde el Extranjero",
-      "nombre_corto":"INE",
-      "autoridad":"Instituto Nacional Electoral (INE), mediante la red consular de México",
-      "costo":"GRATUITO",
-      "moneda":"USD",
-      "edad_general":18,
-      "vigencia":"10 años",
-      "cita":"Consultar la modalidad y operación vigente del Consulado correspondiente.",
-      "regla_documentos":"El análisis debe comprobar las tres categorías principales: nacionalidad mexicana, identificación con fotografía y comprobante de domicilio. Los documentos deben cumplir las condiciones vigentes del INE.",
-      "reglas":{
-        "primera_vez":"La persona debe cumplir las condiciones de edad y nacionalidad aplicables.",
-        "correccion":"Si el problema es un dato personal, identificar exactamente cuál dato cambió y qué documento lo respalda.",
-        "domicilio":"Si cambia el domicilio, analizar el comprobante del nuevo domicilio.",
-        "reposicion":"Si existe cambio de nombre, domicilio u otros datos, no tratar automáticamente el caso como reposición.",
-        "robo_extravio":"El robo o extravío requiere análisis específico.",
-        "documentos":"No asumir que una identificación es aceptada únicamente porque sea emitida por una autoridad; debe coincidir con los medios vigentes aceptados por INE."
+      {
+        "id":"DOC003",
+        "regla":"Si existe contradiccion entre documento y datos declarados, resultado=HAY_INCONSISTENCIAS."
       },
-      "modalidades":{
-        "primera_vez":{
-          "nombre":"Primera vez",
-          "descripcion":"Solicitud inicial de Credencial para Votar desde el Extranjero.",
-          "preguntas":[
-            {"id":"edad","texto":"¿Tienes 18 años cumplidos o cumplirás 18 dentro de una excepción electoral aplicable?","tipo":"opciones","opciones":["Sí, ya tengo 18","Cumpliré 18 y necesito revisar la regla","No","No estoy seguro"],"obligatoria":true},
-            {"id":"nacionalidad_tipo","texto":"¿Qué documento original tienes para comprobar tu nacionalidad mexicana?","tipo":"opciones","opciones":["Acta de nacimiento mexicana","Carta de naturalización","Certificado de nacionalidad","Otro documento","Ninguno","No estoy seguro"],"obligatoria":true},
-            {"id":"identificacion_tipo","texto":"¿Qué identificación original con fotografía tienes?","tipo":"multi_opciones","opciones":["Pasaporte mexicano","Matrícula Consular","Licencia de conducir","Identificación estatal","Otra identificación","Ninguna","No estoy seguro"],"obligatoria":true},
-            {"id":"identificacion_vigencia","texto":"¿Tu identificación tiene algún problema de vigencia o datos?","tipo":"opciones","opciones":["No","Sí","No estoy seguro"],"obligatoria":true},
-            {"id":"domicilio","texto":"¿Tienes comprobante de tu domicilio actual?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"domicilio_coincide","texto":"¿El domicilio que declararás coincide con el comprobante?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"datos_diferentes","texto":"¿Hay diferencias entre tus documentos de nombre, apellidos, fecha o lugar de nacimiento?","tipo":"opciones","opciones":["No","Sí","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México atenderá tu trámite?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "NACIONALIDAD":["Documento original que acredite nacionalidad mexicana."],
-            "IDENTIDAD":["Identificación original con fotografía aceptada por el INE."],
-            "DOMICILIO":["Comprobante de domicilio."],
-            "CAMBIO_DE_DATOS":["Documento adicional cuando existan diferencias que deban acreditarse."]
-          },
-          "condiciones":[
-            {"si":"edad==No","accion":"detener","mensaje":"La Credencial para Votar requiere cumplir las condiciones de edad aplicables."},
-            {"si":"nacionalidad_tipo==Ninguno","accion":"detener","mensaje":"Primero debemos identificar un documento válido para acreditar la nacionalidad."},
-            {"si":"identificacion_tipo incluye Ninguna","accion":"detener","mensaje":"Primero debemos revisar qué identificación puede presentar la persona."},
-            {"si":"domicilio_coincide==No","accion":"detener","mensaje":"El domicilio declarado no coincide con el comprobante. Debemos corregir esta información antes de continuar."},
-            {"si":"datos_diferentes!=No","accion":"revisar","mensaje":"Existen diferencias entre documentos. Debemos identificar exactamente cuáles son antes de preparar la guía final."}
-          ],
-          "casos_especiales":["Cumplimiento de 18 años en periodo electoral","Doble nacionalidad","Naturalización","Diferencias de nombre","Identificación con situación especial","Diferencias de domicilio"]
-        },
-        "correccion":{
-          "nombre":"Corrección o actualización de datos",
-          "descripcion":"Corrección de datos personales de la Credencial para Votar.",
-          "preguntas":[
-            {"id":"credencial","texto":"¿Conservas tu Credencial para Votar anterior?","tipo":"opciones","opciones":["Sí","No","Fue robada","La extravié","Está dañada"],"obligatoria":true},
-            {"id":"tipo_cambio","texto":"¿Qué deseas corregir o actualizar?","tipo":"multi_opciones","opciones":["Nombre","Apellido paterno","Apellido materno","Fecha de nacimiento","Lugar de nacimiento","Fotografía","Sexo","Domicilio","Otro dato"],"obligatoria":true},
-            {"id":"motivo","texto":"¿Por qué necesitas corregir ese dato?","tipo":"opciones","opciones":["Está incorrecto","Cambió legalmente","Hay diferencia entre documentos","Fue registrado incorrectamente","Otro motivo","No estoy seguro"],"obligatoria":true},
-            {"id":"documento_cambio","texto":"¿Tienes documento original que respalde la corrección o cambio?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"nacionalidad","texto":"¿Tienes documento original de nacionalidad mexicana?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"identidad","texto":"¿Tienes identificación original con fotografía?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"domicilio","texto":"¿Tienes comprobante de domicilio actual?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México atenderá el trámite?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "BASE":["Documento original de nacionalidad mexicana."],
-            "IDENTIDAD":["Identificación original con fotografía."],
-            "DOMICILIO":["Comprobante de domicilio."],
-            "CAMBIO_DE_DATOS":["Documento original que respalde la corrección o cambio, cuando corresponda."],
-            "ANTERIOR":["Credencial anterior cuando corresponda."]
-          },
-          "condiciones":[
-            {"si":"tipo_cambio incluye Domicilio","accion":"revisar_modalidad","modalidad":"cambio_domicilio"},
-            {"si":"credencial==Fue robada","accion":"revisar_modalidad","modalidad":"reposicion"},
-            {"si":"credencial==La extravió","accion":"revisar_modalidad","modalidad":"reposicion"},
-            {"si":"documento_cambio==No","accion":"revisar","mensaje":"Antes de continuar debemos determinar qué documento puede respaldar la corrección."},
-            {"si":"motivo==Hay diferencia entre documentos","accion":"revisar","mensaje":"Debemos identificar qué documentos presentan la diferencia."}
-          ],
-          "casos_especiales":["Cambio de nombre","Cambio de apellidos","Corrección de fecha","Corrección de lugar","Cambio de fotografía","Cambio relacionado con sexo o identidad","Diferencias entre documentos"]
-        },
-        "cambio_domicilio":{
-          "nombre":"Cambio de domicilio",
-          "descripcion":"Actualización del domicilio registrado en la Credencial para Votar.",
-          "preguntas":[
-            {"id":"credencial","texto":"¿Conservas tu Credencial para Votar actual?","tipo":"opciones","opciones":["Sí","No","Fue robada","La extravié","Está dañada"],"obligatoria":true},
-            {"id":"nuevo_domicilio","texto":"¿Ya tienes el nuevo domicilio completo?","tipo":"opciones","opciones":["Sí","No"],"obligatoria":true},
-            {"id":"comprobante","texto":"¿Tienes comprobante del nuevo domicilio?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"coincide","texto":"¿El nuevo domicilio coincide exactamente con el comprobante?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"visibilidad","texto":"¿Deseas que el domicilio aparezca en la credencial cuando la opción sea aplicable?","tipo":"opciones","opciones":["Sí","No","Necesito orientación"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México atenderá el trámite?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "NACIONALIDAD":["Documento original de nacionalidad mexicana."],
-            "IDENTIDAD":["Identificación original con fotografía."],
-            "DOMICILIO":["Comprobante del nuevo domicilio."],
-            "ANTERIOR":["Credencial anterior cuando corresponda."]
-          },
-          "condiciones":[
-            {"si":"comprobante==No","accion":"detener","mensaje":"Antes de continuar debemos resolver cómo acreditar el nuevo domicilio."},
-            {"si":"coincide==No","accion":"detener","mensaje":"El domicilio declarado no coincide con el comprobante. Corrige los datos antes de continuar."},
-            {"si":"credencial==Fue robada","accion":"revisar_modalidad","modalidad":"reposicion"},
-            {"si":"credencial==La extravió","accion":"revisar_modalidad","modalidad":"reposicion"}
-          ]
-        },
-        "reposicion":{
-          "nombre":"Reposición",
-          "descripcion":"Reposición por robo, extravío u otra causa permitida, siempre que no corresponda una modificación de datos que cambie el tipo de trámite.",
-          "preguntas":[
-            {"id":"motivo","texto":"¿Por qué necesitas una reposición?","tipo":"opciones","opciones":["Robo","Extravío","Ya no hay espacio para marcar elecciones","Otro motivo"],"obligatoria":true},
-            {"id":"cambios","texto":"¿Necesitas cambiar nombre, domicilio u otros datos?","tipo":"opciones","opciones":["No","Sí","No estoy seguro"],"obligatoria":true},
-            {"id":"reporte","texto":"Si fue robo o extravío, ¿ya realizaste el reporte correspondiente?","tipo":"opciones","opciones":["Sí","No","No estoy seguro","No aplica"],"obligatoria":true},
-            {"id":"nacionalidad","texto":"¿Tienes documento original de nacionalidad mexicana?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"identidad","texto":"¿Tienes identificación original con fotografía?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"domicilio","texto":"¿Tienes comprobante de domicilio?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"consulado","texto":"¿Qué Consulado de México atenderá el trámite?","tipo":"consulado","obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "NACIONALIDAD":["Documento original de nacionalidad mexicana."],
-            "IDENTIDAD":["Identificación original con fotografía."],
-            "DOMICILIO":["Comprobante de domicilio."],
-            "INCIDENTE":["Reporte de robo o extravío cuando corresponda."],
-            "ANTERIOR":["Credencial anterior si se conserva."]
-          },
-          "condiciones":[
-            {"si":"cambios==Sí","accion":"revisar","mensaje":"Si necesitas cambiar datos, debemos determinar si corresponde corrección o cambio de domicilio en lugar de reposición."},
-            {"si":"cambios==No estoy seguro","accion":"revisar","mensaje":"Debemos aclarar si existe algún cambio de datos antes de continuar."}
-          ],
-          "casos_especiales":["Robo","Extravío","Falta de espacio para marcar elecciones","Cambio de datos"]
-        },
-        "vigencia":{
-          "nombre":"Consulta de vigencia y situación de la credencial",
-          "descripcion":"Consulta relacionada con vigencia, recepción, activación o estado de una credencial ya tramitada.",
-          "preguntas":[
-            {"id":"tramite","texto":"¿Ya realizaste el trámite?","tipo":"opciones","opciones":["Sí","No"],"obligatoria":true},
-            {"id":"recibida","texto":"¿Ya recibiste la credencial?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"folio","texto":"¿Conservas el folio o comprobante del trámite?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true},
-            {"id":"activacion","texto":"¿La credencial necesita activación o tienes dudas sobre su activación?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"],"obligatoria":true}
-          ],
-          "documentos_por_categoria":{
-            "CONSULTA":["Credencial para Votar.","Comprobante o folio del trámite."]
-          },
-          "casos_especiales":["Credencial no recibida","Credencial recibida","Problema de estatus","Activación","Necesidad de reposición"]
-        }
-      },
-      "fuentes":["INE - Credencial para Votar","INE - Documentos necesarios para solicitar la Credencial","INE - Voto de los Mexicanos Residentes en el Extranjero","INE - Ampliación de medios de identificación 2026","Consulado de México correspondiente"]
-    }
+      {
+        "id":"DOC004",
+        "regla":"Si un requisito depende de la oficina consular, marcar confirmar=true."
+      }
+    ]
   },
   "datos_personales":{
-    "regla":"Solicitar solamente los datos necesarios para preparar el trámite y el PDF.",
     "campos":[
-      {"id":"nombre","etiqueta":"Nombre(s)","tipo":"texto","obligatorio":true},
+      {"id":"nombres","etiqueta":"Nombre(s)","tipo":"texto","obligatorio":true},
       {"id":"apellido_paterno","etiqueta":"Apellido paterno","tipo":"texto","obligatorio":true},
       {"id":"apellido_materno","etiqueta":"Apellido materno","tipo":"texto","obligatorio":false},
       {"id":"fecha_nacimiento","etiqueta":"Fecha de nacimiento","tipo":"fecha","obligatorio":true},
-      {"id":"lugar_nacimiento","etiqueta":"Lugar de nacimiento","tipo":"texto","obligatorio":false},
-      {"id":"nacionalidad","etiqueta":"Nacionalidad","tipo":"texto","obligatorio":false},
-      {"id":"telefono","etiqueta":"Teléfono","tipo":"texto","obligatorio":false},
-      {"id":"correo","etiqueta":"Correo electrónico","tipo":"email","obligatorio":false},
-      {"id":"domicilio","etiqueta":"Domicilio actual","tipo":"texto","obligatorio":false},
-      {"id":"ciudad","etiqueta":"Ciudad","tipo":"texto","obligatorio":false},
-      {"id":"estado","etiqueta":"Estado","tipo":"texto","obligatorio":false},
-      {"id":"codigo_postal","etiqueta":"Código postal","tipo":"texto","obligatorio":false}
+      {"id":"lugar_nacimiento","etiqueta":"Lugar de nacimiento","tipo":"texto","obligatorio":true},
+      {"id":"entidad_nacimiento","etiqueta":"Entidad de nacimiento","tipo":"texto","obligatorio":true},
+      {"id":"sexo","etiqueta":"Sexo","tipo":"texto","obligatorio":true},
+      {"id":"nacionalidad","etiqueta":"Nacionalidad","tipo":"texto","obligatorio":true},
+      {"id":"estado_residencia_usa","etiqueta":"Estado donde resides actualmente en Estados Unidos","tipo":"texto","obligatorio":true},
+      {"id":"ciudad_residencia_usa","etiqueta":"Ciudad donde resides actualmente","tipo":"texto","obligatorio":true},
+      {"id":"domicilio_usa","etiqueta":"Domicilio actual","tipo":"texto_largo","obligatorio":true},
+      {"id":"codigo_postal","etiqueta":"Código postal","tipo":"texto","obligatorio":true},
+      {"id":"telefono","etiqueta":"Teléfono","tipo":"telefono","obligatorio":true},
+      {"id":"email","etiqueta":"Correo electrónico","tipo":"email","obligatorio":false}
     ]
   },
-  "control_documentos":{
-    "estados":["Lo tengo","No lo tengo","No estoy seguro","No aplica"],
-    "regla":"El sistema debe mostrar únicamente los documentos relacionados con el caso concreto.",
-    "clasificaciones":{
-      "base":"Documento normalmente relacionado con el trámite seleccionado.",
-      "condicional":"Solo aparece cuando una respuesta activa la condición correspondiente.",
-      "respaldo":"Documento utilizado para aclarar o demostrar una situación particular.",
-      "incidente":"Documento relacionado con robo, extravío, daño u otro incidente.",
-      "cambio_datos":"Documento que respalda una modificación o corrección.",
-      "domicilio":"Documento utilizado para acreditar domicilio.",
-      "por_confirmar":"Información que no puede determinarse sin revisar la autoridad correspondiente."
+  "tramites":[
+    {
+      "id":"PASAPORTE",
+      "nombre":"Pasaporte mexicano",
+      "institucion":"Secretaría de Relaciones Exteriores",
+      "descripcion":"Preparación individual para solicitar, renovar, reponer o corregir un pasaporte mexicano desde el extranjero.",
+      "vigencia_info":{
+        "menor_de_3":["1 año","3 años"],
+        "de_3_a_17":["3 años","6 años"],
+        "mayor_de_18":["3 años","6 años","10 años"]
+      },
+      "modalidades":[
+        {
+          "id":"PAS_PRIMERA_ADULTO",
+          "nombre":"Primera vez — persona mayor de 18 años",
+          "objetivo":"Preparar la solicitud inicial de pasaporte para una persona adulta.",
+          "datos_personales":"todos",
+          "preguntas":[
+            {
+              "id":"p_tipo_persona",
+              "texto":"¿La persona que solicitará el pasaporte es mayor de 18 años?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"p_nacionalidad_base",
+              "texto":"¿Con qué documento puedes acreditar tu nacionalidad mexicana?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "ayuda":"Selecciona todos los documentos que realmente tienes.",
+              "opciones":[
+                {"valor":"ACTA_NACIMIENTO","texto":"Acta de nacimiento mexicana"},
+                {"valor":"MATRICULA","texto":"Matrícula Consular"},
+                {"valor":"CERT_NACIONALIDAD","texto":"Certificado de nacionalidad mexicana"},
+                {"valor":"DECLARATORIA","texto":"Declaratoria de nacionalidad mexicana"},
+                {"valor":"NATURALIZACION","texto":"Carta de naturalización"},
+                {"valor":"OTRO","texto":"Otro documento"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"p_identidad",
+              "texto":"¿Qué identificación oficial con fotografía tienes actualmente?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"INE","texto":"Credencial para votar INE"},
+                {"valor":"PASAPORTE","texto":"Pasaporte mexicano"},
+                {"valor":"MATRICULA","texto":"Matrícula Consular"},
+                {"valor":"LICENCIA_USA","texto":"Licencia o identificación de Estados Unidos"},
+                {"valor":"LICENCIA_MEXICO","texto":"Licencia mexicana"},
+                {"valor":"OTRA","texto":"Otra identificación oficial"},
+                {"valor":"NINGUNA","texto":"No tengo identificación con fotografía"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"p_datos_coinciden",
+              "texto":"¿Los datos de tu identificación coinciden con tu documento de nacionalidad?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"p_diferencia_datos",
+              "texto":"¿Qué datos no coinciden?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"p_datos_coinciden","es":"NO"},
+              "opciones":[
+                {"valor":"NOMBRE","texto":"Nombre(s)"},
+                {"valor":"APELLIDO_PATERNO","texto":"Apellido paterno"},
+                {"valor":"APELLIDO_MATERNO","texto":"Apellido materno"},
+                {"valor":"FECHA_NACIMIENTO","texto":"Fecha de nacimiento"},
+                {"valor":"LUGAR_NACIMIENTO","texto":"Lugar de nacimiento"},
+                {"valor":"SEXO","texto":"Sexo"},
+                {"valor":"OTRO","texto":"Otro dato"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"p_casado_apellido",
+              "texto":"¿Quieres que aparezca el apellido de tu cónyuge en el pasaporte?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"p_acta_matrimonio",
+              "texto":"¿Tienes el acta de matrimonio que respalda ese apellido?",
+              "tipo":"si_no",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"p_casado_apellido","es":"SI"}
+            },
+            {
+              "id":"p_pago",
+              "texto":"¿Ya verificaste el costo correspondiente en el consulado donde realizarás el trámite?",
+              "tipo":"si_no",
+              "obligatoria":true
+            }
+          ],
+          "documentos":[
+            {
+              "id":"PAS_NAC",
+              "nombre":"Documento original que acredita la nacionalidad mexicana",
+              "categoria":"NACIONALIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "alternativas":[
+                "Acta de nacimiento mexicana",
+                "Certificado de nacionalidad mexicana",
+                "Declaratoria de nacionalidad mexicana",
+                "Carta de naturalización",
+                "Matrícula Consular, cuando sea aceptada para el caso"
+              ],
+              "confirmar":true
+            },
+            {
+              "id":"PAS_ID",
+              "nombre":"Identificación oficial con fotografía",
+              "categoria":"IDENTIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "alternativas":"Depende de la modalidad y de la circunscripción consular.",
+              "confirmar":true
+            },
+            {
+              "id":"PAS_MATRIMONIO",
+              "nombre":"Acta de matrimonio que respalda el apellido del cónyuge",
+              "categoria":"DATO_PERSONAL",
+              "obligatorio_base":false,
+              "cuando":{"respuesta":"p_casado_apellido","es":"SI"},
+              "confirmar":true
+            }
+          ],
+          "reglas":[
+            {
+              "id":"PAS001",
+              "si":{"respuesta":"p_datos_coinciden","es":"NO"},
+              "accion":"solicitar_documentacion_que_explique_y_acredite_la_variacion"
+            },
+            {
+              "id":"PAS002",
+              "si":{"respuesta":"p_nacionalidad_base","incluye":"NO_SE"},
+              "accion":"REQUIERE_CONFIRMACION"
+            },
+            {
+              "id":"PAS003",
+              "si":{"respuesta":"p_diferencia_datos","incluye":"NO_SE"},
+              "accion":"REQUIERE_CONFIRMACION"
+            }
+          ],
+          "resultado":{
+            "exito":"Documentación base identificada. Verificar requisitos específicos con el consulado.",
+            "advertencia":"El consulado puede solicitar documentación adicional si existen diferencias en los datos.",
+            "costo":"POR CONFIRMAR CON LA AUTORIDAD"
+          }
+        },
+        {
+          "id":"PAS_RENOV_ADULTO",
+          "nombre":"Renovación — persona mayor de 18 años",
+          "objetivo":"Determinar si corresponde renovación ordinaria o una situación especial.",
+          "preguntas":[
+            {
+              "id":"r_pasaporte_actual",
+              "texto":"¿Qué situación tiene tu pasaporte mexicano anterior?",
+              "tipo":"single_select",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"VIGENTE","texto":"Está vigente"},
+                {"valor":"VENCIDO","texto":"Está vencido"},
+                {"valor":"DANADO","texto":"Está dañado o deteriorado"},
+                {"valor":"DATOS_ERROR","texto":"Tiene un error o dato que necesito corregir"},
+                {"valor":"CAMBIO_DATOS","texto":"Necesito modificar datos personales"},
+                {"valor":"PERDIDO","texto":"Lo perdí"},
+                {"valor":"ROBADO","texto":"Me lo robaron"},
+                {"valor":"DESTRUIDO","texto":"Fue destruido"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"r_pasaporte_presentable",
+              "texto":"¿Conservas físicamente el pasaporte anterior?",
+              "tipo":"si_no",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"r_pasaporte_actual","en":["VIGENTE","VENCIDO","DANADO","DATOS_ERROR","CAMBIO_DATOS"]}
+            },
+            {
+              "id":"r_datos_cambio",
+              "texto":"¿Qué datos necesitas cambiar o corregir?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"r_pasaporte_actual","en":["DATOS_ERROR","CAMBIO_DATOS"]},
+              "ayuda":"Puedes seleccionar varias opciones.",
+              "opciones":[
+                {"valor":"NOMBRE","texto":"Nombre(s)"},
+                {"valor":"APELLIDO_PATERNO","texto":"Apellido paterno"},
+                {"valor":"APELLIDO_MATERNO","texto":"Apellido materno"},
+                {"valor":"FECHA_NACIMIENTO","texto":"Fecha de nacimiento"},
+                {"valor":"LUGAR_NACIMIENTO","texto":"Lugar de nacimiento"},
+                {"valor":"ENTIDAD_NACIMIENTO","texto":"Entidad de nacimiento"},
+                {"valor":"SEXO","texto":"Sexo"},
+                {"valor":"OTRO","texto":"Otro dato"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"r_documento_cambio",
+              "texto":"¿Tienes el documento oficial que demuestra la modificación o corrección?",
+              "tipo":"si_no",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"r_datos_cambio","distinto_de":null}
+            },
+            {
+              "id":"r_perdida_reporte",
+              "texto":"¿Ya tienes el reporte o acta correspondiente por la pérdida, robo o destrucción?",
+              "tipo":"si_no",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"r_pasaporte_actual","en":["PERDIDO","ROBADO","DESTRUIDO"]}
+            }
+          ],
+          "documentos":[
+            {
+              "id":"PAS_ANTERIOR",
+              "nombre":"Pasaporte mexicano anterior",
+              "categoria":"PASAPORTE",
+              "obligatorio_base":true,
+              "cuando":{"respuesta":"r_pasaporte_actual","en":["VIGENTE","VENCIDO","DANADO","DATOS_ERROR","CAMBIO_DATOS"]},
+              "confirmar":true
+            },
+            {
+              "id":"PAS_REPORTE",
+              "nombre":"Acta o reporte de robo, pérdida, destrucción u otro hecho correspondiente",
+              "categoria":"SITUACION_ESPECIAL",
+              "obligatorio_base":true,
+              "cuando":{"respuesta":"r_pasaporte_actual","en":["PERDIDO","ROBADO","DESTRUIDO"]},
+              "confirmar":true
+            },
+            {
+              "id":"PAS_PRUEBA_CAMBIO",
+              "nombre":"Documento oficial que acredita el cambio o corrección de datos",
+              "categoria":"DATO_PERSONAL",
+              "obligatorio_base":true,
+              "cuando":{"respuesta":"r_pasaporte_actual","en":["DATOS_ERROR","CAMBIO_DATOS"]},
+              "confirmar":true
+            }
+          ],
+          "reglas":[
+            {
+              "id":"PASR001",
+              "si":{"respuesta":"r_pasaporte_actual","en":["PERDIDO","ROBADO","DESTRUIDO"]},
+              "accion":"TRATAR_COMO_REPOSICION_ESPECIAL"
+            },
+            {
+              "id":"PASR002",
+              "si":{"respuesta":"r_datos_cambio","incluye":"NO_SE"},
+              "accion":"REQUIERE_CONFIRMACION"
+            }
+          ],
+          "resultado":{
+            "costo":"POR CONFIRMAR CON LA AUTORIDAD",
+            "nota":"Los requisitos exactos pueden cambiar según la situación y la oficina consular."
+          }
+        },
+        {
+          "id":"PAS_PRIMERA_MENOR",
+          "nombre":"Primera vez — persona menor de 18 años",
+          "objetivo":"Preparar pasaporte para una persona menor de edad.",
+          "preguntas":[
+            {
+              "id":"m_edad",
+              "texto":"¿Qué edad tiene la persona menor?",
+              "tipo":"numero",
+              "obligatoria":true
+            },
+            {
+              "id":"m_nacionalidad",
+              "texto":"¿Cómo puedes acreditar la nacionalidad mexicana del menor?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"ACTA_MEXICANA","texto":"Acta de nacimiento mexicana"},
+                {"valor":"CERT_NACIONALIDAD","texto":"Certificado de nacionalidad"},
+                {"valor":"DECLARATORIA","texto":"Declaratoria de nacionalidad"},
+                {"valor":"NATURALIZACION","texto":"Carta de naturalización"},
+                {"valor":"MATRICULA","texto":"Matrícula Consular"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"m_identidad",
+              "texto":"¿Qué identificación con fotografía tiene el menor?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"ESCOLAR","texto":"Credencial o constancia escolar"},
+                {"valor":"MEDICA","texto":"Identificación de institución médica"},
+                {"valor":"MATRICULA","texto":"Matrícula Consular"},
+                {"valor":"PASAPORTE","texto":"Pasaporte mexicano"},
+                {"valor":"OTRA","texto":"Otra identificación oficial"},
+                {"valor":"NINGUNA","texto":"No tiene identificación con fotografía"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"m_padres",
+              "texto":"¿Quién ejercerá la patria potestad o tutela y acudirá al trámite?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"MADRE_PADRE","texto":"Madre y padre"},
+                {"valor":"SOLO_MADRE","texto":"Solo la madre"},
+                {"valor":"SOLO_PADRE","texto":"Solo el padre"},
+                {"valor":"TUTOR","texto":"Tutor legal"},
+                {"valor":"AUTORIZADO","texto":"Persona autorizada legalmente"},
+                {"valor":"SITUACION_ESPECIAL","texto":"Existe una situación especial de custodia, ausencia o fallecimiento"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"m_autorizacion",
+              "texto":"¿Existe alguna situación especial que pueda afectar el consentimiento de los padres o tutores?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"NINGUNA","texto":"No"},
+                {"valor":"PADRE_AUSENTE","texto":"Uno de los padres no puede acudir"},
+                {"valor":"FALLECIMIENTO","texto":"Uno de los padres falleció"},
+                {"valor":"CUSTODIA","texto":"Existe resolución o acuerdo de custodia"},
+                {"valor":"TUTELA","texto":"Existe tutela"},
+                {"valor":"JUDICIAL","texto":"Existe intervención judicial"},
+                {"valor":"OTRO","texto":"Otra situación"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            }
+          ],
+          "documentos":[
+            {
+              "id":"PAS_M_NAC",
+              "nombre":"Documento original que acredita la nacionalidad mexicana del menor",
+              "categoria":"NACIONALIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"PAS_M_ID",
+              "nombre":"Identificación con fotografía del menor",
+              "categoria":"IDENTIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"PAS_M_FILIACION",
+              "nombre":"Acta de nacimiento del menor para acreditar filiación",
+              "categoria":"PATRIA_POTESTAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"PAS_M_ID_PADRES",
+              "nombre":"Identificación oficial de quienes ejercen patria potestad o tutela",
+              "categoria":"PATRIA_POTESTAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"PAS_M_SITUACION",
+              "nombre":"Documento que acredite la situación especial de patria potestad, tutela, ausencia, fallecimiento o resolución judicial",
+              "categoria":"SITUACION_ESPECIAL",
+              "obligatorio_base":false,
+              "cuando":{"respuesta":"m_autorizacion","distinto_de":"NINGUNA"},
+              "confirmar":true
+            }
+          ],
+          "resultado":{
+            "costo":"POR CONFIRMAR CON LA AUTORIDAD",
+            "nota":"En menores, las situaciones familiares especiales deben revisarse antes de acudir."
+          }
+        }
+      ]
     },
-    "resultado":{
-      "lo_tengo":"La persona declara tenerlo.",
-      "no_lo_tengo":"La persona declara no tenerlo.",
-      "no_seguro":"La persona tiene duda y debe recibir una explicación o confirmación.",
-      "no_aplica":"El documento no corresponde al caso.",
-      "pendiente":"El sistema debe impedir presentar el PDF como preparación completa mientras existan puntos críticos pendientes."
+    {
+      "id":"MATRICULA_CONSULAR",
+      "nombre":"Matrícula Consular",
+      "institucion":"Secretaría de Relaciones Exteriores",
+      "descripcion":"Preparación individual para obtener, canjear o reponer la Matrícula Consular de Alta Seguridad.",
+      "vigencia":"5 años",
+      "modalidades":[
+        {
+          "id":"MC_PRIMERA_ADULTO",
+          "nombre":"Primera vez — persona mayor de 18 años",
+          "objetivo":"Preparar la primera Matrícula Consular.",
+          "preguntas":[
+            {
+              "id":"mc_nacionalidad",
+              "texto":"¿Con qué documento puedes acreditar tu nacionalidad mexicana?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"ACTA_NACIMIENTO","texto":"Acta de nacimiento"},
+                {"valor":"PASAPORTE","texto":"Pasaporte mexicano"},
+                {"valor":"CERT_NACIONALIDAD","texto":"Certificado de nacionalidad"},
+                {"valor":"DECLARATORIA","texto":"Declaratoria de nacionalidad"},
+                {"valor":"NATURALIZACION","texto":"Carta de naturalización"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"mc_identidad",
+              "texto":"¿Qué identificación oficial con fotografía tienes?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"PASAPORTE","texto":"Pasaporte mexicano"},
+                {"valor":"INE","texto":"INE"},
+                {"valor":"LICENCIA_USA","texto":"Licencia o identificación de Estados Unidos"},
+                {"valor":"LICENCIA_MEXICO","texto":"Licencia mexicana"},
+                {"valor":"RESIDENCIA","texto":"Tarjeta de residencia de Estados Unidos"},
+                {"valor":"OTRA","texto":"Otra identificación oficial"},
+                {"valor":"NINGUNA","texto":"Ninguna"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"mc_domicilio",
+              "texto":"¿Qué comprobante de domicilio tienes actualmente?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "ayuda":"Selecciona los comprobantes que realmente tienes.",
+              "opciones":[
+                {"valor":"LUZ","texto":"Recibo de electricidad"},
+                {"valor":"AGUA","texto":"Recibo de agua"},
+                {"valor":"TELEFONO","texto":"Recibo de teléfono"},
+                {"valor":"BANCO","texto":"Documento o estado de cuenta bancario"},
+                {"valor":"SEGURO","texto":"Documento de seguro"},
+                {"valor":"CORRESPONDENCIA","texto":"Correspondencia aceptable"},
+                {"valor":"OTRO","texto":"Otro comprobante"},
+                {"valor":"NINGUNO","texto":"No tengo comprobante"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"mc_domicilio_nombre",
+              "texto":"¿El comprobante de domicilio está a tu nombre?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"mc_circunscripcion",
+              "texto":"¿Tu domicilio está dentro de la circunscripción del consulado donde piensas realizar el trámite?",
+              "tipo":"si_no",
+              "obligatoria":true
+            }
+          ],
+          "documentos":[
+            {
+              "id":"MC_NAC",
+              "nombre":"Documento original que acredita nacionalidad mexicana",
+              "categoria":"NACIONALIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"MC_ID",
+              "nombre":"Identificación oficial original con fotografía",
+              "categoria":"IDENTIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"MC_DOM",
+              "nombre":"Comprobante original de domicilio en Estados Unidos",
+              "categoria":"DOMICILIO",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            }
+          ],
+          "resultado":{
+            "costo":"POR CONFIRMAR CON LA AUTORIDAD",
+            "vigencia":"5 años",
+            "nota":"La SRE señala que la Matrícula acredita identidad, nacionalidad y domicilio dentro de la circunscripción consular correspondiente."
+          }
+        },
+        {
+          "id":"MC_CANJE_ADULTO",
+          "nombre":"Canje o renovación — persona mayor de 18 años",
+          "objetivo":"Preparar el canje de una Matrícula Consular existente.",
+          "preguntas":[
+            {
+              "id":"mc_canje_anterior",
+              "texto":"¿Tienes físicamente tu Matrícula Consular anterior?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"mc_canje_domicilio",
+              "texto":"¿Tu domicilio actual es diferente al que tenías registrado?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"mc_canje_datos",
+              "texto":"¿Necesitas cambiar o corregir algún dato personal?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "ayuda":"Puedes seleccionar varias opciones.",
+              "opciones":[
+                {"valor":"NOMBRE","texto":"Nombre(s)"},
+                {"valor":"APELLIDO_PATERNO","texto":"Apellido paterno"},
+                {"valor":"APELLIDO_MATERNO","texto":"Apellido materno"},
+                {"valor":"FECHA_NACIMIENTO","texto":"Fecha de nacimiento"},
+                {"valor":"LUGAR_NACIMIENTO","texto":"Lugar de nacimiento"},
+                {"valor":"DOMICILIO","texto":"Domicilio"},
+                {"valor":"OTRO","texto":"Otro dato"},
+                {"valor":"NINGUNO","texto":"Ninguno"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"mc_canje_perdida",
+              "texto":"¿La Matrícula anterior fue perdida, robada o destruida?",
+              "tipo":"single_select",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"NO","texto":"No"},
+                {"valor":"PERDIDA","texto":"Perdida"},
+                {"valor":"ROBADA","texto":"Robada"},
+                {"valor":"DESTRUIDA","texto":"Destruida"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            }
+          ],
+          "documentos":[
+            {
+              "id":"MC_ANTERIOR",
+              "nombre":"Matrícula Consular anterior",
+              "categoria":"DOCUMENTO_ANTERIOR",
+              "obligatorio_base":true,
+              "cuando":{"respuesta":"mc_canje_perdida","es":"NO"},
+              "confirmar":true
+            },
+            {
+              "id":"MC_DOM_CANJE",
+              "nombre":"Comprobante de domicilio actualizado",
+              "categoria":"DOMICILIO",
+              "obligatorio_base":false,
+              "cuando":{"respuesta":"mc_canje_domicilio","es":"SI"},
+              "confirmar":true
+            },
+            {
+              "id":"MC_PRUEBA_DATO",
+              "nombre":"Documento que respalda el cambio o corrección de datos",
+              "categoria":"DATO_PERSONAL",
+              "obligatorio_base":false,
+              "cuando":{"respuesta":"mc_canje_datos","distinto_de":"NINGUNO"},
+              "confirmar":true
+            },
+            {
+              "id":"MC_REPORTE",
+              "nombre":"Reporte o documento relacionado con pérdida, robo o destrucción",
+              "categoria":"SITUACION_ESPECIAL",
+              "obligatorio_base":false,
+              "cuando":{"respuesta":"mc_canje_perdida","en":["PERDIDA","ROBADA","DESTRUIDA"]},
+              "confirmar":true
+            }
+          ],
+          "resultado":{
+            "costo":"POR CONFIRMAR CON LA AUTORIDAD",
+            "vigencia":"5 años"
+          }
+        },
+        {
+          "id":"MC_PRIMERA_MENOR",
+          "nombre":"Primera vez — menor de 18 años",
+          "objetivo":"Preparar Matrícula Consular para una persona menor.",
+          "preguntas":[
+            {
+              "id":"mcm_edad",
+              "texto":"¿Qué edad tiene el menor?",
+              "tipo":"numero",
+              "obligatoria":true
+            },
+            {
+              "id":"mcm_nacionalidad",
+              "texto":"¿Cómo acreditará el menor su nacionalidad mexicana?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"ACTA","texto":"Acta de nacimiento"},
+                {"valor":"PASAPORTE","texto":"Pasaporte mexicano"},
+                {"valor":"CERTIFICADO","texto":"Certificado o declaratoria de nacionalidad"},
+                {"valor":"NATURALIZACION","texto":"Carta de naturalización"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"mcm_identidad",
+              "texto":"¿Qué identificación con fotografía tiene el menor?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"ESCOLAR","texto":"Identificación escolar"},
+                {"valor":"PASAPORTE","texto":"Pasaporte mexicano"},
+                {"valor":"MATRICULA","texto":"Matrícula Consular"},
+                {"valor":"MEDICA","texto":"Identificación médica"},
+                {"valor":"USA","texto":"Identificación oficial de Estados Unidos"},
+                {"valor":"NINGUNA","texto":"Ninguna"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"mcm_padres",
+              "texto":"¿Quién acudirá con el menor?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"MADRE_PADRE","texto":"Madre y padre"},
+                {"valor":"MADRE","texto":"Solo madre"},
+                {"valor":"PADRE","texto":"Solo padre"},
+                {"valor":"TUTOR","texto":"Tutor"},
+                {"valor":"OTRO","texto":"Otra situación legal"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            }
+          ],
+          "documentos":[
+            {
+              "id":"MCM_NAC",
+              "nombre":"Documento original de nacionalidad mexicana del menor",
+              "categoria":"NACIONALIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"MCM_ID",
+              "nombre":"Identificación original con fotografía del menor",
+              "categoria":"IDENTIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"MCM_DOM",
+              "nombre":"Comprobante de domicilio",
+              "categoria":"DOMICILIO",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"MCM_PADRES",
+              "nombre":"Identificación oficial de madre, padre o tutor",
+              "categoria":"REPRESENTACION_LEGAL",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            }
+          ],
+          "resultado":{
+            "costo":"POR CONFIRMAR CON LA AUTORIDAD",
+            "vigencia":"5 años"
+          }
+        }
+      ]
+    },
+    {
+      "id":"INE_EXTRANJERO",
+      "nombre":"Credencial para Votar desde el Extranjero",
+      "institucion":"Instituto Nacional Electoral",
+      "descripcion":"Preparación individual para obtener, actualizar, corregir, cambiar domicilio o reponer la Credencial para Votar desde el Extranjero.",
+      "costo":"GRATUITO",
+      "vigencia":"10 años",
+      "modalidades":[
+        {
+          "id":"INE_PRIMERA",
+          "nombre":"Primera credencial",
+          "objetivo":"Preparar la primera Credencial para Votar desde el Extranjero.",
+          "preguntas":[
+            {
+              "id":"ine_edad",
+              "texto":"¿Ya tienes 18 años?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"ine_nacionalidad",
+              "texto":"¿Qué documento original tienes para acreditar tu nacionalidad mexicana?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"ACTA","texto":"Acta de nacimiento mexicana"},
+                {"valor":"NATURALIZACION","texto":"Carta de naturalización"},
+                {"valor":"CERT_NACIONALIDAD","texto":"Certificado de nacionalidad"},
+                {"valor":"DECLARATORIA","texto":"Declaratoria de nacionalidad"},
+                {"valor":"OTRO","texto":"Otro documento aceptable"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"ine_identidad",
+              "texto":"¿Qué identificación original con fotografía tienes?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"PASAPORTE","texto":"Pasaporte mexicano"},
+                {"valor":"MATRICULA","texto":"Matrícula Consular"},
+                {"valor":"INE","texto":"Credencial para votar"},
+                {"valor":"LICENCIA","texto":"Licencia de conducir"},
+                {"valor":"RESIDENCIA","texto":"Tarjeta de residente"},
+                {"valor":"VISA","texto":"Visa de gobierno extranjero"},
+                {"valor":"ESCOLAR","texto":"Documento escolar con fotografía"},
+                {"valor":"PROFESIONAL","texto":"Documento profesional"},
+                {"valor":"OTRA","texto":"Otra identificación"},
+                {"valor":"NINGUNA","texto":"No tengo identificación con fotografía"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"ine_identidad_vigencia",
+              "texto":"¿La identificación con fotografía que presentarás está vigente o entra dentro de una excepción permitida?",
+              "tipo":"single_select",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"VIGENTE","texto":"Sí, está vigente"},
+                {"valor":"VENCIDA","texto":"Está vencida"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"ine_domicilio_tipo",
+              "texto":"¿Qué comprobante de domicilio tienes?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"LUZ","texto":"Electricidad"},
+                {"valor":"AGUA","texto":"Agua"},
+                {"valor":"TELEFONO","texto":"Teléfono"},
+                {"valor":"BANCO","texto":"Banco"},
+                {"valor":"ESCUELA","texto":"Escuela"},
+                {"valor":"GOBIERNO","texto":"Documento de autoridad"},
+                {"valor":"SEGURO","texto":"Seguro"},
+                {"valor":"OTRO","texto":"Otro comprobante"},
+                {"valor":"NINGUNO","texto":"No tengo comprobante"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"ine_domicilio_completo",
+              "texto":"¿El comprobante muestra el domicilio completo, incluyendo calle, número, ciudad y código postal?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"ine_po_box",
+              "texto":"¿El comprobante utiliza solamente un apartado postal o PO Box como domicilio?",
+              "tipo":"si_no",
+              "obligatoria":true
+            }
+          ],
+          "documentos":[
+            {
+              "id":"INE_NAC",
+              "nombre":"Documento original que acredita nacionalidad mexicana",
+              "categoria":"NACIONALIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "nota":"Debe ser original y sin tachaduras ni enmendaduras.",
+              "confirmar":true
+            },
+            {
+              "id":"INE_ID",
+              "nombre":"Identificación original con fotografía",
+              "categoria":"IDENTIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "nota":"La aceptación depende de los medios de identificación vigentes del INE.",
+              "confirmar":true
+            },
+            {
+              "id":"INE_DOM",
+              "nombre":"Comprobante original de domicilio",
+              "categoria":"DOMICILIO",
+              "obligatorio_base":true,
+              "cuando":true,
+              "nota":"No utilizar solamente PO Box como domicilio.",
+              "confirmar":true
+            }
+          ],
+          "reglas":[
+            {
+              "id":"INE001",
+              "si":{"respuesta":"ine_po_box","es":"SI"},
+              "accion":"FALTAN_DOCUMENTOS"
+            },
+            {
+              "id":"INE002",
+              "si":{"respuesta":"ine_identidad_vigencia","es":"NO_SE"},
+              "accion":"REQUIERE_CONFIRMACION"
+            }
+          ],
+          "resultado":{
+            "costo":"GRATUITO",
+            "vigencia":"10 años",
+            "nota":"El INE exige tres grupos documentales: nacionalidad, identificación con fotografía y comprobante de domicilio."
+          }
+        },
+        {
+          "id":"INE_CORRECCION",
+          "nombre":"Corrección o actualización de datos personales",
+          "objetivo":"Identificar exactamente uno o varios datos que deben corregirse o actualizarse.",
+          "preguntas":[
+            {
+              "id":"ine_corr_credencial",
+              "texto":"¿Actualmente tienes una Credencial para Votar?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"ine_corr_situacion",
+              "texto":"Si no tienes una credencial actualmente, ¿qué ocurrió?",
+              "tipo":"single_select",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_corr_credencial","es":"NO"},
+              "opciones":[
+                {"valor":"NUNCA","texto":"Nunca he tenido una"},
+                {"valor":"PERDIDA","texto":"La perdí"},
+                {"valor":"ROBADA","texto":"Me la robaron"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"ine_datos_corregir",
+              "texto":"¿Qué datos necesitas cambiar o corregir?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "ayuda":"Puedes seleccionar una o varias opciones.",
+              "opciones":[
+                {"valor":"NOMBRE","texto":"Nombre(s)"},
+                {"valor":"APELLIDO_PATERNO","texto":"Apellido paterno"},
+                {"valor":"APELLIDO_MATERNO","texto":"Apellido materno"},
+                {"valor":"FECHA_NACIMIENTO","texto":"Fecha de nacimiento"},
+                {"valor":"LUGAR_NACIMIENTO","texto":"Lugar de nacimiento"},
+                {"valor":"ENTIDAD_NACIMIENTO","texto":"Entidad de nacimiento"},
+                {"valor":"SEXO","texto":"Sexo"},
+                {"valor":"DOMICILIO","texto":"Domicilio"},
+                {"valor":"OTRO","texto":"Otro dato"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"ine_nombre_actual",
+              "texto":"¿Qué nombre aparece actualmente en tu documento?",
+              "tipo":"texto_largo",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"NOMBRE"}
+            },
+            {
+              "id":"ine_nombre_nuevo",
+              "texto":"¿Cómo debe aparecer correctamente tu nombre?",
+              "tipo":"texto_largo",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"NOMBRE"}
+            },
+            {
+              "id":"ine_ap_pat_actual",
+              "texto":"¿Qué apellido paterno aparece actualmente?",
+              "tipo":"texto",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"APELLIDO_PATERNO"}
+            },
+            {
+              "id":"ine_ap_pat_nuevo",
+              "texto":"¿Cuál debe ser el apellido paterno correcto?",
+              "tipo":"texto",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"APELLIDO_PATERNO"}
+            },
+            {
+              "id":"ine_ap_mat_actual",
+              "texto":"¿Qué apellido materno aparece actualmente?",
+              "tipo":"texto",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"APELLIDO_MATERNO"}
+            },
+            {
+              "id":"ine_ap_mat_nuevo",
+              "texto":"¿Cuál debe ser el apellido materno correcto?",
+              "tipo":"texto",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"APELLIDO_MATERNO"}
+            },
+            {
+              "id":"ine_fecha_actual",
+              "texto":"¿Qué fecha de nacimiento aparece actualmente?",
+              "tipo":"fecha",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"FECHA_NACIMIENTO"}
+            },
+            {
+              "id":"ine_fecha_nueva",
+              "texto":"¿Cuál es la fecha de nacimiento correcta?",
+              "tipo":"fecha",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"FECHA_NACIMIENTO"}
+            },
+            {
+              "id":"ine_lugar_actual",
+              "texto":"¿Qué lugar de nacimiento aparece actualmente?",
+              "tipo":"texto_largo",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"LUGAR_NACIMIENTO"}
+            },
+            {
+              "id":"ine_lugar_nuevo",
+              "texto":"¿Cuál es el lugar de nacimiento correcto?",
+              "tipo":"texto_largo",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"LUGAR_NACIMIENTO"}
+            },
+            {
+              "id":"ine_sexo_nuevo",
+              "texto":"¿Qué dato de sexo debe aparecer actualmente?",
+              "tipo":"texto",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"SEXO"}
+            },
+            {
+              "id":"ine_domicilio_tipo_cambio",
+              "texto":"¿Qué ocurre con el domicilio?",
+              "tipo":"single_select",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"DOMICILIO"},
+              "opciones":[
+                {"valor":"CAMBIO_FISICO","texto":"Me mudé a otra dirección"},
+                {"valor":"CORRECCION","texto":"Sigo viviendo en el mismo lugar pero hay un dato incorrecto"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"ine_otro_detalle",
+              "texto":"¿Qué otro dato necesitas corregir o actualizar?",
+              "tipo":"texto_largo",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_datos_corregir","incluye":"OTRO"}
+            },
+            {
+              "id":"ine_prueba_dato",
+              "texto":"¿Tienes un documento oficial que respalde la corrección que solicitas?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"ine_prueba_tipo",
+              "texto":"¿Qué documento tienes para respaldar la corrección?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_prueba_dato","es":"SI"},
+              "opciones":[
+                {"valor":"ACTA_NACIMIENTO","texto":"Acta de nacimiento"},
+                {"valor":"ACTA_RECTIFICADA","texto":"Acta corregida o actualizada"},
+                {"valor":"RESOLUCION","texto":"Resolución o documento de autoridad"},
+                {"valor":"DOCUMENTO_OFICIAL","texto":"Otro documento oficial"},
+                {"valor":"OTRO","texto":"Otro"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"ine_prueba_original",
+              "texto":"¿El documento que respalda la corrección está en original y sin tachaduras ni enmendaduras?",
+              "tipo":"si_no",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"ine_prueba_dato","es":"SI"}
+            }
+          ],
+          "documentos":[
+            {
+              "id":"INEC_NAC",
+              "nombre":"Documento original de nacionalidad",
+              "categoria":"NACIONALIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"INEC_ID",
+              "nombre":"Identificación original con fotografía",
+              "categoria":"IDENTIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"INEC_DOM",
+              "nombre":"Comprobante de domicilio original",
+              "categoria":"DOMICILIO",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"INEC_PRUEBA",
+              "nombre":"Documento oficial que respalda la corrección o actualización solicitada",
+              "categoria":"CORRECCION",
+              "obligatorio_base":true,
+              "cuando":{"respuesta":"ine_datos_corregir","distinto_de":null},
+              "confirmar":true
+            }
+          ],
+          "reglas":[
+            {
+              "id":"INEC001",
+              "si":{"respuesta":"ine_corr_credencial","es":"NO"},
+              "y":{"respuesta":"ine_corr_situacion","es":"NUNCA"},
+              "accion":"REVISAR_MODALIDAD",
+              "mensaje":"Si nunca has tenido una Credencial para Votar, puede corresponder primera credencial y no una corrección."
+            },
+            {
+              "id":"INEC002",
+              "si":{"respuesta":"ine_datos_corregir","incluye":"NO_SE"},
+              "accion":"REQUIERE_CONFIRMACION"
+            },
+            {
+              "id":"INEC003",
+              "si":{"respuesta":"ine_datos_corregir","incluye":"OTRO"},
+              "accion":"EXIGIR_DETALLE"
+            },
+            {
+              "id":"INEC004",
+              "si":{"respuesta":"ine_prueba_dato","es":"NO"},
+              "accion":"FALTAN_DOCUMENTOS"
+            },
+            {
+              "id":"INEC005",
+              "si":{"respuesta":"ine_prueba_original","es":"NO"},
+              "accion":"REQUIERE_CONFIRMACION"
+            }
+          ],
+          "resultado":{
+            "costo":"GRATUITO",
+            "nota":"La corrección debe identificar exactamente qué dato cambia y qué documento respalda la modificación."
+          }
+        },
+        {
+          "id":"INE_DOMICILIO",
+          "nombre":"Cambio de domicilio",
+          "objetivo":"Preparar actualización por cambio físico de domicilio.",
+          "preguntas":[
+            {
+              "id":"ined_credencial",
+              "texto":"¿Tienes actualmente una Credencial para Votar?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"ined_cambio_fisico",
+              "texto":"¿Te mudaste físicamente a otra dirección?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"ined_domicilio_nuevo",
+              "texto":"Escribe tu nuevo domicilio completo.",
+              "tipo":"texto_largo",
+              "obligatoria":true
+            },
+            {
+              "id":"ined_comprobante",
+              "texto":"¿Qué comprobante de domicilio tienes para esa nueva dirección?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"LUZ","texto":"Electricidad"},
+                {"valor":"AGUA","texto":"Agua"},
+                {"valor":"TELEFONO","texto":"Teléfono"},
+                {"valor":"BANCO","texto":"Banco"},
+                {"valor":"ESCUELA","texto":"Escuela"},
+                {"valor":"GOBIERNO","texto":"Autoridad"},
+                {"valor":"SEGURO","texto":"Seguro"},
+                {"valor":"OTRO","texto":"Otro"},
+                {"valor":"NINGUNO","texto":"Ninguno"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"ined_coincide",
+              "texto":"¿El comprobante contiene el mismo domicilio que quieres registrar?",
+              "tipo":"si_no",
+              "obligatoria":true
+            },
+            {
+              "id":"ined_visible",
+              "texto":"¿Cómo quieres que aparezca el domicilio en tu credencial?",
+              "tipo":"single_select",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"VISIBLE","texto":"Visible"},
+                {"valor":"OCULTO","texto":"Oculto"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            }
+          ],
+          "documentos":[
+            {
+              "id":"INED_NAC",
+              "nombre":"Documento de nacionalidad mexicana",
+              "categoria":"NACIONALIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"INED_ID",
+              "nombre":"Identificación original con fotografía",
+              "categoria":"IDENTIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"INED_DOM",
+              "nombre":"Comprobante original del nuevo domicilio",
+              "categoria":"DOMICILIO",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            }
+          ],
+          "reglas":[
+            {
+              "id":"INED001",
+              "si":{"respuesta":"ined_coincide","es":"NO"},
+              "accion":"FALTAN_DOCUMENTOS",
+              "mensaje":"El comprobante no coincide con el domicilio que deseas registrar."
+            },
+            {
+              "id":"INED002",
+              "si":{"respuesta":"ined_visible","es":"NO_SE"},
+              "accion":"REQUIERE_CONFIRMACION"
+            }
+          ],
+          "resultado":{
+            "costo":"GRATUITO",
+            "vigencia":"10 años"
+          }
+        },
+        {
+          "id":"INE_REPOSICION",
+          "nombre":"Reposición por pérdida, robo o daño",
+          "objetivo":"Determinar si corresponde reposición sin cambio de datos.",
+          "preguntas":[
+            {
+              "id":"iner_motivo",
+              "texto":"¿Por qué necesitas una reposición?",
+              "tipo":"single_select",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"PERDIDA","texto":"Pérdida"},
+                {"valor":"ROBO","texto":"Robo"},
+                {"valor":"DANO","texto":"Daño"},
+                {"valor":"SIN_ESPACIO","texto":"Ya no hay espacio para marcar elecciones"},
+                {"valor":"OTRO","texto":"Otro motivo"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"iner_cambio_datos",
+              "texto":"¿También necesitas cambiar algún dato personal o domicilio?",
+              "tipo":"multiple",
+              "obligatoria":true,
+              "opciones":[
+                {"valor":"NINGUNO","texto":"No, los datos siguen iguales"},
+                {"valor":"NOMBRE","texto":"Nombre(s)"},
+                {"valor":"APELLIDOS","texto":"Apellidos"},
+                {"valor":"FECHA_NACIMIENTO","texto":"Fecha de nacimiento"},
+                {"valor":"LUGAR_NACIMIENTO","texto":"Lugar de nacimiento"},
+                {"valor":"SEXO","texto":"Sexo"},
+                {"valor":"DOMICILIO","texto":"Domicilio"},
+                {"valor":"OTRO","texto":"Otro dato"},
+                {"valor":"NO_SE","texto":"No estoy seguro"}
+              ]
+            },
+            {
+              "id":"iner_reporte",
+              "texto":"Si fue pérdida o robo, ¿ya realizaste el reporte correspondiente?",
+              "tipo":"si_no",
+              "obligatoria":true,
+              "mostrar_si":{"respuesta":"iner_motivo","en":["PERDIDA","ROBO"]}
+            }
+          ],
+          "documentos":[
+            {
+              "id":"INER_NAC",
+              "nombre":"Documento de nacionalidad",
+              "categoria":"NACIONALIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"INER_ID",
+              "nombre":"Identificación con fotografía",
+              "categoria":"IDENTIDAD",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"INER_DOM",
+              "nombre":"Comprobante de domicilio",
+              "categoria":"DOMICILIO",
+              "obligatorio_base":true,
+              "cuando":true,
+              "confirmar":true
+            },
+            {
+              "id":"INER_REPORTE",
+              "nombre":"Reporte correspondiente por pérdida o robo",
+              "categoria":"SITUACION_ESPECIAL",
+              "obligatorio_base":false,
+              "cuando":{"respuesta":"iner_motivo","en":["PERDIDA","ROBO"]},
+              "confirmar":true
+            }
+          ],
+          "reglas":[
+            {
+              "id":"INER001",
+              "si":{"respuesta":"iner_cambio_datos","incluye":"NINGUNO"},
+              "y":{"respuesta":"iner_cambio_datos","cantidad_mayor_que":1},
+              "accion":"HAY_INCONSISTENCIAS",
+              "mensaje":"No puedes indicar 'ninguno' y al mismo tiempo seleccionar cambios."
+            },
+            {
+              "id":"INER002",
+              "si":{"respuesta":"iner_cambio_datos","distinto_de":"NINGUNO"},
+              "accion":"REVISAR_MODALIDAD",
+              "mensaje":"Si necesitas modificar datos, puede corresponder corrección o cambio de domicilio en lugar de una reposición simple."
+            },
+            {
+              "id":"INER003",
+              "si":{"respuesta":"iner_reporte","es":"NO"},
+              "accion":"REQUIERE_CONFIRMACION"
+            }
+          ],
+          "resultado":{
+            "costo":"GRATUITO",
+            "nota":"La reposición simple no debe utilizarse para ocultar cambios de datos que requieren otra modalidad."
+          }
+        }
+      ]
     }
-  },
-  "motor_revision":{
-    "objetivo":"Detectar errores antes de generar la guía final.",
-    "niveles":{
-      "verde":"La información proporcionada es consistente y no se detecta un bloqueo conocido.",
-      "amarillo":"Existe una duda o documento condicional que debe revisarse.",
-      "rojo":"Existe una contradicción, falta crítica o posible modalidad incorrecta. No permitir finalizar hasta resolverla o marcarla expresamente como POR CONFIRMAR CON LA AUTORIDAD."
-    },
-    "bloqueos":[
-      "Edad incompatible con la modalidad.",
-      "Robo o extravío seleccionado dentro de una modalidad que no corresponde.",
-      "Cambio de domicilio tratado como simple reposición cuando requiere otro análisis.",
-      "Diferencias de nombre sin identificar.",
-      "Diferencias de fecha o lugar de nacimiento sin identificar.",
-      "Falta de documento base cuando es indispensable para continuar.",
-      "Domicilio que no coincide con el comprobante.",
-      "Consulado ambiguo o aparentemente incorrecto.",
-      "Situación de menor de edad sin aclarar quién ejerce patria potestad o tutela.",
-      "Situación judicial sin documentación o explicación.",
-      "Usuario que responde No estoy seguro en un punto crítico.",
-      "Documento marcado como faltante que el sistema considera necesario para el caso."
+  ],
+  "control_documentos":{
+    "categorias":[
+      "NACIONALIDAD",
+      "IDENTIDAD",
+      "DOMICILIO",
+      "PASAPORTE",
+      "DOCUMENTO_ANTERIOR",
+      "DATO_PERSONAL",
+      "CORRECCION",
+      "PATRIA_POTESTAD",
+      "REPRESENTACION_LEGAL",
+      "SITUACION_ESPECIAL"
     ],
-    "accion":"Cuando exista un bloqueo, mostrar una sola explicación clara y una sola acción siguiente. No mostrar una lista extensa de advertencias."
-  },
-  "resultado_personalizado":{
-    "debe_mostrar":[
-      "Qué trámite seleccionó la persona.",
-      "Qué modalidad corresponde.",
-      "Qué documentos son relevantes para su caso.",
-      "Qué documentos declara tener.",
-      "Qué documentos declara no tener.",
-      "Qué documentos le generan duda.",
-      "Qué situaciones especiales fueron detectadas.",
-      "Qué debe corregir antes de continuar.",
-      "Qué debe confirmar con la autoridad.",
-      "Qué pasos debe realizar antes de acudir."
-    ],
-    "no_debe_mostrar":[
-      "Una lista general de todos los documentos posibles.",
-      "Requisitos de otras modalidades.",
-      "Información de otros trámites.",
-      "Advertencias repetidas.",
-      "Información que el usuario todavía no necesita.",
-      "Garantías de aprobación."
+    "reglas":[
+      "Todo documento debe tener estado LO_TENGO, NO_LO_TENGO, NO_ESTOY_SEGURO o NO_APLICA.",
+      "NO_LO_TENGO en un documento obligatorio genera FALTAN_DOCUMENTOS.",
+      "NO_ESTOY_SEGURO genera REQUIERE_CONFIRMACION.",
+      "No presentar como obligatorio un documento cuya condición no se cumple.",
+      "No presentar como opcional un documento que se vuelve obligatorio por una respuesta.",
+      "Si una alternativa documental requiere confirmación del consulado o INE, mostrar POR CONFIRMAR CON LA AUTORIDAD."
     ]
+  },
+  "consulado":{
+    "campos":[
+      {
+        "id":"pais",
+        "texto":"País donde realizarás el trámite",
+        "valor_por_defecto":"Estados Unidos"
+      },
+      {
+        "id":"estado",
+        "texto":"Estado donde resides",
+        "obligatorio":true
+      },
+      {
+        "id":"ciudad",
+        "texto":"Ciudad donde resides",
+        "obligatorio":true
+      },
+      {
+        "id":"consulado",
+        "texto":"Consulado u oficina donde piensas realizarlo",
+        "obligatorio":true
+      }
+    ],
+    "regla":"Si el usuario solamente proporciona el estado pero no la ciudad u oficina, el sistema debe marcar CONFIRMAR_CONSULADO."
   },
   "pdf_general":{
-    "titulo":"SAVE MÉXICO AYUDAR - Guía personal de preparación de trámite",
-    "regla":"El PDF debe reflejar el caso individual y no una plantilla genérica.",
-    "debe_contener":[
-      "Nombre exacto del trámite.",
-      "Modalidad exacta.",
-      "Fecha de preparación.",
-      "Consulado seleccionado.",
-      "Datos personales proporcionados.",
-      "Preguntas y respuestas relevantes.",
-      "Resultado del análisis.",
-      "Documentos aplicables al caso.",
-      "Estado de cada documento: Lo tengo, No lo tengo, No estoy seguro o No aplica.",
-      "Situaciones especiales detectadas.",
-      "Correcciones necesarias antes de continuar.",
-      "Puntos pendientes.",
-      "Puntos que requieren confirmación oficial.",
-      "Pasos de preparación.",
-      "Información de pago cuando corresponda.",
-      "Información de cita cuando corresponda.",
-      "Fuentes oficiales."
+    "titulo":"SAVE MÉXICO AYUDAR — GUÍA PERSONAL DE PREPARACIÓN",
+    "subtitulo":"Preparación documental individual para trámite mexicano",
+    "debe_incluir":[
+      "Nombre de la persona",
+      "Trámite seleccionado",
+      "Modalidad exacta",
+      "Consulado u oficina indicada",
+      "Fecha de preparación",
+      "Datos personales proporcionados",
+      "Respuestas relevantes",
+      "Cambios de datos solicitados",
+      "Documento que respalda cada cambio cuando corresponda",
+      "Lista únicamente de documentos aplicables al caso",
+      "Estado de cada documento",
+      "Documentos faltantes",
+      "Documentos dudosos",
+      "Inconsistencias detectadas",
+      "Preguntas que deben confirmarse con la autoridad",
+      "Costo solamente si está confirmado para la jurisdicción correspondiente",
+      "Aviso de que la guía no sustituye la decisión de la autoridad"
     ],
-    "seccion_resultado":"El PDF debe comenzar con un resumen claro: CASO LISTO PARA PREPARACIÓN, REQUIERE REVISIÓN o REQUIERE CONFIRMACIÓN CON LA AUTORIDAD.",
-    "regla_no_aprobacion":"Nunca decir APROBADO, GARANTIZADO o LISTO PARA CONSULADO si existen puntos críticos pendientes.",
-    "no_debe_contener":[
-      "Requisitos inventados.",
-      "Costos inventados.",
-      "Garantías.",
-      "Información de otros trámites.",
-      "Información de otra modalidad.",
-      "Documentos irrelevantes.",
-      "Diagnósticos médicos.",
-      "Lenguaje que haga parecer que SAVE MÉXICO AYUDAR es una dependencia gubernamental."
+    "regla_critica":"El PDF nunca debe contener una lista genérica de todos los documentos posibles. Debe mostrar únicamente los documentos que resultaron pertinentes a las respuestas de la persona."
+  },
+  "validacion_final":{
+    "antes_de_generar_pdf":[
+      "La modalidad está definida.",
+      "La edad o condición de adulto/menor está definida cuando corresponde.",
+      "La ciudad y estado de residencia están definidos.",
+      "El consulado está identificado o marcado para confirmación.",
+      "Todas las preguntas obligatorias están respondidas.",
+      "Las selecciones múltiples fueron procesadas correctamente.",
+      "No existe NO_SE sin aclaración en una decisión crítica.",
+      "No existe OTRO sin explicación.",
+      "Los documentos obligatorios tienen estado.",
+      "Las contradicciones fueron detectadas.",
+      "Los documentos faltantes aparecen claramente.",
+      "Los documentos dudosos aparecen claramente.",
+      "Los cambios personales tienen detalle individual.",
+      "El resultado final corresponde a la situación real."
     ]
   },
-  "fuentes_oficiales":{
-    "sre_pasaporte":"SRE - Trámite de Pasaporte desde el extranjero",
-    "sre_pasaporte_general":"SRE - Pasaporte Mexicano",
-    "sre_menores":"SRE - Menores de edad",
-    "sre_doble_nacionalidad":"SRE - Doble nacionalidad",
-    "sre_citas":"SRE - Citas para servicios consulares",
-    "ine_credencial":"INE - Credencial para Votar",
-    "ine_documentos":"INE - Documentos necesarios para solicitar la Credencial",
-    "ine_extranjero":"INE - Voto de los Mexicanos Residentes en el Extranjero",
-    "ine_identificacion_2026":"INE - Ampliación de opciones de identificación 2026"
-  },
   "mensajes":{
-    "inicio":"Vamos a revisar tu caso paso a paso.",
-    "pregunta":"Responde esta pregunta para continuar.",
-    "correccion":"Encontramos algo que debemos aclarar antes de continuar.",
-    "modalidad_incorrecta":"Por tu respuesta, esta modalidad puede no ser la correcta para tu caso.",
-    "documento":"Ahora revisaremos únicamente los documentos relacionados con tu caso.",
-    "falta":"Este documento fue marcado como faltante por ti.",
-    "duda":"Este documento requiere confirmación.",
-    "no_aplica":"Este documento no corresponde a tu caso.",
-    "consulado":"Primero debemos identificar correctamente el Consulado que corresponde a tu trámite.",
-    "confirmar":"POR CONFIRMAR CON LA AUTORIDAD.",
-    "revision":"Tu caso necesita una revisión adicional antes de generar la guía final.",
-    "listo":"La información proporcionada es consistente con las respuestas registradas. Aun así, debes verificar las instrucciones vigentes de la autoridad.",
-    "pdf":"Esta guía fue preparada específicamente con la información que proporcionaste."
+    "inicio":"Vamos a preparar tu caso paso a paso. No necesitas saber los requisitos de memoria.",
+    "multiple":"Puedes seleccionar una o varias opciones.",
+    "faltante":"Este documento todavía falta para completar tu preparación.",
+    "dudoso":"No estamos seguros de que este documento sea suficiente. Debe confirmarse con la autoridad.",
+    "inconsistencia":"Encontramos información que no coincide. Vamos a aclararla antes de preparar tu guía.",
+    "confirmar":"Este punto debe confirmarse con la autoridad correspondiente.",
+    "listo":"Tu información fue revisada y la guía está lista para confirmación.",
+    "no_listo":"Todavía no conviene generar una guía definitiva porque falta información importante.",
+    "no_oficial":"SAVE MÉXICO AYUDAR no es una oficina del Gobierno de México, SRE ni INE."
+  },
+  "fuentes_oficiales":{
+    "sre_pasaporte":"Secretaría de Relaciones Exteriores — Trámite de Pasaporte desde el extranjero",
+    "sre_matricula":"Secretaría de Relaciones Exteriores — Certificado de Matrícula Consular de Alta Seguridad",
+    "ine_proceso":"Instituto Nacional Electoral — Detalles de la solicitud de Credencial para Votar",
+    "ine_documentos":"Instituto Nacional Electoral — Documentos para solicitar tu Credencial",
+    "ine_identificacion":"Instituto Nacional Electoral — Medios de identificación para solicitar la Credencial para Votar desde el Extranjero",
+    "regla":"Las fuentes oficiales deben revisarse periódicamente porque requisitos, documentos aceptados, citas, tarifas y procedimientos pueden cambiar."
   }
 }
