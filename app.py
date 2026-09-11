@@ -3,28 +3,35 @@ from fastapi import FastAPI,Request,HTTPException
 from fastapi.responses import FileResponse,StreamingResponse,JSONResponse
 from fastapi.staticfiles import StaticFiles
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer,Table,TableStyle,PageBreak
+from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer,Table,TableStyle
 from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from consular_engine import iniciar,interpretar,continuar,seleccionar_caso
 
-app=FastAPI(title="MEXICANO APOYA MEXICANO",version="5.0.0")
+app=FastAPI(title="MEXICANO APOYA MEXICANO",version="5.1.0")
 os.makedirs("static",exist_ok=True)
 app.mount("/static",StaticFiles(directory="static"),name="static")
 
 def limpio(v):
-    if v is None:return ""
-    return str(v).strip()
+    return "" if v is None else str(v).strip()
 
 def esc(v):
     return html.escape(limpio(v))
 
 def lista(v):
-    if not isinstance(v,list):return []
-    return [limpio(x) for x in v if limpio(x)]
+    return [limpio(x) for x in v] if isinstance(v,list) else []
 
-def datos_pdf(r):
+def unicos(v):
+    r=[]
+    for x in lista(v):
+        if x and x not in r:r.append(x)
+    return r
+
+def pendiente(v):
+    return limpio(v) or "PENDIENTE DE COMPLETAR"
+
+def datos_personales(r):
     p=r.get("perfil") or {}
     return [
         ("Nombre",p.get("nombre")),
@@ -36,20 +43,12 @@ def datos_pdf(r):
         ("Correo",p.get("email"))
     ]
 
-def pendiente(v):
-    return limpio(v) or "PENDIENTE DE COMPLETAR"
-
-def normal_lista(items):
-    out=[]
-    for x in lista(items):
-        if x not in out:out.append(x)
-    return out
-
 def build_pdf(r):
     b=io.BytesIO()
     doc=SimpleDocTemplate(
         b,pagesize=letter,leftMargin=42,rightMargin=42,
-        topMargin=42,bottomMargin=42,title="Hoja de Ruta - MEXICANO APOYA MEXICANO"
+        topMargin=42,bottomMargin=42,
+        title="Hoja de Ruta - MEXICANO APOYA MEXICANO"
     )
     s=getSampleStyleSheet()
     titulo=ParagraphStyle(
@@ -75,49 +74,47 @@ def build_pdf(r):
         "small",parent=body,fontSize=8.5,leading=11,
         textColor=colors.HexColor("#555555")
     )
-    warn=ParagraphStyle(
-        "warn",parent=body,fontName="Helvetica-Bold",
-        textColor=colors.HexColor("#8a4b00")
-    )
+
     story=[]
     story.append(Paragraph("MEXICANO APOYA MEXICANO",titulo))
     story.append(Paragraph("HOJA DE RUTA PERSONAL PARA TU TRÁMITE CONSULAR",subt))
 
     nivel=r.get("nivel","amarillo")
     estado=r.get("estado_texto","TE FALTA ALGO")
-    ec={"verde":"#d9f4e5","amarillo":"#fff2c2","rojo":"#f8d7da"}.get(nivel,"#fff2c2")
-    tc={"verde":"#176b3a","amarillo":"#785900","rojo":"#8b1e28"}.get(nivel,"#785900")
-    t=Table([[Paragraph(f"<b>{esc(estado)}</b>",body)]],colWidths=[doc.width])
-    t.setStyle(TableStyle([
-        ("BACKGROUND",(0,0),(-1,-1),colors.HexColor(ec)),
-        ("TEXTCOLOR",(0,0),(-1,-1),colors.HexColor(tc)),
-        ("BOX",(0,0),(-1,-1),0.7,colors.HexColor(tc)),
+    bg={"verde":"#d9f4e5","amarillo":"#fff2c2","rojo":"#f8d7da"}.get(nivel,"#fff2c2")
+    fg={"verde":"#176b3a","amarillo":"#785900","rojo":"#8b1e28"}.get(nivel,"#785900")
+
+    estado_tb=Table([[Paragraph(f"<b>{esc(estado)}</b>",body)]],colWidths=[doc.width])
+    estado_tb.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),colors.HexColor(bg)),
+        ("TEXTCOLOR",(0,0),(-1,-1),colors.HexColor(fg)),
+        ("BOX",(0,0),(-1,-1),0.7,colors.HexColor(fg)),
         ("ALIGN",(0,0),(-1,-1),"CENTER"),
         ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
         ("TOPPADDING",(0,0),(-1,-1),9),
         ("BOTTOMPADDING",(0,0),(-1,-1),9)
     ]))
-    story.append(t)
-    story.append(Spacer(1,10))
+    story.extend([estado_tb,Spacer(1,10)])
 
-    def section(num,title):
-        story.append(Paragraph(f"{num}. {esc(title)}",sec))
+    def section(n,t):
+        story.append(Paragraph(f"{n}. {esc(t)}",sec))
 
-    def bullets(items,empty="PENDIENTE DE COMPLETAR"):
-        items=normal_lista(items)
+    def bullets(items,texto="PENDIENTE DE COMPLETAR"):
+        items=unicos(items)
         if not items:
-            story.append(Paragraph(empty,body));return
+            story.append(Paragraph(texto,body))
+            return
         for x in items:
             story.append(Paragraph("• "+esc(x),body))
 
     section(1,"DATOS PERSONALES")
     rows=[]
-    for k,v in datos_pdf(r):
+    for k,v in datos_personales(r):
         rows.append([
             Paragraph(f"<b>{esc(k)}</b>",body),
             Paragraph(esc(pendiente(v)),body)
         ])
-    tb=Table(rows,colWidths=[130,doc.width-130],repeatRows=0)
+    tb=Table(rows,colWidths=[130,doc.width-130])
     tb.setStyle(TableStyle([
         ("GRID",(0,0),(-1,-1),0.35,colors.HexColor("#ccd4dc")),
         ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#eef2f5")),
@@ -130,7 +127,10 @@ def build_pdf(r):
     story.append(tb)
 
     section(2,"TU TRÁMITE")
-    story.append(Paragraph(esc(r.get("tramite") or r.get("titulo") or "PENDIENTE DE COMPLETAR"),body))
+    story.append(Paragraph(
+        esc(r.get("tramite") or r.get("titulo") or "PENDIENTE DE COMPLETAR"),
+        body
+    ))
 
     section(3,"PERSONAS QUE DEBEN PRESENTARSE")
     bullets(r.get("personas_obligatorias"))
@@ -138,7 +138,7 @@ def build_pdf(r):
     section(4,"REQUISITOS OBLIGATORIOS")
     bullets(r.get("requisitos_obligatorios"))
 
-    opc=normal_lista(r.get("opcionales"))
+    opc=unicos(r.get("opcionales"))
     if opc:
         story.append(Paragraph("<b>REQUISITOS OPCIONALES</b>",body))
         bullets(opc)
@@ -153,29 +153,43 @@ def build_pdf(r):
     bullets(r.get("revisar"))
 
     section(8,"¿QUÉ DEBES HACER?")
-    acciones=normal_lista(r.get("acciones"))
+    acciones=unicos(r.get("acciones"))
     if acciones:
         for i,x in enumerate(acciones,1):
             story.append(Paragraph(f"<b>{i}.</b> {esc(x)}",body))
     else:
-        story.append(Paragraph("No se identificaron acciones adicionales.",body))
+        story.append(Paragraph(
+            "Reúne los documentos indicados y confirma los puntos pendientes antes de acudir.",
+            body
+        ))
 
     section(9,"CITA")
-    bullets(r.get("cita"),"Confirma si necesitas cita para la modalidad elegida.")
+    bullets(
+        r.get("cita"),
+        "Confirma si necesitas cita para la modalidad elegida."
+    )
 
     section(10,"DOCUMENTOS ORIGINALES")
     bullets(r.get("originales"))
 
     section(11,"COPIAS")
-    cop=normal_lista(r.get("copias"))
-    if cop:bullets(cop)
-    else:story.append(Paragraph("No se identificaron copias obligatorias.",body))
+    copias=unicos(r.get("copias"))
+    if copias:
+        bullets(copias)
+    else:
+        story.append(Paragraph("No se identificaron copias obligatorias.",body))
 
     section(12,"PAGO")
-    story.append(Paragraph(esc(r.get("pago") or "Confirma la tarifa vigente antes de acudir."),body))
+    story.append(Paragraph(
+        esc(r.get("pago") or "Confirma la tarifa vigente antes de acudir."),
+        body
+    ))
 
     section(13,"ANTES DE FIRMAR O IMPRIMIR")
-    story.append(Paragraph(esc(r.get("revision") or "Revisa cuidadosamente todos tus datos."),body))
+    story.append(Paragraph(
+        esc(r.get("revision") or "Revisa cuidadosamente todos tus datos."),
+        body
+    ))
 
     if r.get("vigencia"):
         section(14,"VIGENCIA")
@@ -186,7 +200,7 @@ def build_pdf(r):
         story.append(Paragraph(esc(r["entrega"]),body))
 
     section(16,"INFORMACIÓN IMPORTANTE")
-    importantes=normal_lista(r.get("importante"))
+    importantes=unicos(r.get("importante"))
     if importantes:
         bullets(importantes)
     else:
@@ -195,23 +209,29 @@ def build_pdf(r):
     section(17,"INFORMACIÓN OFICIAL")
     fuente=limpio(r.get("fuente"))
     if fuente:
-        story.append(Paragraph("Consulta siempre la fuente oficial correspondiente:",body))
+        story.append(Paragraph(
+            "Consulta siempre la fuente oficial correspondiente:",
+            body
+        ))
         story.append(Paragraph(esc(fuente),small))
     else:
         story.append(Paragraph("PENDIENTE DE COMPLETAR",body))
 
     story.append(Spacer(1,18))
     story.append(Paragraph(
-        "<b>IMPORTANTE:</b> Esta aplicación es independiente. No es el Gobierno de México ni representa a ningún Consulado. "
-        "La información se organiza como apoyo para preparar tu trámite. La autoridad consular determina los requisitos aplicables "
-        "y puede solicitar documentación o información adicional.",
+        "<b>IMPORTANTE:</b> Esta aplicación es independiente. "
+        "No es el Gobierno de México ni representa a ningún Consulado. "
+        "La información se organiza como apoyo para preparar tu trámite. "
+        "La autoridad consular determina los requisitos aplicables y puede "
+        "solicitar documentación o información adicional.",
         small
     ))
     story.append(Spacer(1,8))
     story.append(Paragraph(
-        "Revisa tus datos personales y los documentos antes de acudir al Consulado.",
+        "Revisa tus datos personales y tus documentos antes de acudir.",
         small
     ))
+
     doc.build(story)
     b.seek(0)
     return b
@@ -222,7 +242,28 @@ async def inicio():
 
 @app.get("/api/estado")
 async def estado():
-    return {"status":"ok","app":"MEXICANO APOYA MEXICANO","version":"5.0.0"}
+    return {
+        "status":"ok",
+        "app":"MEXICANO APOYA MEXICANO",
+        "version":"5.1.0"
+    }
+
+@app.post("/api/inicio/{servicio}")
+async def api_inicio_servicio(servicio:str,request:Request):
+    try:
+        if servicio not in ("cita","documento"):
+            raise HTTPException(400,"Servicio no válido.")
+        try:
+            x=await request.json()
+        except Exception:
+            x={}
+        r=x.get("respuestas") or {}
+        texto=limpio(x.get("texto") or x.get("mensaje"))
+        return iniciar(servicio,r,texto)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500,f"No se pudo iniciar: {e}")
 
 @app.post("/api/iniciar")
 async def api_iniciar(request:Request):
@@ -230,8 +271,12 @@ async def api_iniciar(request:Request):
         x=await request.json()
         servicio=limpio(x.get("servicio") or "cita")
         r=x.get("respuestas") or {}
-        texto=limpio(x.get("texto"))
+        texto=limpio(x.get("texto") or x.get("mensaje"))
+        if servicio not in ("cita","documento"):
+            raise HTTPException(400,"Servicio no válido.")
         return iniciar(servicio,r,texto)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(400,f"No se pudo iniciar: {e}")
 
@@ -246,7 +291,8 @@ async def api_entender(request:Request):
         if not texto:
             raise HTTPException(400,"Escribe o dicta la información.")
         return interpretar(servicio,texto,r,pid)
-    except HTTPException:raise
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500,f"Error procesando la información: {e}")
 
@@ -254,13 +300,15 @@ async def api_entender(request:Request):
 async def api_responder(request:Request):
     try:
         x=await request.json()
-        caso=limpio(x.get("caso") or x.get("tramite"))
+        caso=limpio(x.get("caso") or x.get("tramite") or x.get("id"))
         pid=limpio(x.get("pregunta_id"))
-        texto=limpio(x.get("texto") or x.get("respuesta"))
+        texto=limpio(x.get("texto") or x.get("respuesta") or x.get("valor"))
         r=x.get("respuestas") or {}
-        if not caso:raise HTTPException(400,"No se identificó el trámite.")
+        if not caso:
+            raise HTTPException(400,"No se identificó el trámite.")
         return continuar(caso,r,pid,texto)
-    except HTTPException:raise
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500,f"Error procesando respuesta: {e}")
 
@@ -270,10 +318,12 @@ async def api_seleccionar(request:Request):
         x=await request.json()
         caso=limpio(x.get("caso") or x.get("tramite") or x.get("id"))
         r=x.get("respuestas") or {}
-        texto=limpio(x.get("texto"))
-        if not caso:raise HTTPException(400,"No se seleccionó un trámite.")
+        texto=limpio(x.get("texto") or x.get("mensaje"))
+        if not caso:
+            raise HTTPException(400,"No se seleccionó un trámite.")
         return seleccionar_caso(caso,r,texto)
-    except HTTPException:raise
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500,f"No se pudo seleccionar el trámite: {e}")
 
@@ -281,18 +331,21 @@ async def api_seleccionar(request:Request):
 async def api_pdf(request:Request):
     try:
         r=await request.json()
-        if r.get("resultado") and isinstance(r["resultado"],dict):
+        if isinstance(r.get("resultado"),dict):
             r=r["resultado"]
-        if r.get("tipo")!="resultado" and not r.get("tramite"):
+        if not r.get("tramite") and not r.get("titulo"):
             raise HTTPException(400,"No existe una Hoja de Ruta para generar.")
         pdf=build_pdf(r)
-        nombre="hoja_ruta_mexicano_apoya_mexicano.pdf"
         return StreamingResponse(
             pdf,
             media_type="application/pdf",
-            headers={"Content-Disposition":f'attachment; filename="{nombre}"'}
+            headers={
+                "Content-Disposition":
+                'attachment; filename="hoja_ruta_mexicano_apoya_mexicano.pdf"'
+            }
         )
-    except HTTPException:raise
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500,f"No se pudo generar el PDF: {e}")
 
@@ -306,8 +359,16 @@ async def api_pdf_hoja_ruta(request:Request):
 
 @app.exception_handler(Exception)
 async def error_general(request:Request,exc:Exception):
-    return JSONResponse(status_code=500,content={"error":"Error interno del servidor."})
+    return JSONResponse(
+        status_code=500,
+        content={"error":"Error interno del servidor."}
+    )
 
 if __name__=="__main__":
     import uvicorn
-    uvicorn.run("app:app",host="0.0.0.0",port=int(os.getenv("PORT","8000")),reload=False)
+    uvicorn.run(
+        "app:app",
+        host="0.0.0.0",
+        port=int(os.getenv("PORT","8000")),
+        reload=False
+    )
