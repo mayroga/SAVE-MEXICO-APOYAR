@@ -7,12 +7,10 @@ from pydantic import BaseModel
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
-from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer,Table,TableStyle
-from reportlab.lib import colors
-from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer
 from consular_engine import iniciar,interpretar,continuar,catalogo,obtener_caso,resultado
 
-app=FastAPI(title="MEXICANO APOYA MEXICANO",version="3.0.0")
+app=FastAPI(title="MEXICANO APOYA MEXICANO",version="4.0.0")
 app.mount("/static",StaticFiles(directory="static"),name="static")
 
 class Inicio(BaseModel):
@@ -36,7 +34,7 @@ def inicio():
 
 @app.get("/api/estado")
 def estado():
- return {"ok":True,"app":"MEXICANO APOYA MEXICANO","motor":"consular_engine"}
+ return {"ok":True,"app":"MEXICANO APOYA MEXICANO","motor":"consular_engine","version":"4.0.0"}
 
 @app.get("/api/casos")
 def casos(servicio:str=""):
@@ -46,7 +44,9 @@ def casos(servicio:str=""):
 def comenzar(servicio:str):
  if servicio not in ("cita","documento"):
   return {"ok":False,"mensaje":"Servicio no disponible."}
- r=iniciar(servicio);r["ok"]=True;r["servicio"]=servicio
+ r=iniciar(servicio)
+ r["ok"]=True
+ r["servicio"]=servicio
  return r
 
 @app.post("/api/iniciar")
@@ -54,7 +54,19 @@ def iniciar_caso(data:Inicio):
  if data.servicio not in ("cita","documento"):
   return {"ok":False,"mensaje":"Servicio no disponible."}
  r=interpretar(data.servicio,data.texto,{})
- r["ok"]=True;r["servicio"]=data.servicio
+ r["ok"]=True
+ r["servicio"]=data.servicio
+ return r
+
+@app.post("/api/entender")
+def entender(data:Inicio):
+ if data.servicio not in ("cita","documento"):
+  return {"ok":False,"mensaje":"Servicio no disponible."}
+ if not data.texto.strip():
+  return {"ok":False,"estado":"necesita_descripcion","pregunta":"Cuéntame con tus propias palabras qué necesitas resolver."}
+ r=interpretar(data.servicio,data.texto,{})
+ r["ok"]=True
+ r["servicio"]=data.servicio
  return r
 
 @app.post("/api/responder")
@@ -73,98 +85,108 @@ def responder(data:Respuesta):
   return {"ok":False,"mensaje":"Necesitamos tu respuesta para continuar."}
  respuestas=dict(r.get("respuestas") or respuestas)
  if data.caso:respuestas["_caso"]=data.caso
- r["ok"]=True;r["servicio"]=data.servicio;r["respuestas"]=respuestas
+ r["ok"]=True
+ r["servicio"]=data.servicio
+ r["respuestas"]=respuestas
  return r
 
-@app.post("/api/entender")
-def entender(data:Inicio):
- if data.servicio not in ("cita","documento"):
-  return {"ok":False,"mensaje":"Servicio no disponible."}
- if not data.texto.strip():
-  return {"ok":False,"estado":"necesita_descripcion","pregunta":"Cuéntame con tus propias palabras qué necesitas resolver."}
- r=interpretar(data.servicio,data.texto,{})
- r["ok"]=True;r["servicio"]=data.servicio
- return r
+def esc(t):
+ return str(t or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
 
-def pdf_parrafo(texto,style):
- return Paragraph(str(texto or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;"),style)
+def P(t,s):
+ return Paragraph(esc(t),s)
 
 def crear_pdf(caso_id,respuestas):
  caso=obtener_caso(caso_id)
  if not caso:return None
- datos=resultado(caso,respuestas)
+ d=resultado(caso,respuestas)
  buf=BytesIO()
  doc=SimpleDocTemplate(buf,pagesize=letter,rightMargin=42,leftMargin=42,topMargin=42,bottomMargin=42)
  styles=getSampleStyleSheet()
- titulo=ParagraphStyle("Titulo",parent=styles["Title"],fontSize=19,leading=23,alignment=TA_CENTER,spaceAfter=10)
- subtitulo=ParagraphStyle("Sub",parent=styles["Heading2"],fontSize=13,leading=17,spaceBefore=10,spaceAfter=6)
- texto=ParagraphStyle("Texto",parent=styles["BodyText"],fontSize=10.5,leading=15,spaceAfter=5)
- pequeno=ParagraphStyle("Pequeno",parent=texto,fontSize=8.5,leading=12)
- elementos=[]
+ titulo=ParagraphStyle("T",parent=styles["Title"],fontSize=18,leading=22,alignment=TA_CENTER,spaceAfter=10)
+ h=ParagraphStyle("H",parent=styles["Heading2"],fontSize=12.5,leading=16,spaceBefore=10,spaceAfter=6)
+ body=ParagraphStyle("B",parent=styles["BodyText"],fontSize=10,leading=14,spaceAfter=5)
+ small=ParagraphStyle("S",parent=body,fontSize=8.2,leading=11)
+
+ e=[]
  fecha=datetime.now().strftime("%d/%m/%Y %H:%M")
- elementos += [
+ nivel=d.get("nivel","")
+ estado=d.get("estado_texto","")
+ etiqueta={"verde":"PARECES LISTO","amarillo":"TE FALTA ALGO","rojo":"ATENCIÓN"}.get(nivel,"RESULTADO")
+
+ e += [
   Paragraph("MEXICANO APOYA MEXICANO",titulo),
-  Paragraph("HOJA DE RUTA / CHECKLIST DE REQUISITOS FÍSICOS",subtitulo),
-  Paragraph(f"<b>Fecha de consulta:</b> {fecha}",texto),
-  Paragraph(f"<b>Trámite:</b> {caso['titulo']}",texto),
-  Spacer(1,8)
+  Paragraph("HOJA DE RUTA / CHECKLIST DE REQUISITOS",h),
+  P(f"Fecha de consulta: {fecha}",body),
+  P(f"Trámite: {d.get('titulo',caso.get('titulo',''))}",body),
+  P(f"ESTADO: {etiqueta}",h),
+  P(estado,body)
  ]
 
- elementos.append(Paragraph("1. ¿QUÉ DEBES PREPARAR?",subtitulo))
- elementos.append(pdf_parrafo(datos["prepara"],texto))
+ e.append(Paragraph("1. ¿QUÉ DEBES PREPARAR?",h))
+ e.append(P(d.get("prepara"),body))
 
- c=datos.get("checklist",{})
- tiene=c.get("tiene",[])
- falta=c.get("falta",[])
- revisar=c.get("revisar",[])
+ c=d.get("checklist",{})
+ e.append(Paragraph("2. LO QUE YA TIENES",h))
+ if c.get("tiene"):
+  for x in c["tiene"]:e.append(P("☑ "+x,body))
+ else:e.append(P("No marcaste ningún documento como disponible.",body))
 
- elementos.append(Paragraph("2. LO QUE YA TIENES",subtitulo))
- if tiene:
-  for x in tiene:elementos.append(Paragraph("☑ "+x,texto))
- else:elementos.append(Paragraph("No marcaste ningún documento como disponible.",texto))
+ e.append(Paragraph("3. LO QUE TE FALTA",h))
+ if c.get("falta"):
+  for x in c["falta"]:e.append(P("☐ "+x,body))
+ else:e.append(P("No marcaste documentos como faltantes.",body))
 
- elementos.append(Paragraph("3. LO QUE TE FALTA",subtitulo))
- if falta:
-  for x in falta:elementos.append(Paragraph("☐ "+x,texto))
- else:elementos.append(Paragraph("No marcaste documentos como faltantes.",texto))
+ e.append(Paragraph("4. LO QUE NO ESTÁS SEGURO DE TENER",h))
+ if c.get("revisar"):
+  for x in c["revisar"]:e.append(P("□ "+x,body))
+ else:e.append(P("No dejaste documentos pendientes de confirmar.",body))
 
- elementos.append(Paragraph("4. LO QUE NO ESTÁS SEGURO DE TENER",subtitulo))
- if revisar:
-  for x in revisar:elementos.append(Paragraph("□ "+x,texto))
- else:elementos.append(Paragraph("No dejaste documentos pendientes de confirmar.",texto))
+ especiales=d.get("especiales") or []
+ if especiales:
+  e.append(Paragraph("5. ATENCIÓN A TU CASO",h))
+  for x in especiales:e.append(P("⚠ "+x,body))
 
- elementos.append(Paragraph("5. DOCUMENTOS PARA PREPARAR",subtitulo))
- for x in c.get("documentos",[]):
-  elementos.append(Paragraph("• "+x,texto))
+ e.append(Paragraph("6. DOCUMENTOS / REQUISITOS",h))
+ docs=c.get("documentos") or []
+ if docs:
+  for x in docs:e.append(P("• "+x,body))
+ else:e.append(P("Revisa los requisitos específicos indicados en tu resultado.",body))
 
- elementos.append(Paragraph("6. ORIGINAL Y COPIA",subtitulo))
- elementos.append(Paragraph(
-  "<b>ORIGINAL:</b> Lleva los documentos originales que correspondan a tu trámite y a tu situación.",
-  texto))
- elementos.append(Paragraph(
-  "<b>COPIA:</b> Lleva las copias que indique el consulado para ese trámite. No asumas que una copia sustituye al original.",
-  texto))
+ ruta=d.get("ruta") or {}
+ e.append(Paragraph("7. ORIGINALES",h))
+ e.append(P(ruta.get("llevar_original"),body))
 
- elementos.append(Paragraph("7. CITA",subtitulo))
- elementos.append(Paragraph(
-  "Revisa las instrucciones de tu consulado sobre la cita y conserva tu confirmación. "
-  "Los requisitos pueden variar según el consulado y el trámite.",texto))
+ e.append(Paragraph("8. COPIAS",h))
+ e.append(P(ruta.get("copias"),body))
 
- elementos.append(Paragraph("8. PAGO",subtitulo))
- elementos.append(pdf_parrafo(datos.get("pago"),texto))
+ e.append(Paragraph("9. CITA",h))
+ e.append(P(ruta.get("cita"),body))
 
- elementos.append(Paragraph("9. IMPORTANTE",subtitulo))
- elementos.append(pdf_parrafo(datos.get("confirma"),texto))
- elementos.append(pdf_parrafo(datos.get("aviso"),pequeno))
+ e.append(Paragraph("10. PAGO",h))
+ e.append(P(d.get("pago"),body))
 
- elementos.append(Paragraph("10. INFORMACIÓN OFICIAL",subtitulo))
- elementos.append(Paragraph(datos.get("fuente",""),pequeno))
- elementos.append(Spacer(1,12))
- elementos.append(Paragraph(
-  "Esta hoja es una guía de preparación. No es un documento emitido por el Gobierno de México "
-  "ni sustituye la confirmación del consulado.",pequeno))
+ if d.get("vigencia"):
+  e.append(Paragraph("11. VIGENCIA",h))
+  e.append(P(d["vigencia"],body))
 
- doc.build(elementos)
+ if d.get("entrega"):
+  e.append(Paragraph("12. ENTREGA",h))
+  e.append(P(d["entrega"],body))
+
+ if d.get("revision"):
+  e.append(Paragraph("13. ANTES DE FIRMAR / IMPRIMIR",h))
+  e.append(P(d["revision"],body))
+
+ e.append(Paragraph("14. INFORMACIÓN OFICIAL",h))
+ e.append(P(d.get("fuente"),small))
+ e.append(Spacer(1,10))
+ e.append(P(d.get("confirma"),body))
+ e.append(P(d.get("aviso"),small))
+ e.append(P("Consulta oficial de citas: https://citas.sre.gob.mx",small))
+ e.append(P("Consulta oficial de tarifas: https://consulmex.sre.gob.mx/miami/index.php/tarifas-consulares",small))
+
+ doc.build(e)
  buf.seek(0)
  return buf
 
@@ -176,9 +198,8 @@ def generar_pdf(data:PDFData):
  buf=crear_pdf(data.caso,dict(data.respuestas or {}))
  if not buf:
   return {"ok":False,"mensaje":"No fue posible generar el PDF."}
- nombre="Hoja_Ruta_Mexicano_Apoya_Mexicano.pdf"
  return StreamingResponse(
   buf,
   media_type="application/pdf",
-  headers={"Content-Disposition":f'attachment; filename="{nombre}"'}
+  headers={"Content-Disposition":'attachment; filename="Hoja_Ruta_Mexicano_Apoya_Mexicano.pdf"'}
  )
