@@ -1,4 +1,3 @@
-```python
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -98,4 +97,4 @@ def responder(data:Respuesta):
             "La decisión final sobre el documento o servicio corresponde al Consulado."
         ]
     }
-```
+
