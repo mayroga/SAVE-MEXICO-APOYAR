@@ -56,7 +56,12 @@ class Guide(BaseModel):
     modalidad:str=""
     datos_personales:dict=Field(default_factory=dict)
     datos_especificos:dict=Field(default_factory=dict)
+
+    # IMPORTANTE:
+    # index.html envía documentos como LISTA de objetos.
+    # Se acepta Any para mantener compatibilidad.
     documentos:list[Any]=Field(default_factory=list)
+
     documentos_disponibles:list[Any]=Field(default_factory=list)
     documentos_faltantes:list[Any]=Field(default_factory=list)
     documentos_dudosos:list[Any]=Field(default_factory=list)
@@ -96,7 +101,8 @@ def _items(value):
     return []
 
 def get_tramites():
-    return dict(_items(load_data().get("tramites",[])))
+    data=load_data()
+    return dict(_items(data.get("tramites",[])))
 
 def get_tramite(tid):
     t=get_tramites().get(str(tid))
@@ -105,7 +111,8 @@ def get_tramite(tid):
     return t
 
 def get_modalidades(tid):
-    return dict(_items(get_tramite(tid).get("modalidades",[])))
+    t=get_tramite(tid)
+    return dict(_items(t.get("modalidades",[])))
 
 def get_modalidad(tid,mid):
     m=get_modalidades(tid).get(str(mid))
@@ -114,34 +121,63 @@ def get_modalidad(tid,mid):
     return m
 
 def get_blocks(mod):
+    if not isinstance(mod,dict):
+        return []
     x=mod.get("bloques_documentales",mod.get("bloques",[]))
-    return x if isinstance(x,list) else list(x.values()) if isinstance(x,dict) else []
+    if isinstance(x,list):
+        return x
+    if isinstance(x,dict):
+        return list(x.values())
+    return []
 
 def get_questions(mod):
-    x=mod.get("preguntas",mod.get("preguntas_situacion",mod.get("preguntas_especificas",[])))
-    return x if isinstance(x,list) else list(x.values()) if isinstance(x,dict) else []
+    if not isinstance(mod,dict):
+        return []
+    x=mod.get(
+        "preguntas",
+        mod.get(
+            "preguntas_situacion",
+            mod.get("preguntas_especificas",[])
+        )
+    )
+    if isinstance(x,list):
+        return x
+    if isinstance(x,dict):
+        return list(x.values())
+    return []
 
 def get_docs(mod):
     out=[]
     for b in get_blocks(mod):
-        if not isinstance(b,dict):continue
+        if not isinstance(b,dict):
+            continue
         arr=b.get("documentos",[])
-        if isinstance(arr,dict):arr=list(arr.values())
-        for d in arr if isinstance(arr,list) else []:
+        if isinstance(arr,dict):
+            arr=list(arr.values())
+        if not isinstance(arr,list):
+            continue
+        for d in arr:
             if isinstance(d,dict):
                 x=dict(d)
                 x["_bloque_id"]=b.get("id",b.get("codigo",""))
-                x["_bloque_seccion"]=b.get("seccion",b.get("nombre",""))
+                x["_bloque_seccion"]=b.get(
+                    "seccion",
+                    b.get("nombre","")
+                )
                 out.append(x)
+
     if not out:
-        arr=mod.get("documentos",[])
-        if isinstance(arr,dict):arr=list(arr.values())
-        for d in arr if isinstance(arr,list) else []:
-            if isinstance(d,dict):out.append(dict(d))
+        arr=mod.get("documentos",[]) if isinstance(mod,dict) else []
+        if isinstance(arr,dict):
+            arr=list(arr.values())
+        if isinstance(arr,list):
+            for d in arr:
+                if isinstance(d,dict):
+                    out.append(dict(d))
     return out
 
 # ============================================================
-# ACCESO
+# AUTENTICACIÓN / ACCESO
 # ============================================================
 
 def new_token(store):
@@ -163,18 +199,45 @@ def require_access(request):
 @app.post("/api/admin-login")
 async def admin_login(data:Login):
     if not ADMIN_USERNAME or not ADMIN_PASSWORD:
-        raise HTTPException(503,"El acceso administrativo no está configurado.")
-    if not secrets.compare_digest(data.username,ADMIN_USERNAME) or not secrets.compare_digest(data.password,ADMIN_PASSWORD):
-        raise HTTPException(401,"Usuario o contraseña incorrectos.")
+        raise HTTPException(
+            503,
+            "El acceso administrativo no está configurado."
+        )
+
+    if (
+        not secrets.compare_digest(data.username,ADMIN_USERNAME)
+        or
+        not secrets.compare_digest(data.password,ADMIN_PASSWORD)
+    ):
+        raise HTTPException(
+            401,
+            "Usuario o contraseña incorrectos."
+        )
+
     token=new_token(ADMIN_TOKENS)
-    r=JSONResponse({"ok":True,"access":True,"admin":True})
-    r.set_cookie("save_admin_token",token,httponly=True,secure=True,samesite="lax",max_age=86400)
+    r=JSONResponse({
+        "ok":True,
+        "access":True,
+        "admin":True,
+        "message":"Acceso administrativo autorizado."
+    })
+    r.set_cookie(
+        "save_admin_token",
+        token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=86400
+    )
     return r
 
 @app.post("/api/logout")
 async def logout(request:Request):
-    ADMIN_TOKENS.discard(request.cookies.get("save_admin_token"))
-    ACCESS_TOKENS.discard(request.cookies.get("save_access_token"))
+    a=request.cookies.get("save_admin_token")
+    p=request.cookies.get("save_access_token")
+    ADMIN_TOKENS.discard(a)
+    ACCESS_TOKENS.discard(p)
+
     r=JSONResponse({"ok":True})
     r.delete_cookie("save_admin_token")
     r.delete_cookie("save_access_token")
@@ -183,7 +246,12 @@ async def logout(request:Request):
 @app.get("/api/check-access")
 async def check_access(request:Request):
     admin,paid=cookie_access(request)
-    return {"ok":True,"access":bool(admin or paid),"admin":admin,"paid":paid}
+    return {
+        "ok":True,
+        "access":bool(admin or paid),
+        "admin":admin,
+        "paid":paid
+    }
 
 # ============================================================
 # STRIPE
@@ -191,50 +259,113 @@ async def check_access(request:Request):
 
 def price_for(plan):
     p=str(plan or "").lower().strip()
+
     if p in ("daily","1","price1"):
         return PRICE_DAILY,"daily","payment"
+
     if p in ("monthly","2","price2"):
         return PRICE_MONTHLY,"monthly","subscription"
+
     if p in ("annual","yearly","3","price3"):
         return PRICE_ANNUAL,"annual","subscription"
+
     raise HTTPException(400,"Plan no válido.")
 
 @app.post("/api/create-checkout-session")
 async def create_checkout(data:Checkout,request:Request):
     admin,paid=cookie_access(request)
+
     if admin:
-        return {"ok":True,"admin":True,"access":True}
+        return {
+            "ok":True,
+            "admin":True,
+            "access":True
+        }
+
     if not STRIPE_SECRET_KEY:
-        raise HTTPException(503,"Stripe no está configurado.")
-    price,plan,mode=price_for(data.plan)
-    if not price:
-        raise HTTPException(503,"El Price ID solicitado no está configurado.")
-    try:
-        s=stripe.checkout.Session.create(
-            mode=mode,
-            line_items=[{"price":price,"quantity":1}],
-            success_url=f"{APP_URL}/?payment=success&session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{APP_URL}/?payment=cancel",
-            metadata={"app":"SAVE_MEXICO_AYUDAR","plan":plan}
+        raise HTTPException(
+            503,
+            "Stripe no está configurado."
         )
-        return {"ok":True,"url":s.url,"id":s.id,"plan":plan}
+
+    price,plan,mode=price_for(data.plan)
+
+    if not price:
+        raise HTTPException(
+            503,
+            "El Price ID solicitado no está configurado."
+        )
+
+    try:
+        session=stripe.checkout.Session.create(
+            mode=mode,
+            line_items=[
+                {
+                    "price":price,
+                    "quantity":1
+                }
+            ],
+            success_url=(
+                f"{APP_URL}/?payment=success"
+                "&session_id={CHECKOUT_SESSION_ID}"
+            ),
+            cancel_url=f"{APP_URL}/?payment=cancel",
+            metadata={
+                "app":"SAVE_MEXICO_AYUDAR",
+                "plan":plan
+            }
+        )
+
+        return {
+            "ok":True,
+            "url":session.url,
+            "id":session.id,
+            "plan":plan
+        }
+
     except Exception as e:
-        raise HTTPException(500,f"No se pudo crear el pago: {e}")
+        raise HTTPException(
+            500,
+            f"No se pudo crear el pago: {e}"
+        )
 
 @app.get("/api/verify-payment")
-async def verify_payment(session_id:str,request:Request):
+async def verify_payment(
+    session_id:str,
+    request:Request
+):
     admin,paid=cookie_access(request)
+
     if admin:
-        return {"ok":True,"access":True,"admin":True}
+        return {
+            "ok":True,
+            "access":True,
+            "admin":True
+        }
+
     if not STRIPE_SECRET_KEY:
-        raise HTTPException(503,"Stripe no está configurado.")
+        raise HTTPException(
+            503,
+            "Stripe no está configurado."
+        )
+
     if not session_id:
-        raise HTTPException(400,"Falta session_id.")
+        raise HTTPException(
+            400,
+            "Falta session_id."
+        )
+
     try:
         s=stripe.checkout.Session.retrieve(session_id)
-        payment_ok=(s.payment_status=="paid")
-        if not payment_ok:
-            return {"ok":False,"access":False,"message":"El pago aún no está confirmado."}
+
+        # Para payment se exige pago confirmado.
+        # Para subscription también se exige payment_status=paid.
+        if s.payment_status!="paid":
+            return {
+                "ok":False,
+                "access":False,
+                "message":"El pago aún no está confirmado."
+            }
 
         plan=(s.metadata or {}).get("plan","")
         sid=str(s.id)
@@ -246,16 +377,15 @@ async def verify_payment(session_id:str,request:Request):
             "status":s.status
         }
 
-        if sid not in PAYMENTS:
-            raise HTTPException(400,"Pago no confirmado.")
-
         token=new_token(ACCESS_TOKENS)
+
         r=JSONResponse({
             "ok":True,
             "access":True,
             "paid":True,
             "plan":plan
         })
+
         r.set_cookie(
             "save_access_token",
             token,
@@ -264,11 +394,14 @@ async def verify_payment(session_id:str,request:Request):
             samesite="lax",
             max_age=31536000
         )
+
         return r
-    except HTTPException:
-        raise
+
     except Exception as e:
-        raise HTTPException(400,f"No se pudo verificar el pago: {e}")
+        raise HTTPException(
+            400,
+            f"No se pudo verificar el pago: {e}"
+        )
 
 @app.post("/api/stripe-webhook")
 async def stripe_webhook(request:Request):
@@ -278,15 +411,25 @@ async def stripe_webhook(request:Request):
     if STRIPE_WEBHOOK_SECRET:
         try:
             event=stripe.Webhook.construct_event(
-                payload,sig,STRIPE_WEBHOOK_SECRET
+                payload,
+                sig,
+                STRIPE_WEBHOOK_SECRET
             )
         except Exception as e:
-            raise HTTPException(400,f"Webhook inválido: {e}")
+            raise HTTPException(
+                400,
+                f"Webhook inválido: {e}"
+            )
     else:
         try:
-            event=json.loads(payload.decode("utf-8"))
+            event=json.loads(
+                payload.decode("utf-8")
+            )
         except Exception:
-            raise HTTPException(400,"Webhook inválido.")
+            raise HTTPException(
+                400,
+                "Webhook inválido."
+            )
 
     typ=event.get("type","")
     obj=event.get("data",{}).get("object",{})
@@ -296,20 +439,28 @@ async def stripe_webhook(request:Request):
         "checkout.session.async_payment_succeeded"
     ):
         sid=obj.get("id")
+
         if sid:
             PAYMENTS[sid]={
                 "created":datetime.utcnow().isoformat(),
-                "plan":(obj.get("metadata") or {}).get("plan",""),
-                "payment_status":obj.get("payment_status",""),
+                "plan":(
+                    obj.get("metadata") or {}
+                ).get("plan",""),
+                "payment_status":obj.get(
+                    "payment_status",""
+                ),
                 "status":obj.get("status","")
             }
 
-    if typ in ("checkout.session.async_payment_failed",):
+    elif typ=="checkout.session.async_payment_failed":
         sid=obj.get("id")
+
         if sid:
             PAYMENTS[sid]={
                 "created":datetime.utcnow().isoformat(),
-                "plan":(obj.get("metadata") or {}).get("plan",""),
+                "plan":(
+                    obj.get("metadata") or {}
+                ).get("plan",""),
                 "payment_status":"failed",
                 "status":obj.get("status","")
             }
@@ -323,8 +474,10 @@ async def stripe_webhook(request:Request):
 @app.get("/api/tramites")
 async def tramites(request:Request):
     require_access(request)
+
     data=load_data()
     ts=get_tramites()
+
     return {
         "version":data.get("version",""),
         "actualizado":data.get("actualizado",""),
@@ -333,18 +486,37 @@ async def tramites(request:Request):
                 "id":tid,
                 "seccion":t.get("seccion",""),
                 "nombre":t.get("nombre",tid),
-                "nombre_corto":t.get("nombre_corto",t.get("nombre",tid)),
-                "institucion":t.get("institucion",t.get("autoridad","")),
-                "descripcion":t.get("descripcion",""),
+                "nombre_corto":t.get(
+                    "nombre_corto",
+                    t.get("nombre",tid)
+                ),
+                "institucion":t.get(
+                    "institucion",
+                    t.get("autoridad","")
+                ),
+                "descripcion":t.get(
+                    "descripcion",
+                    ""
+                ),
                 "modalidades":[
                     {
                         "id":mid,
-                        "seccion":m.get("seccion",""),
-                        "nombre":m.get("nombre",mid),
-                        "objetivo":m.get("objetivo",""),
-                        "descripcion":m.get("descripcion","")
+                        "seccion":m.get(
+                            "seccion",""
+                        ),
+                        "nombre":m.get(
+                            "nombre",mid
+                        ),
+                        "objetivo":m.get(
+                            "objetivo",""
+                        ),
+                        "descripcion":m.get(
+                            "descripcion",""
+                        )
                     }
-                    for mid,m in get_modalidades(tid).items()
+                    for mid,m in get_modalidades(
+                        tid
+                    ).items()
                 ]
             }
             for tid,t in ts.items()
@@ -352,21 +524,39 @@ async def tramites(request:Request):
     }
 
 @app.get("/api/modalidades")
-async def modalidades(tramite:str,request:Request):
+async def modalidades(
+    tramite:str,
+    request:Request
+):
     require_access(request)
+
     return {
         "tramite":tramite,
         "modalidades":[
             {
                 "id":mid,
-                "seccion":m.get("seccion",""),
-                "nombre":m.get("nombre",mid),
-                "objetivo":m.get("objetivo",""),
-                "descripcion":m.get("descripcion",""),
-                "preguntas":len(get_questions(m)),
-                "bloques_documentales":len(get_blocks(m))
+                "seccion":m.get(
+                    "seccion",""
+                ),
+                "nombre":m.get(
+                    "nombre",mid
+                ),
+                "objetivo":m.get(
+                    "objetivo",""
+                ),
+                "descripcion":m.get(
+                    "descripcion",""
+                ),
+                "preguntas":len(
+                    get_questions(m)
+                ),
+                "bloques_documentales":len(
+                    get_blocks(m)
+                )
             }
-            for mid,m in get_modalidades(tramite).items()
+            for mid,m in get_modalidades(
+                tramite
+            ).items()
         ]
     }
 
@@ -377,144 +567,341 @@ async def ficha_tramite(
     modalidad:Optional[str]=None
 ):
     require_access(request)
+
     t=get_tramite(tramite)
 
     if modalidad:
-        m=get_modalidad(tramite,modalidad)
+        m=get_modalidad(
+            tramite,
+            modalidad
+        )
+
         return {
             "tramite":tramite,
-            "seccion":t.get("seccion",""),
-            "nombre":t.get("nombre",tramite),
-            "institucion":t.get("institucion",t.get("autoridad","")),
-            "descripcion":t.get("descripcion",""),
+            "seccion":t.get(
+                "seccion",""
+            ),
+            "nombre":t.get(
+                "nombre",
+                tramite
+            ),
+            "institucion":t.get(
+                "institucion",
+                t.get("autoridad","")
+            ),
+            "descripcion":t.get(
+                "descripcion",""
+            ),
             "modalidad":modalidad,
-            "ficha":m
+            "ficha":m,
+            "fuentes":t.get(
+                "fuentes",
+                []
+            )
         }
 
     return {
         "tramite":tramite,
-        "seccion":t.get("seccion",""),
-        "nombre":t.get("nombre",tramite),
-        "institucion":t.get("institucion",t.get("autoridad","")),
-        "descripcion":t.get("descripcion",""),
+        "seccion":t.get(
+            "seccion",""
+        ),
+        "nombre":t.get(
+            "nombre",
+            tramite
+        ),
+        "institucion":t.get(
+            "institucion",
+            t.get("autoridad","")
+        ),
+        "descripcion":t.get(
+            "descripcion",""
+        ),
         "modalidades":{
             k:{
-                "seccion":v.get("seccion",""),
-                "nombre":v.get("nombre",k),
-                "objetivo":v.get("objetivo",""),
-                "descripcion":v.get("descripcion","")
+                "seccion":v.get(
+                    "seccion",""
+                ),
+                "nombre":v.get(
+                    "nombre",k
+                ),
+                "objetivo":v.get(
+                    "objetivo",""
+                ),
+                "descripcion":v.get(
+                    "descripcion",""
+                )
             }
-            for k,v in get_modalidades(tramite).items()
-        }
+            for k,v in get_modalidades(
+                tramite
+            ).items()
+        },
+        "fuentes":t.get(
+            "fuentes",
+            []
+        )
     }
 
 @app.get("/api/datos-personales")
-async def datos_personales(request:Request):
+async def datos_personales(
+    request:Request
+):
     require_access(request)
-    d=load_data().get("datos_personales",[])
-    return {"datos_personales":d}
+
+    return {
+        "datos_personales":
+            load_data().get(
+                "datos_personales",
+                []
+            )
+    }
 
 # ============================================================
-# CONDICIONES
+# MOTOR DE CONDICIONES
 # ============================================================
 
 def values(v):
-    if v is None:return []
+    if v is None:
+        return []
     return v if isinstance(v,list) else [v]
 
 def answer(data,qid):
     return data.get(qid)
 
 def condition_match(cond,res):
-    if cond is None:return True
-    if isinstance(cond,bool):return cond
+    if cond is None:
+        return True
+
+    if isinstance(cond,bool):
+        return cond
+
     if isinstance(cond,list):
-        return all(condition_match(x,res) for x in cond)
-    if not isinstance(cond,dict):return True
+        return all(
+            condition_match(x,res)
+            for x in cond
+        )
+
+    if not isinstance(cond,dict):
+        return True
 
     if "respuesta" in cond:
-        v=answer(res,cond["respuesta"])
+        v=answer(
+            res,
+            cond["respuesta"]
+        )
         vals=values(v)
 
-        if "es" in cond and v!=cond["es"]:return False
-        if "igual_a" in cond and v!=cond["igual_a"]:return False
-        if "distinto_de" in cond and v==cond["distinto_de"]:return False
-        if "no_es" in cond and v==cond["no_es"]:return False
-        if "incluye" in cond and cond["incluye"] not in vals:return False
-        if "no_incluye" in cond and cond["no_incluye"] in vals:return False
-        if "en" in cond and not any(x in cond["en"] for x in vals):return False
-        if "alguno_de" in cond and not any(x in cond["alguno_de"] for x in vals):return False
-        if "todos_de" in cond and not all(x in vals for x in cond["todos_de"]):return False
+        if "es" in cond and v!=cond["es"]:
+            return False
+
+        if "igual_a" in cond and v!=cond["igual_a"]:
+            return False
+
+        if "distinto_de" in cond and v==cond["distinto_de"]:
+            return False
+
+        if "no_es" in cond and v==cond["no_es"]:
+            return False
+
+        if (
+            "incluye" in cond
+            and cond["incluye"] not in vals
+        ):
+            return False
+
+        if (
+            "no_incluye" in cond
+            and cond["no_incluye"] in vals
+        ):
+            return False
+
+        if "en" in cond:
+            if not any(
+                x in cond["en"]
+                for x in vals
+            ):
+                return False
+
+        if "alguno_de" in cond:
+            if not any(
+                x in cond["alguno_de"]
+                for x in vals
+            ):
+                return False
+
+        if "todos_de" in cond:
+            if not all(
+                x in vals
+                for x in cond["todos_de"]
+            ):
+                return False
 
         if "cantidad_mayor_que" in cond:
-            if len(vals)<=int(cond["cantidad_mayor_que"]):return False
+            if len(vals)<=int(
+                cond["cantidad_mayor_que"]
+            ):
+                return False
+
         if "cantidad_igual_a" in cond:
-            if len(vals)!=int(cond["cantidad_igual_a"]):return False
+            if len(vals)!=int(
+                cond["cantidad_igual_a"]
+            ):
+                return False
+
         if "cantidad_menor_que" in cond:
-            if len(vals)>=int(cond["cantidad_menor_que"]):return False
+            if len(vals)>=int(
+                cond["cantidad_menor_que"]
+            ):
+                return False
 
         if "existe" in cond:
-            exists=v is not None and v!="" and v!=[] and v!={}
-            if bool(cond["existe"])!=exists:return False
+            exists=(
+                v is not None
+                and v!=""
+                and v!=[]
+                and v!={}
+            )
 
-    if "y" in cond and not condition_match(cond["y"],res):
-        return False
+            if bool(cond["existe"])!=exists:
+                return False
+
+    if "y" in cond:
+        if not condition_match(
+            cond["y"],
+            res
+        ):
+            return False
+
     if "and" in cond:
-        arr=cond["and"] if isinstance(cond["and"],list) else [cond["and"]]
-        if not all(condition_match(x,res) for x in arr):return False
-    if "o" in cond and not condition_match(cond["o"],res):
-        return False
+        arr=cond["and"]
+        if not isinstance(arr,list):
+            arr=[arr]
+
+        if not all(
+            condition_match(x,res)
+            for x in arr
+        ):
+            return False
+
+    if "o" in cond:
+        if not condition_match(
+            cond["o"],
+            res
+        ):
+            return False
+
     if "or" in cond:
-        arr=cond["or"] if isinstance(cond["or"],list) else [cond["or"]]
-        if not any(condition_match(x,res) for x in arr):return False
+        arr=cond["or"]
+        if not isinstance(arr,list):
+            arr=[arr]
+
+        if not any(
+            condition_match(x,res)
+            for x in arr
+        ):
+            return False
 
     return True
 
 def question_visible(q,res):
-    if not isinstance(q,dict):return False
-    for key in ("mostrar_si","cuando","condicion"):
-        if key in q and not condition_match(q[key],res):
+    if not isinstance(q,dict):
+        return False
+
+    for key in (
+        "mostrar_si",
+        "cuando",
+        "condicion"
+    ):
+        if (
+            key in q
+            and not condition_match(
+                q[key],
+                res
+            )
+        ):
             return False
+
     return True
 
 def visible_questions(mod,res):
-    return [q for q in get_questions(mod) if question_visible(q,res)]
+    return [
+        q for q in get_questions(mod)
+        if question_visible(q,res)
+    ]
 
 # ============================================================
 # DOCUMENTOS
 # ============================================================
 
 def document_visible(doc,res):
-    c=doc.get("cuando",doc.get("mostrar_si",doc.get("condicion",True)))
+    c=doc.get(
+        "cuando",
+        doc.get(
+            "mostrar_si",
+            doc.get(
+                "condicion",
+                True
+            )
+        )
+    )
     return condition_match(c,res)
 
 def document_items(mod,res):
     out=[]
+
     for b in get_blocks(mod):
-        if not isinstance(b,dict):continue
+        if not isinstance(b,dict):
+            continue
+
         arr=b.get("documentos",[])
-        if isinstance(arr,dict):arr=list(arr.values())
-        if not isinstance(arr,list):continue
+
+        if isinstance(arr,dict):
+            arr=list(arr.values())
+
+        if not isinstance(arr,list):
+            continue
 
         for d in arr:
-            if not isinstance(d,dict) or not document_visible(d,res):
+            if (
+                not isinstance(d,dict)
+                or not document_visible(d,res)
+            ):
                 continue
+
             x=dict(d)
-            x["_bloque_id"]=b.get("id",b.get("codigo",""))
-            x["_bloque_seccion"]=b.get("seccion",b.get("nombre",""))
+            x["_bloque_id"]=b.get(
+                "id",
+                b.get("codigo","")
+            )
+            x["_bloque_seccion"]=b.get(
+                "seccion",
+                b.get("nombre","")
+            )
             out.append(x)
 
     if not out:
-        arr=mod.get("documentos",[])
-        if isinstance(arr,dict):arr=list(arr.values())
-        for d in arr if isinstance(arr,list) else []:
-            if isinstance(d,dict) and document_visible(d,res):
-                out.append(dict(d))
+        arr=mod.get(
+            "documentos",
+            []
+        )
+
+        if isinstance(arr,dict):
+            arr=list(arr.values())
+
+        if isinstance(arr,list):
+            for d in arr:
+                if (
+                    isinstance(d,dict)
+                    and document_visible(
+                        d,res
+                    )
+                ):
+                    out.append(dict(d))
 
     return out
 
 def canonical_doc_state(v):
     s=str(v or "").strip().upper()
+
     return {
         "HAVE":"LO_TENGO",
         "MISSING":"NO_LO_TENGO",
@@ -533,7 +920,10 @@ def canonical_doc_state(v):
 def document_status_map(payload):
     src=payload or {}
 
-    if isinstance(src,dict) and "documentos" in src:
+    if (
+        isinstance(src,dict)
+        and "documentos" in src
+    ):
         src=src["documentos"]
 
     out={}
@@ -541,81 +931,187 @@ def document_status_map(payload):
     if isinstance(src,dict):
         for k,v in src.items():
             if isinstance(v,dict):
-                out[str(k)]=canonical_doc_state(v.get("estado",""))
+                out[str(k)]=canonical_doc_state(
+                    v.get("estado","")
+                )
             else:
                 out[str(k)]=canonical_doc_state(v)
 
     elif isinstance(src,list):
         for x in src:
-            if isinstance(x,dict):
-                did=x.get("id") or x.get("codigo")
-                if did:
-                    out[str(did)]=canonical_doc_state(x.get("estado",""))
+            if not isinstance(x,dict):
+                continue
+
+            did=x.get(
+                "id",
+                x.get("codigo")
+            )
+
+            if did:
+                out[str(did)]=canonical_doc_state(
+                    x.get("estado","")
+                )
 
     return out
 
 # ============================================================
-# REGLAS
+# REGLAS DEL CASO
 # ============================================================
 
 def rule_condition(rule,res):
-    if not isinstance(rule,dict):return False
-    for key in ("si","y","cuando"):
-        if key in rule and not condition_match(rule[key],res):
+    if not isinstance(rule,dict):
+        return False
+
+    for key in (
+        "si",
+        "y",
+        "cuando"
+    ):
+        if (
+            key in rule
+            and not condition_match(
+                rule[key],
+                res
+            )
+        ):
             return False
+
     return True
 
 def dynamic_situations(mod,res):
     arr=[]
-    for r in mod.get("reglas",[]) or []:
+
+    for r in mod.get(
+        "reglas",
+        []
+    ) or []:
+
         if rule_condition(r,res):
             arr.append({
-                "id":r.get("id",""),
-                "accion":r.get("accion",""),
-                "mensaje":r.get("mensaje","")
+                "id":r.get(
+                    "id",
+                    ""
+                ),
+                "accion":r.get(
+                    "accion",
+                    ""
+                ),
+                "mensaje":r.get(
+                    "mensaje",
+                    ""
+                )
             })
+
     return arr
 
 def unanswered_required(mod,res):
     missing=[]
-    for q in visible_questions(mod,res):
-        if q.get("obligatoria",q.get("required",False)) is not True:
+
+    for q in visible_questions(
+        mod,
+        res
+    ):
+        required=q.get(
+            "obligatoria",
+            q.get(
+                "required",
+                False
+            )
+        )
+
+        if required is not True:
             continue
 
-        qid=str(q.get("id",""))
+        qid=str(
+            q.get(
+                "id",
+                ""
+            )
+        )
+
         v=res.get(qid)
 
         if v is None or v=="" or v==[]:
             missing.append(qid)
             continue
 
-        if isinstance(v,list) and "__OTRO__" in v:
-            if not str(res.get(qid+"_otro","")).strip():
-                missing.append(qid)
-                continue
+        if (
+            isinstance(v,list)
+            and "__OTRO__" in v
+            and not str(
+                res.get(
+                    qid+"_otro",
+                    ""
+                )
+            ).strip()
+        ):
+            missing.append(qid)
+            continue
 
-        if v=="__OTRO__" and not str(res.get(qid+"_otro","")).strip():
+        if (
+            v=="__OTRO__"
+            and not str(
+                res.get(
+                    qid+"_otro",
+                    ""
+                )
+            ).strip()
+        ):
             missing.append(qid)
 
     return missing
 
 def answer_has(res,value):
     for x in res.values():
-        if isinstance(x,list) and value in x:return True
-        if x==value:return True
+        if isinstance(x,list):
+            if value in x:
+                return True
+        elif x==value:
+            return True
     return False
 
-def evaluate_case(tid,mid,res,docs_payload=None,consulado=None):
+def evaluate_case(
+    tid,
+    mid,
+    res,
+    docs_payload=None,
+    consulado=None
+):
     t=get_tramite(tid)
     m=get_modalidad(tid,mid)
 
-    res=res if isinstance(res,dict) else {}
-    consulado=consulado if isinstance(consulado,dict) else {}
+    res=res if isinstance(
+        res,
+        dict
+    ) else {}
 
-    missing_q=unanswered_required(m,res)
-    situations=dynamic_situations(m,res)
-    status=document_status_map(docs_payload)
-    applicable=document_items(m,res)
+    consulado=(
+        consulado
+        if isinstance(
+            consulado,
+            dict
+        )
+        else {}
+    )
+
+    missing_q=unanswered_required(
+        m,
+        res
+    )
+
+    situations=dynamic_situations(
+        m,
+        res
+    )
+
+    status=document_status_map(
+        docs_payload
+    )
+
+    applicable=document_items(
+        m,
+        res
+    )
 
     faltantes=[]
     dudosos=[]
@@ -623,107 +1119,212 @@ def evaluate_case(tid,mid,res,docs_payload=None,consulado=None):
     confirmar=[]
 
     for d in applicable:
-        did=str(d.get("id") or d.get("codigo") or "")
-        if not did:continue
+        did=str(
+            d.get(
+                "id",
+                d.get(
+                    "codigo",
+                    ""
+                )
+            )
+        )
 
-        st=status.get(did,"")
+        if not did:
+            continue
+
+        st=status.get(
+            did,
+            ""
+        )
+
         required=bool(
-            d.get("obligatorio_base") is True or
-            d.get("obligatorio") is True or
-            d.get("required") is True
+            d.get(
+                "obligatorio_base",
+                False
+            )
+            or
+            d.get(
+                "obligatorio",
+                False
+            )
+            or
+            d.get(
+                "required",
+                False
+            )
         )
 
         if required and st=="":
             confirmar.append({
                 "id":did,
-                "nombre":f"Debe indicar el estado de: {d.get('nombre',did)}"
+                "nombre":(
+                    "Debe indicar el estado de: "
+                    +str(
+                        d.get(
+                            "nombre",
+                            did
+                        )
+                    )
+                )
             })
 
-        if st=="NO_LO_TENGO" and required:
+        if (
+            st=="NO_LO_TENGO"
+            and required
+        ):
             faltantes.append(d)
 
         if st=="NO_ESTOY_SEGURO":
             dudosos.append(d)
 
-        if d.get("confirmar") is True:
+        if d.get(
+            "confirmar",
+            False
+        ) is True:
             confirmar.append({
                 "id":did,
-                "nombre":d.get("nombre",did)
+                "nombre":d.get(
+                    "nombre",
+                    did
+                )
             })
 
         if st not in (
-            "","LO_TENGO","NO_LO_TENGO",
-            "NO_ESTOY_SEGURO","NO_APLICA"
+            "",
+            "LO_TENGO",
+            "NO_LO_TENGO",
+            "NO_ESTOY_SEGURO",
+            "NO_APLICA"
         ):
             inconsistencias.append({
                 "id":did,
-                "mensaje":"Estado documental no reconocido."
+                "mensaje":(
+                    "Estado documental "
+                    "no reconocido."
+                )
             })
 
-    for r in m.get("reglas",[]) or []:
-        if not rule_condition(r,res):continue
+    # Reglas específicas del JSON
+    for r in m.get(
+        "reglas",
+        []
+    ) or []:
 
-        action=str(r.get("accion","")).upper()
-        msg=r.get("mensaje","")
-        rid=r.get("id","REGLA")
+        if not rule_condition(
+            r,
+            res
+        ):
+            continue
+
+        action=str(
+            r.get(
+                "accion",
+                ""
+            )
+        ).upper()
+
+        msg=r.get(
+            "mensaje",
+            ""
+        )
+
+        rid=r.get(
+            "id",
+            "REGLA"
+        )
 
         if action=="FALTAN_DOCUMENTOS":
             faltantes.append({
                 "id":rid,
-                "nombre":msg or "Documento requerido por la regla."
+                "nombre":(
+                    msg
+                    or
+                    "Documento requerido por la regla."
+                )
             })
 
         elif action=="HAY_INCONSISTENCIAS":
             inconsistencias.append({
                 "id":rid,
-                "mensaje":msg or "Debe aclararse esta situación."
+                "mensaje":(
+                    msg
+                    or
+                    "Debe aclararse esta situación."
+                )
             })
 
         elif action=="REQUIERE_CONFIRMACION":
             confirmar.append({
                 "id":rid,
-                "nombre":msg or "Confirmar con la autoridad."
+                "nombre":(
+                    msg
+                    or
+                    "Confirmar con la autoridad."
+                )
             })
 
         elif action=="EXIGIR_DETALLE":
             inconsistencias.append({
                 "id":rid,
-                "mensaje":msg or "Se requiere información adicional."
+                "mensaje":(
+                    msg
+                    or
+                    "Se requiere información adicional."
+                )
             })
 
-    if answer_has(res,"NO_SE"):
+    if answer_has(
+        res,
+        "NO_SE"
+    ):
         confirmar.append({
             "id":"RESPUESTA_NO_SE",
-            "nombre":"Existe una respuesta que no se pudo confirmar."
+            "nombre":(
+                "Existe una respuesta que "
+                "no se pudo confirmar."
+            )
         })
 
-    if answer_has(res,"__OTRO__"):
+    if answer_has(
+        res,
+        "__OTRO__"
+    ):
         confirmar.append({
             "id":"OTRO",
-            "nombre":"Debe explicarse la opción OTRO."
+            "nombre":(
+                "Debe explicarse la opción OTRO."
+            )
         })
 
-    # Prioridad oficial:
-    # 1 inconsistencias
-    # 2 documentos faltantes
-    # 3 confirmación
-    # 4 listo
+    # PRIORIDAD DEL RESULTADO
     if inconsistencias:
         result="HAY_INCONSISTENCIAS"
     elif faltantes:
         result="FALTAN_DOCUMENTOS"
-    elif missing_q or dudosos or confirmar:
+    elif (
+        missing_q
+        or dudosos
+        or confirmar
+    ):
         result="REQUIERE_CONFIRMACION"
     else:
         result="LISTO_PARA_CONFIRMAR"
 
-    # Si el frontend no envía consulado, no se inventa.
-    # Solo se marca como punto de confirmación.
-    if not consulado.get("estado") or not consulado.get("ciudad") or not consulado.get("consulado"):
+    # Consulado/oficina
+    if (
+        not consulado.get("estado")
+        or not consulado.get("ciudad")
+        or not consulado.get("consulado")
+    ):
         confirmar.append({
             "id":"CONSULADO",
-            "nombre":"Estado, ciudad y consulado u oficina deben identificarse o confirmarse."
+            "nombre":(
+                "Estado, ciudad y consulado "
+                "u oficina deben identificarse "
+                "o confirmarse."
+            )
         })
+
         if result=="LISTO_PARA_CONFIRMAR":
             result="REQUIERE_CONFIRMACION"
 
@@ -731,8 +1332,14 @@ def evaluate_case(tid,mid,res,docs_payload=None,consulado=None):
         "ok":True,
         "tramite":tid,
         "modalidad":mid,
-        "nombre_tramite":t.get("nombre",tid),
-        "nombre_modalidad":m.get("nombre",mid),
+        "nombre_tramite":t.get(
+            "nombre",
+            tid
+        ),
+        "nombre_modalidad":m.get(
+            "nombre",
+            mid
+        ),
         "resultado":result,
         "preguntas_faltantes":missing_q,
         "situaciones":situations,
@@ -743,25 +1350,55 @@ def evaluate_case(tid,mid,res,docs_payload=None,consulado=None):
         "confirmaciones":confirmar,
         "consulado":consulado,
         "respuestas":res,
-        "resultado_configurado":m.get("resultado",{})
+        "resultado_configurado":m.get(
+            "resultado",
+            {}
+        )
     }
 
 @app.post("/api/resultado-tramite")
-async def resultado_tramite(data:dict,request:Request):
+async def resultado_tramite(
+    data:dict,
+    request:Request
+):
     require_access(request)
 
-    tid=data.get("tramite","")
-    mid=data.get("modalidad","")
+    tid=data.get(
+        "tramite",
+        ""
+    )
+
+    mid=data.get(
+        "modalidad",
+        ""
+    )
 
     if not tid or not mid:
-        raise HTTPException(400,"Falta trámite o modalidad.")
+        raise HTTPException(
+            400,
+            "Falta trámite o modalidad."
+        )
 
-    res=data.get("respuestas") or data.get("datos_especificos") or {}
-    docs=data.get("documentos") or {}
+    res=(
+        data.get("respuestas")
+        or
+        data.get("datos_especificos")
+        or
+        {}
+    )
+
+    docs=data.get(
+        "documentos"
+    ) or {}
 
     return evaluate_case(
-        tid,mid,res,docs,
-        data.get("consulado") or {}
+        tid,
+        mid,
+        res,
+        docs,
+        data.get(
+            "consulado"
+        ) or {}
     )
 
 # ============================================================
@@ -769,29 +1406,53 @@ async def resultado_tramite(data:dict,request:Request):
 # ============================================================
 
 def safe_filename(name):
-    name=Path(str(name)).name
-    if not re.fullmatch(r"[A-Za-z0-9_.-]+",name):
-        raise HTTPException(400,"Nombre de archivo inválido.")
+    name=Path(
+        str(name)
+    ).name
+
+    if not re.fullmatch(
+        r"[A-Za-z0-9_.-]+",
+        name
+    ):
+        raise HTTPException(
+            400,
+            "Nombre de archivo inválido."
+        )
+
     return name
 
 def format_value(v):
     if isinstance(v,list):
-        return ", ".join(str(x) for x in v)
+        return ", ".join(
+            str(x)
+            for x in v
+        )
+
     if isinstance(v,dict):
-        return ", ".join(f"{k}: {v2}" for k,v2 in v.items())
+        return ", ".join(
+            f"{k}: {v2}"
+            for k,v2 in v.items()
+        )
+
     return str(v)
 
 def question_labels(mod):
     out={}
+
     for q in get_questions(mod):
         if isinstance(q,dict) and q.get("id"):
             out[str(q["id"])]=(
-                q.get("pregunta") or
-                q.get("texto") or
-                q.get("label") or
-                q.get("nombre") or
+                q.get("pregunta")
+                or
+                q.get("texto")
+                or
+                q.get("label")
+                or
+                q.get("nombre")
+                or
                 str(q["id"])
             )
+
     return out
 
 def pdf_document(c,d):
@@ -799,15 +1460,29 @@ def pdf_document(c,d):
     width=c["width"]
     height=c["height"]
 
-    def line(txt,size=10,bold=False,space=14):
+    def line(
+        txt,
+        size=10,
+        bold=False,
+        space=14
+    ):
         nonlocal y
-        font="Helvetica-Bold" if bold else "Helvetica"
+
+        font=(
+            "Helvetica-Bold"
+            if bold
+            else
+            "Helvetica"
+        )
 
         if y<60:
             c["c"].showPage()
             y=height-50
 
-        c["c"].setFont(font,size)
+        c["c"].setFont(
+            font,
+            size
+        )
 
         lines=simpleSplit(
             str(txt),
@@ -819,99 +1494,247 @@ def pdf_document(c,d):
             if y<60:
                 c["c"].showPage()
                 y=height-50
-                c["c"].setFont(font,size)
-            c["c"].drawString(50,y,s)
+                c["c"].setFont(
+                    font,
+                    size
+                )
+
+            c["c"].drawString(
+                50,
+                y,
+                s
+            )
+
             y-=space
 
         return y
 
-    line(f"DOCUMENTO: {d.get('id','')}",11,True,16)
-    line(f"Nombre: {d.get('nombre',d.get('name',''))}")
-    line(f"Categoría: {d.get('categoria','')}")
-    if d.get("_bloque_seccion"):
-        line(f"Sección: {d['_bloque_seccion']}")
-    line(f"Estado: {d.get('estado','NO DEFINIDO')}")
-    line(f"Obligatorio: {'SÍ' if d.get('obligatorio') else 'NO'}")
+    line(
+        f"DOCUMENTO: {d.get('id','')}",
+        11,
+        True,
+        16
+    )
+
+    line(
+        f"Nombre: {d.get('nombre',d.get('name',''))}"
+    )
+
+    line(
+        f"Categoría: {d.get('categoria','')}"
+    )
+
+    if d.get(
+        "_bloque_seccion"
+    ):
+        line(
+            f"Sección: {d['_bloque_seccion']}"
+        )
+
+    line(
+        f"Estado: {d.get('estado','NO DEFINIDO')}"
+    )
+
+    line(
+        "Obligatorio: "
+        +(
+            "SÍ"
+            if d.get("obligatorio")
+            else
+            "NO"
+        )
+    )
 
     if d.get("motivo"):
-        line(f"Motivo: {d['motivo']}")
+        line(
+            f"Motivo: {d['motivo']}"
+        )
 
     if d.get("nota"):
-        line(f"Nota: {d['nota']}")
+        line(
+            f"Nota: {d['nota']}"
+        )
 
     if d.get("confirmar"):
-        line("POR CONFIRMAR CON LA AUTORIDAD.",10,True)
+        line(
+            "POR CONFIRMAR CON LA AUTORIDAD.",
+            10,
+            True
+        )
 
     y-=5
     return y
 
 def make_pdf(data,path):
-    tid=data.get("tramite","")
-    mid=data.get("modalidad","")
+    tid=data.get(
+        "tramite",
+        ""
+    )
 
-    res=data.get("respuestas") or data.get("datos_especificos") or {}
-    dp=data.get("datos_personales") or {}
-    cons=data.get("consulado") or {}
+    mid=data.get(
+        "modalidad",
+        ""
+    )
+
+    res=(
+        data.get("respuestas")
+        or
+        data.get("datos_especificos")
+        or
+        {}
+    )
+
+    dp=data.get(
+        "datos_personales"
+    ) or {}
+
+    cons=data.get(
+        "consulado"
+    ) or {}
 
     evaluation=evaluate_case(
         tid,
         mid,
         res,
-        data.get("documentos") or {},
+        data.get(
+            "documentos"
+        ) or {},
         cons
     )
 
     t=get_tramite(tid)
-    m=get_modalidad(tid,mid)
+    m=get_modalidad(
+        tid,
+        mid
+    )
+
     labels=question_labels(m)
 
-    c=canvas.Canvas(str(path),pagesize=LETTER)
+    c=canvas.Canvas(
+        str(path),
+        pagesize=LETTER
+    )
+
     width,height=LETTER
     y=height-50
 
-    def text(txt,size=10,bold=False,space=14):
+    def text(
+        txt,
+        size=10,
+        bold=False,
+        space=14
+    ):
         nonlocal y
 
-        font="Helvetica-Bold" if bold else "Helvetica"
-        lines=simpleSplit(str(txt),font,width-100) or [""]
+        font=(
+            "Helvetica-Bold"
+            if bold
+            else
+            "Helvetica"
+        )
+
+        lines=simpleSplit(
+            str(txt),
+            font,
+            width-100
+        ) or [""]
 
         for s in lines:
             if y<60:
                 c.showPage()
                 y=height-50
-            c.setFont(font,size)
-            c.drawString(50,y,s)
+
+            c.setFont(
+                font,
+                size
+            )
+
+            c.drawString(
+                50,
+                y,
+                s
+            )
+
             y-=space
 
     # --------------------------------------------------------
     # ENCABEZADO
     # --------------------------------------------------------
 
-    text("SAVE MÉXICO AYUDAR",17,True,23)
-    text("GUÍA PERSONAL DE PREPARACIÓN",13,True,20)
-    text("Preparación privada para trámite mexicano",10,False,17)
     text(
-        f"Fecha de preparación: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-       9,False,13
+        "SAVE MÉXICO AYUDAR",
+        17,
+        True,
+        23
+    )
+
+    text(
+        "GUÍA PERSONAL DE PREPARACIÓN",
+        13,
+        True,
+        20
+    )
+
+    text(
+        "Preparación documental individual "
+        "para trámite mexicano",
+        10,
+        False,
+        18
+    )
+
+    text(
+        "Fecha de preparación: "
+        +datetime.now().strftime(
+            "%Y-%m-%d %H:%M"
+        ),
+        9,
+        False,
+        13
     )
 
     y-=5
 
     # --------------------------------------------------------
-    # TRÁMITE
+    # IDENTIFICACIÓN
     # --------------------------------------------------------
 
-    text("1. TRÁMITE",12,True,18)
-    text(f"Trámite: {t.get('nombre',tid)}")
-    text(f"Modalidad: {m.get('nombre',mid)}")
+    text(
+        "1. IDENTIFICACIÓN DEL TRÁMITE",
+        12,
+        True,
+        18
+    )
 
-    if t.get("institucion") or t.get("autoridad"):
+    text(
+        f"Trámite: {t.get('nombre',tid)}"
+    )
+
+    text(
+        f"Modalidad: {m.get('nombre',mid)}"
+    )
+
+    text(
+        "Institución: "
+        +t.get(
+            "institucion",
+            t.get(
+                "autoridad",
+                ""
+            )
+        )
+    )
+
+    if t.get("seccion"):
         text(
-            f"Institución: {t.get('institucion',t.get('autoridad',''))}"
+            f"Sección: {t.get('seccion','')}"
         )
 
     if t.get("descripcion"):
-        text(f"Descripción: {t['descripcion']}",9)
+        text(
+            f"Descripción: {t['descripcion']}",
+            9
+        )
 
     y-=5
 
@@ -919,12 +1742,25 @@ def make_pdf(data,path):
     # DATOS PERSONALES
     # --------------------------------------------------------
 
-    text("2. DATOS PERSONALES",12,True,18)
+    text(
+        "2. DATOS PERSONALES",
+        12,
+        True,
+        18
+    )
 
     for k,v in dp.items():
-        if v in ("",None,[]):
+        if v in (
+            "",
+            None,
+            []
+        ):
             continue
-        text(f"{k}: {format_value(v)}",9)
+
+        text(
+            f"{k}: {format_value(v)}",
+            9
+        )
 
     y-=5
 
@@ -932,12 +1768,62 @@ def make_pdf(data,path):
     # CONSULADO
     # --------------------------------------------------------
 
-    text("3. CONSULADO U OFICINA",12,True,18)
+    text(
+        "3. CONSULADO U OFICINA",
+        12,
+        True,
+        18
+    )
 
-    text(f"País: {cons.get('pais','México / Estados Unidos')}")
-    text(f"Estado: {cons.get('estado','')}")
-    text(f"Ciudad: {cons.get('ciudad','')}")
-    text(f"Consulado u oficina: {cons.get('consulado','')}")
+    text(
+        f"País: {cons.get('pais','Estados Unidos')}"
+    )
+
+    text(
+        f"Estado: {cons.get('estado','')}"
+    )
+
+    text(
+        f"Ciudad: {cons.get('ciudad','')}"
+    )
+
+    text(
+        "Consulado u oficina: "
+        +cons.get(
+            "consulado",
+            ""
+        )
+    )
+
+    if cons.get("direccion"):
+        text(
+            "Dirección: "
+            +str(
+                cons.get(
+                    "direccion"
+                )
+            )
+        )
+
+    if cons.get("telefono"):
+        text(
+            "Teléfono: "
+            +str(
+                cons.get(
+                    "telefono"
+                )
+            )
+        )
+
+    if cons.get("sitio_web"):
+        text(
+            "Sitio web: "
+            +str(
+                cons.get(
+                    "sitio_web"
+                )
+            )
+        )
 
     y-=5
 
@@ -945,20 +1831,48 @@ def make_pdf(data,path):
     # RESPUESTAS
     # --------------------------------------------------------
 
-    text("4. RESPUESTAS DE LA PERSONA",12,True,18)
+    text(
+        "4. RESPUESTAS DE LA PERSONA",
+        12,
+        True,
+        18
+    )
 
     for k,v in res.items():
-        if k.endswith("_otro"):
-            continue
-        if v in ("",None,[]):
+        if str(k).endswith("_otro"):
             continue
 
-        label=labels.get(str(k),str(k))
-        text(f"{label}: {format_value(v)}",9,False,13)
+        if v in (
+            "",
+            None,
+            []
+        ):
+            continue
 
-        otro=res.get(f"{k}_otro")
+        label=labels.get(
+            str(k),
+            str(k)
+        )
+
+        text(
+            f"{label}: {format_value(v)}",
+            9,
+            False,
+            13
+        )
+
+        otro=res.get(
+            f"{k}_otro"
+        )
+
         if otro:
-            text(f"Detalle de OTRO: {otro}",9,False,13)
+            text(
+                "Detalle de OTRO: "
+                +str(otro),
+                9,
+                False,
+                13
+            )
 
     y-=5
 
@@ -966,48 +1880,116 @@ def make_pdf(data,path):
     # SITUACIONES
     # --------------------------------------------------------
 
-    if evaluation["situaciones"]:
-        text("5. SITUACIONES DETECTADAS",12,True,18)
-        for x in evaluation["situaciones"]:
+    if evaluation[
+        "situaciones"
+    ]:
+        text(
+            "5. SITUACIONES DETECTADAS",
+            12,
+            True,
+            18
+        )
+
+        for x in evaluation[
+            "situaciones"
+        ]:
             if x.get("mensaje"):
-                text(x["mensaje"],9)
+                text(
+                    x["mensaje"],
+                    9
+                )
+
         y-=5
 
     # --------------------------------------------------------
     # DOCUMENTOS
     # --------------------------------------------------------
 
-    text("6. DOCUMENTOS APLICABLES",12,True,18)
+    text(
+        "6. DOCUMENTOS APLICABLES",
+        12,
+        True,
+        18
+    )
 
-    docs_status=document_status_map(data.get("documentos") or {})
+    docs_status=document_status_map(
+        data.get(
+            "documentos"
+        ) or {}
+    )
 
     groups={}
-    for d in evaluation["documentos_aplicables"]:
+
+    for d in evaluation[
+        "documentos_aplicables"
+    ]:
         section=d.get(
             "_bloque_seccion",
-            d.get("categoria","DOCUMENTOS")
+            d.get(
+                "categoria",
+                "DOCUMENTOS"
+            )
         )
-        groups.setdefault(section,[]).append(d)
+
+        groups.setdefault(
+            section,
+            []
+        ).append(d)
 
     for section,items in groups.items():
+
         if section:
-            text(section,11,True,17)
+            text(
+                section,
+                11,
+                True,
+                17
+            )
 
         for d in items:
-            did=str(d.get("id") or d.get("codigo") or "")
-            x=dict(d)
-            x["estado"]=docs_status.get(did,"NO DEFINIDO")
-            x["obligatorio"]=bool(
-                d.get("obligatorio_base") is True or
-                d.get("obligatorio") is True or
-                d.get("required") is True
+            did=str(
+                d.get(
+                    "id",
+                    d.get(
+                        "codigo",
+                        ""
+                    )
+                )
             )
-            y=pdf_document({
-                "c":c,
-                "y":y,
-                "width":width,
-                "height":height
-            },x)
+
+            x=dict(d)
+
+            x["estado"]=docs_status.get(
+                did,
+                "NO DEFINIDO"
+            )
+
+            x["obligatorio"]=bool(
+                d.get(
+                    "obligatorio_base",
+                    False
+                )
+                or
+                d.get(
+                    "obligatorio",
+                    False
+                )
+                or
+                d.get(
+                    "required",
+                    False
+                )
+            )
+
+            y=pdf_document(
+                {
+                    "c":c,
+                    "y":y,
+                    "width":width,
+                    "height":height
+                },
+                x
+            )
 
         y-=4
 
@@ -1015,57 +1997,113 @@ def make_pdf(data,path):
     # FALTANTES
     # --------------------------------------------------------
 
-    if evaluation["documentos_faltantes"]:
-        text("7. DOCUMENTOS FALTANTES",12,True,18)
-        for d in evaluation["documentos_faltantes"]:
+    if evaluation[
+        "documentos_faltantes"
+    ]:
+        text(
+            "7. DOCUMENTOS FALTANTES",
+            12,
+            True,
+            18
+        )
+
+        for d in evaluation[
+            "documentos_faltantes"
+        ]:
             text(
                 f"{d.get('id','')}: "
                 f"{d.get('nombre',d.get('mensaje',''))}",
-               10
+                10
             )
+
         y-=5
 
     # --------------------------------------------------------
     # DUDOSOS
     # --------------------------------------------------------
 
-    if evaluation["documentos_dudosos"]:
-        text("8. DOCUMENTOS POR CONFIRMAR",12,True,18)
-        for d in evaluation["documentos_dudosos"]:
+    if evaluation[
+        "documentos_dudosos"
+    ]:
+        text(
+            "8. DOCUMENTOS POR CONFIRMAR",
+            12,
+            True,
+            18
+        )
+
+        for d in evaluation[
+            "documentos_dudosos"
+        ]:
             text(
                 f"{d.get('id','')}: "
                 f"{d.get('nombre',d.get('name',''))}",
-               10
+                10
             )
+
         y-=5
 
     # --------------------------------------------------------
     # INCONSISTENCIAS
     # --------------------------------------------------------
 
-    if evaluation["inconsistencias"]:
-        text("9. INCONSISTENCIAS",12,True,18)
-        for x in evaluation["inconsistencias"]:
+    if evaluation[
+        "inconsistencias"
+    ]:
+        text(
+            "9. INCONSISTENCIAS",
+            12,
+            True,
+            18
+        )
+
+        for x in evaluation[
+            "inconsistencias"
+        ]:
             text(
                 f"{x.get('id','')}: "
                 f"{x.get('mensaje','')}",
-               10
+                10
             )
+
         y-=5
 
     # --------------------------------------------------------
     # CONFIRMACIONES
     # --------------------------------------------------------
 
-    if evaluation["confirmaciones"]:
-        text("10. PUNTOS POR CONFIRMAR",12,True,18)
+    if evaluation[
+        "confirmaciones"
+    ]:
+        text(
+            "10. PUNTOS POR CONFIRMAR",
+            12,
+            True,
+            18
+        )
 
         seen=set()
 
-        for x in evaluation["confirmaciones"]:
+        for x in evaluation[
+            "confirmaciones"
+        ]:
             ident=(
-                str(x.get("id",""))+
-                str(x.get("nombre",x.get("mensaje","")))
+                str(
+                    x.get(
+                        "id",
+                        ""
+                    )
+                )
+                +
+                str(
+                    x.get(
+                        "nombre",
+                        x.get(
+                            "mensaje",
+                            ""
+                        )
+                    )
+                )
             )
 
             if ident in seen:
@@ -1076,7 +2114,7 @@ def make_pdf(data,path):
             text(
                 f"{x.get('id','')}: "
                 f"{x.get('nombre',x.get('mensaje',''))}",
-               10
+                10
             )
 
         y-=5
@@ -1085,15 +2123,38 @@ def make_pdf(data,path):
     # RESULTADO
     # --------------------------------------------------------
 
-    text("11. RESULTADO FINAL",12,True,18)
-    text(evaluation["resultado"],11,True,17)
+    text(
+        "11. RESULTADO FINAL",
+        12,
+        True,
+        18
+    )
 
-    rc=m.get("resultado",{})
+    text(
+        evaluation[
+            "resultado"
+        ],
+        11,
+        True,
+        17
+    )
+
+    rc=m.get(
+        "resultado",
+        {}
+    )
 
     if isinstance(rc,dict):
         for k,v in rc.items():
-            if v not in ("",None,[]):
-                text(f"{k}: {format_value(v)}",9)
+            if v not in (
+                "",
+                None,
+                []
+            ):
+                text(
+                    f"{k}: {format_value(v)}",
+                    9
+                )
 
     y-=5
 
@@ -1101,47 +2162,69 @@ def make_pdf(data,path):
     # AVISO
     # --------------------------------------------------------
 
-    text("AVISO IMPORTANTE",12,True,18)
     text(
-        "SAVE MÉXICO AYUDAR no es una oficina del Gobierno de México, "
-        "la SRE ni el INE.",
-       9
+        "AVISO IMPORTANTE",
+        12,
+        True,
+        18
     )
+
     text(
-        "Esta guía es un servicio privado de preparación documental.",
-       9
+        "SAVE MÉXICO AYUDAR no es una oficina "
+        "del Gobierno de México, la SRE ni el INE.",
+        9
     )
+
     text(
-        "Los requisitos, documentos aceptados, citas, tarifas y "
-        "procedimientos pueden cambiar.",
-       9
+        "Esta guía es una preparación privada.",
+        9
     )
+
     text(
-        "Confirma la información con la autoridad competente antes "
-        "de acudir.",
-       9
+        "Los requisitos, documentos aceptados, "
+        "citas, tarifas y procedimientos pueden cambiar.",
+        9
+    )
+
+    text(
+        "La información debe confirmarse con "
+        "la autoridad competente antes de acudir.",
+        9
     )
 
     c.save()
     return path
 
 # ============================================================
-# GENERAR PDF
+# GENERAR GUÍA PDF
 # ============================================================
 
 @app.post("/api/generar-guia-consular")
-async def generar_guia(data:Guide,request:Request):
+async def generar_guia(
+    data:Guide,
+    request:Request
+):
     require_access(request)
 
     if not data.tramite:
-        raise HTTPException(400,"Debe indicar el trámite.")
+        raise HTTPException(
+            400,
+            "Debe indicar el trámite."
+        )
 
     if not data.modalidad:
-        raise HTTPException(400,"Debe indicar la modalidad.")
+        raise HTTPException(
+            400,
+            "Debe indicar la modalidad."
+        )
 
-    # Acepta el formato actual del index.html:
-    # documentos = lista de objetos.
-    respuestas=data.respuestas or data.datos_especificos or {}
+    respuestas=(
+        data.respuestas
+        or
+        data.datos_especificos
+        or
+        {}
+    )
 
     result=evaluate_case(
         data.tramite,
@@ -1151,39 +2234,73 @@ async def generar_guia(data:Guide,request:Request):
         data.consulado
     )
 
-    if result["preguntas_faltantes"]:
+    if result[
+        "preguntas_faltantes"
+    ]:
         raise HTTPException(
             400,
-            "Faltan respuestas obligatorias: "+
-            ", ".join(result["preguntas_faltantes"])
+            "Faltan respuestas obligatorias: "
+            +
+            ", ".join(
+                result[
+                    "preguntas_faltantes"
+                ]
+            )
         )
 
-    if result["resultado"]=="HAY_INCONSISTENCIAS":
+    if result[
+        "resultado"
+    ]=="HAY_INCONSISTENCIAS":
         raise HTTPException(
             400,
-            "Existen inconsistencias que deben aclararse antes de generar la guía."
+            "Existen inconsistencias que deben aclararse "
+            "antes de generar la guía."
         )
 
-    name=f"guia_{uuid.uuid4().hex}.pdf"
+    name=(
+        "guia_"
+        +uuid.uuid4().hex
+        +".pdf"
+    )
+
     path=OUT/name
 
     payload=data.model_dump()
-    payload["respuestas"]=respuestas
-    payload["datos_especificos"]=respuestas
-    payload["resultado_evaluacion"]=result
+
+    payload[
+        "respuestas"
+    ]=respuestas
+
+    payload[
+        "datos_especificos"
+    ]=respuestas
+
+    payload[
+        "resultado_evaluacion"
+    ]=result
 
     try:
-        make_pdf(payload,path)
+        make_pdf(
+            payload,
+            path
+        )
     except Exception as e:
         if path.exists():
-            try:path.unlink()
-            except Exception:pass
+            try:
+                path.unlink()
+            except Exception:
+                pass
+
         raise HTTPException(
             500,
             f"No se pudo generar el PDF: {e}"
         )
 
-    if not path.exists() or path.stat().st_size<100:
+    if (
+        not path.exists()
+        or
+        path.stat().st_size<100
+    ):
         raise HTTPException(
             500,
             "El PDF no pudo crearse correctamente."
@@ -1191,37 +2308,55 @@ async def generar_guia(data:Guide,request:Request):
 
     return {
         "ok":True,
+
+        # index.html actual
         "filename":name,
+
+        # compatibilidad
         "archivo":name,
         "file":name,
         "pdf":name,
+
         "url":f"/descargar/{name}",
-        "resultado":result["resultado"],
+
+        "resultado":result[
+            "resultado"
+        ],
+
         "resultado_evaluacion":result
     }
 
 # ============================================================
-# DESCARGA PDF
+# DESCARGAR PDF
 # ============================================================
 
 @app.get("/descargar/{name}")
-async def descargar(name:str,request:Request):
+async def descargar(
+    name:str,
+    request:Request
+):
     require_access(request)
 
-    try:
-        name=safe_filename(name)
-    except Exception:
-        raise HTTPException(400,"Archivo inválido.")
+    name=safe_filename(name)
 
-    if not name.lower().endswith(".pdf"):
-        raise HTTPException(400,"Solo se pueden descargar archivos PDF.")
+    if not name.lower().endswith(
+        ".pdf"
+    ):
+        raise HTTPException(
+            400,
+            "Solo se pueden descargar archivos PDF."
+        )
 
+    root=OUT.resolve()
     p=(OUT/name).resolve()
 
     try:
-        p.relative_to(OUT.resolve())
+        p.relative_to(root)
     except ValueError:
-        raise HTTPException(400,"Archivo inválido.")
+        raise HTTPException(
+            400,
+            "Archivo inválido."
+        )
 
     if not p.exists() or not p.is_file():
         raise HTTPException(
@@ -1236,7 +2371,7 @@ async def descargar(name:str,request:Request):
     )
 
 # ============================================================
-# SUBIR DOCUMENTO
+# CARGA / LECTURA DE DOCUMENTOS
 # ============================================================
 
 @app.post("/api/subir-documento")
@@ -1247,11 +2382,21 @@ async def subir_documento(
     require_access(request)
 
     if not file.filename:
-        raise HTTPException(400,"Archivo no válido.")
+        raise HTTPException(
+            400,
+            "Archivo no válido."
+        )
 
-    ext=Path(file.filename).suffix.lower()
+    ext=Path(
+        file.filename
+    ).suffix.lower()
 
-    if ext not in (".pdf",".jpg",".jpeg",".png"):
+    if ext not in (
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png"
+    ):
         raise HTTPException(
             400,
             "Solo se permiten PDF, JPG, JPEG o PNG."
@@ -1265,7 +2410,11 @@ async def subir_documento(
             "El archivo supera 15 MB."
         )
 
-    name=f"{uuid.uuid4().hex}{ext}"
+    name=(
+        uuid.uuid4().hex
+        +ext
+    )
+
     path=OUT/name
     path.write_bytes(raw)
 
@@ -1273,7 +2422,11 @@ async def subir_documento(
 
     if ext==".pdf":
         try:
-            pages=len(PdfReader(str(path)).pages)
+            pages=len(
+                PdfReader(
+                    str(path)
+                ).pages
+            )
         except Exception:
             pages=None
 
@@ -1284,7 +2437,7 @@ async def subir_documento(
     }
 
 # ============================================================
-# SALUD
+# SALUD DEL SISTEMA
 # ============================================================
 
 @app.get("/health")
@@ -1296,19 +2449,41 @@ async def health():
         "ok":True,
         "app":"SAVE MÉXICO AYUDAR",
         "version":"5.1.1",
-        "datos_version":data.get("version",""),
-        "datos_actualizado":data.get("actualizado",""),
-        "estructura_tramites":type(data.get("tramites")).__name__,
+        "datos_version":data.get(
+            "version",
+            ""
+        ),
+        "datos_actualizado":data.get(
+            "actualizado",
+            ""
+        ),
+        "estructura_tramites":type(
+            data.get(
+                "tramites"
+            )
+        ).__name__,
         "cantidad_tramites":len(ts),
-        "tramites":list(ts.keys()),
+        "tramites":list(
+            ts.keys()
+        ),
         "modalidades":{
-            tid:list(get_modalidades(tid).keys())
+            tid:list(
+                get_modalidades(
+                    tid
+                ).keys()
+            )
             for tid in ts
         },
-        "stripe":bool(STRIPE_SECRET_KEY),
-        "stripe_webhook":bool(STRIPE_WEBHOOK_SECRET),
+        "stripe":bool(
+            STRIPE_SECRET_KEY
+        ),
+        "stripe_webhook":bool(
+            STRIPE_WEBHOOK_SECRET
+        ),
         "admin_configured":bool(
-            ADMIN_USERNAME and ADMIN_PASSWORD
+            ADMIN_USERNAME
+            and
+            ADMIN_PASSWORD
         )
     }
 
@@ -1326,12 +2501,20 @@ async def index():
             "No existe static/index.html."
         )
 
-    return FileResponse(str(p))
+    return FileResponse(
+        str(p)
+    )
 
 if __name__=="__main__":
     import uvicorn
+
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
-        port=int(os.getenv("PORT","8000"))
+        port=int(
+            os.getenv(
+                "PORT",
+                "8000"
+            )
+        )
     )
