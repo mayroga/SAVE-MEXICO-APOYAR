@@ -1,197 +1,277 @@
-let servicio="";
-let paso=0;
-let ultimaRespuesta="";
+let servicio="",caso="",preguntaId="",respuestas={},ultimaRespuesta="";
+
+const $=id=>document.getElementById(id);
 
 function mostrar(id){
-  document.querySelectorAll(".pantalla").forEach(p=>p.classList.remove("activa"));
-  document.getElementById(id)?.classList.add("activa");
-  window.scrollTo(0,0);
+ document.querySelectorAll(".pantalla").forEach(x=>x.classList.remove("activa"));
+ $(id)?.classList.add("activa");
+ window.scrollTo(0,0);
 }
 
-function entrar(){
-  mostrar("info");
-}
+function entrar(){mostrar("info")}
 
 async function despertar(){
-  const e=document.getElementById("servidor");
-  try{
-    const r=await fetch("/api/estado",{cache:"no-store"});
-    e.textContent=r.ok?"Listo":"Preparando...";
-  }catch{
-    e.textContent="Preparando...";
-  }
+ const e=$("servidor");
+ try{
+  const r=await fetch("/api/estado",{cache:"no-store"});
+  e.textContent=r.ok?"Listo":"Preparando...";
+ }catch{
+  e.textContent="Preparando...";
+ }
 }
 
 async function iniciarServicio(tipo){
-  servicio=tipo;
-  paso=0;
+ servicio=tipo;
+ caso="";
+ preguntaId="";
+ respuestas={};
+ ultimaRespuesta="";
+ mostrar("pregunta");
+ $("preguntaTexto").textContent="Un momento...";
+ $("opciones").innerHTML="";
+ $("respuestaTexto").value="";
+ $("estadoPregunta").textContent="";
+
+ try{
+  const r=await fetch("/api/inicio/"+tipo,{cache:"no-store"});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw Error();
+  procesar(d);
+ }catch{
+  mostrarError("No pudimos iniciar el servicio. Inténtalo nuevamente.");
+ }
+}
+
+function procesar(d){
+ if(d.caso)caso=d.caso;
+ if(d.pregunta_id)preguntaId=d.pregunta_id;
+
+ if(d.estado==="pregunta"||d.estado==="necesita_descripcion"){
   mostrar("pregunta");
+  mostrarPregunta(d);
+  return;
+ }
 
-  try{
-    const r=await fetch("/api/inicio/"+tipo,{cache:"no-store"});
-    const d=await r.json();
+ if(d.estado==="seleccionar"){
+  mostrar("pregunta");
+  mostrarSeleccion(d);
+  return;
+ }
 
-    if(!r.ok||!d.ok)throw Error();
+ if(d.estado==="resuelto"){
+  mostrarResultado(d);
+  return;
+ }
 
-    mostrarPregunta(d);
-  }catch{
-    mostrarError("No pudimos conectar con el servicio. Inténtalo nuevamente.");
-  }
+ if(d.estado==="no_identificado"){
+  mostrar("pregunta");
+  mostrarPregunta(d);
+  return;
+ }
+
+ mostrarError(d.mensaje||"No pudimos entender tu caso.");
 }
 
 function mostrarPregunta(d){
-  paso=d.paso;
+ $("preguntaTexto").textContent=d.pregunta||"Cuéntame qué necesitas resolver.";
+ $("opciones").innerHTML="";
+ $("respuestaTexto").value="";
+ $("estadoPregunta").textContent="";
 
-  document.getElementById("paso").textContent=
-    "PREGUNTA "+(paso+1)+" DE "+d.total;
+ if(d.pregunta_id)preguntaId=d.pregunta_id;
 
-  document.getElementById("preguntaTexto").textContent=d.pregunta;
+ if(Array.isArray(d.opciones)&&d.opciones.length){
+  d.opciones.forEach(op=>{
+   const b=document.createElement("button");
+   b.className="respuesta";
+   b.textContent=op;
+   b.onclick=()=>{
+    document.querySelectorAll(".respuesta").forEach(x=>x.classList.remove("seleccionada"));
+    b.classList.add("seleccionada");
+    $("respuestaTexto").value=op;
+   };
+   $("opciones").appendChild(b);
+  });
+ }
+}
 
-  const opciones=document.getElementById("opciones");
-  opciones.innerHTML="";
+function mostrarSeleccion(d){
+ $("preguntaTexto").textContent=d.pregunta||"Elige la opción que más se parece a tu caso.";
+ $("opciones").innerHTML="";
+ $("respuestaTexto").value="";
+ $("estadoPregunta").textContent="";
 
-  if(d.opciones&&d.opciones.length){
-    d.opciones.forEach(op=>{
-      const b=document.createElement("button");
-      b.className="respuesta";
-      b.textContent=op;
-      b.onclick=()=>{
-        document.querySelectorAll(".respuesta")
-          .forEach(x=>x.classList.remove("seleccionada"));
-        b.classList.add("seleccionada");
-        document.getElementById("respuestaTexto").value=op;
-      };
-      opciones.appendChild(b);
-    });
-  }
-
-  document.getElementById("respuestaTexto").value="";
-  document.getElementById("estadoPregunta").textContent="";
+ (d.opciones||[]).forEach((op,i)=>{
+  const b=document.createElement("button");
+  b.className="respuesta";
+  b.textContent=op;
+  b.onclick=()=>{
+   caso=(d.casos||[])[i]||"";
+   respuestas._confirmado=[caso];
+   document.querySelectorAll(".respuesta").forEach(x=>x.classList.remove("seleccionada"));
+   b.classList.add("seleccionada");
+   $("respuestaTexto").value=op;
+  };
+  $("opciones").appendChild(b);
+ });
 }
 
 async function enviarRespuesta(){
-  const campo=document.getElementById("respuestaTexto");
-  const respuesta=campo.value.trim();
+ const campo=$("respuestaTexto");
+ const texto=campo.value.trim();
+ const estado=$("estadoPregunta");
 
-  if(!respuesta){
-    document.getElementById("estadoPregunta").textContent=
-      "Dime tu respuesta o elige una opción.";
-    return;
+ if(!texto){
+  estado.textContent="Dime tu respuesta o elige una opción.";
+  return;
+ }
+
+ estado.textContent="Un momento...";
+
+ const datos={
+  servicio,
+  caso,
+  texto,
+  respuestas,
+  pregunta_id:preguntaId
+ };
+
+ try{
+  const r=await fetch("/api/responder",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify(datos)
+  });
+
+  const d=await r.json();
+
+  if(!r.ok||!d.ok){
+   estado.textContent=d.mensaje||"No pudimos continuar.";
+   return;
   }
 
-  const estado=document.getElementById("estadoPregunta");
-  estado.textContent="Un momento...";
+  respuestas=d.respuestas||respuestas;
 
-  try{
-    const r=await fetch("/api/responder",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        servicio,
-        paso,
-        respuesta
-      })
-    });
+  if(d.caso)caso=d.caso;
+  if(d.pregunta_id)preguntaId=d.pregunta_id;
 
-    const d=await r.json();
+  procesar(d);
 
-    if(!r.ok||!d.ok)throw Error();
-
-    if(d.terminado){
-      mostrarResultado(d);
-      return;
-    }
-
-    mostrarPregunta(d);
-
-  }catch{
-    estado.textContent=
-      "No pudimos continuar. Inténtalo nuevamente.";
-  }
+ }catch{
+  estado.textContent="No pudimos conectar con el servicio. Inténtalo nuevamente.";
+ }
 }
 
 function mostrarResultado(d){
-  mostrar("resultado");
+ mostrar("resultado");
 
-  document.getElementById("resultadoTitulo").textContent=
-    d.titulo||"TU RESULTADO";
+ $("resultadoTitulo").textContent=d.titulo||"TU RESULTADO";
 
-  const caja=document.getElementById("resultadoTexto");
-  caja.innerHTML="";
+ const caja=$("resultadoTexto");
+ caja.innerHTML="";
+ let partes=[];
 
-  if(Array.isArray(d.resultado)){
-    d.resultado.forEach((texto,i)=>{
-      const p=document.createElement("p");
-      p.textContent=(i+1)+". "+texto;
-      caja.appendChild(p);
-    });
-    ultimaRespuesta=d.resultado.join(". ");
-  }else{
-    caja.textContent=d.resultado||"Tu preparación terminó.";
-    ultimaRespuesta=d.resultado||"Tu preparación terminó.";
-  }
+ if(Array.isArray(d.prepara)&&d.prepara.length){
+  agregarBloque(caja,"QUÉ DEBES PREPARAR",d.prepara);
+  partes.push("Qué debes preparar. "+d.prepara.join(". "));
+ }
 
-  leerResultado();
+ if(Array.isArray(d.confirma)&&d.confirma.length){
+  agregarBloque(caja,"QUÉ DEBES CONFIRMAR",d.confirma);
+  partes.push("Qué debes confirmar. "+d.confirma.join(". "));
+ }
+
+ if(d.fuente){
+  const p=document.createElement("p");
+  p.className="fuente";
+  p.innerHTML="<strong>FUENTE OFICIAL</strong><br><a href='"+escapeAttr(d.fuente)+"' target='_blank' rel='noopener'>Consultar información oficial</a>";
+  caja.appendChild(p);
+  partes.push("Fuente oficial. Consulta la información oficial.");
+ }
+
+ if(!partes.length){
+  caja.textContent=d.mensaje||"No tenemos información suficiente para darte un resultado.";
+  partes.push(d.mensaje||"No tenemos información suficiente para darte un resultado.");
+ }
+
+ ultimaRespuesta=partes.join(" ");
+ leerResultado();
+}
+
+function agregarBloque(caja,titulo,lista){
+ const h=document.createElement("h3");
+ h.textContent=titulo;
+ caja.appendChild(h);
+
+ lista.forEach((texto,i)=>{
+  const p=document.createElement("p");
+  p.textContent=(i+1)+". "+texto;
+  caja.appendChild(p);
+ });
 }
 
 function escuchar(){
-  const Recognition=
-    window.SpeechRecognition||
-    window.webkitSpeechRecognition;
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 
-  if(!Recognition){
-    document.getElementById("estadoPregunta").textContent=
-      "Tu navegador no permite usar el micrófono. Puedes escribir.";
-    return;
-  }
+ if(!Recognition){
+  $("estadoPregunta").textContent="Tu navegador no permite usar el micrófono. Puedes escribir.";
+  return;
+ }
 
-  const r=new Recognition();
-  r.lang="es-MX";
-  r.continuous=false;
-  r.interimResults=false;
-  r.maxAlternatives=1;
+ const r=new Recognition();
+ r.lang="es-MX";
+ r.continuous=false;
+ r.interimResults=false;
+ r.maxAlternatives=1;
 
-  const estado=document.getElementById("estadoPregunta");
-  estado.textContent="🎙️ TE ESTOY ESCUCHANDO...";
+ $("estadoPregunta").textContent="🎙️ TE ESTOY ESCUCHANDO...";
 
-  r.onresult=e=>{
-    const texto=e.results[0][0].transcript;
-    document.getElementById("respuestaTexto").value=texto;
-    estado.textContent="Te escuché. Pulsa CONTINUAR.";
-  };
+ r.onresult=e=>{
+  const texto=e.results[0][0].transcript.trim();
+  $("respuestaTexto").value=texto;
+  $("estadoPregunta").textContent="Te escuché. Pulsa CONTINUAR.";
+ };
 
-  r.onerror=()=>{
-    estado.textContent=
-      "No pude escucharte. Inténtalo nuevamente.";
-  };
+ r.onerror=()=>{
+  $("estadoPregunta").textContent="No pude escucharte. Inténtalo nuevamente.";
+ };
 
-  r.onend=()=>{
-    if(!document.getElementById("respuestaTexto").value)
-      estado.textContent="Puedes hablar nuevamente.";
-  };
+ r.onend=()=>{
+  if(!$("respuestaTexto").value)
+   $("estadoPregunta").textContent="Puedes hablar nuevamente.";
+ };
 
-  r.start();
+ try{r.start()}catch{
+  $("estadoPregunta").textContent="No pude activar el micrófono.";
+ }
 }
 
 function leerResultado(){
-  if(!ultimaRespuesta||!("speechSynthesis" in window))return;
+ if(!ultimaRespuesta||!("speechSynthesis" in window))return;
 
-  speechSynthesis.cancel();
+ speechSynthesis.cancel();
 
-  const voz=new SpeechSynthesisUtterance(ultimaRespuesta);
-  voz.lang="es-MX";
-  voz.rate=.9;
-  voz.pitch=1;
+ const voz=new SpeechSynthesisUtterance(ultimaRespuesta);
+ voz.lang="es-MX";
+ voz.rate=.9;
+ voz.pitch=1;
 
-  speechSynthesis.speak(voz);
+ speechSynthesis.speak(voz);
 }
 
 function mostrarError(texto){
-  mostrar("resultado");
-  document.getElementById("resultadoTitulo").textContent="AVISO";
-  document.getElementById("resultadoTexto").textContent=texto;
-  ultimaRespuesta=texto;
+ mostrar("resultado");
+ $("resultadoTitulo").textContent="AVISO";
+ $("resultadoTexto").textContent=texto;
+ ultimaRespuesta=texto;
+}
+
+function escapeAttr(texto){
+ return String(texto)
+  .replace(/&/g,"&amp;")
+  .replace(/"/g,"&quot;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;");
 }
 
 despertar();
-
