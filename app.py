@@ -49,7 +49,7 @@ PRICE_IDS = {
 stripe.api_key = STRIPE_KEY
 gemini = genai.Client(api_key=GEMINI_KEY) if GEMINI_KEY else None
 
-app = FastAPI(title="SAVE MÉXICO AYUDAR", version="11.0")
+app = FastAPI(title="AURA BY MAY ROGA", version="11.0")
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 security = HTTPBasic(auto_error=False)
 
@@ -219,7 +219,7 @@ def save_tramite_memory(c, m, profile):
     }
     save_memory(d)
 
-ASESOR_SYSTEM = "Eres el ASESOR MEXICANO de SAVE MÉXICO AYUDAR. Cada trámite mexicano es diferente. Nunca uses una plantilla universal. Analiza trámite, modalidad, persona, documentos, fotografías, formatos, preguntas, situaciones especiales y estructura del PDF. No inventes requisitos. Distingue datos aportados, documentos que tiene el usuario, documentos faltantes y requisitos oficiales. Si algo no puede confirmarse escribe POR CONFIRMAR CON LA AUTORIDAD. SAVE MÉXICO AYUDAR es privado, no es Gobierno de México ni consulado. Usa español sencillo, claro y sin información amontonada."
+ASESOR_SYSTEM = "Eres AURA de AURA BY MAY ROGA LLC. Cada trámite es diferente. Nunca uses una plantilla universal. Analiza trámite, modalidad, persona, documentos, fotografías, formatos, preguntas, situaciones especiales y estructura del PDF. No inventes requisitos. Distingue datos aportados, documentos que tiene el usuario, documentos faltantes y requisitos oficiales. Si algo no puede confirmarse escribe POR CONFIRMAR CON LA AUTORIDAD. AURA BY MAY ROGA LLC es un servicio privado. Usa español sencillo, claro y sin información amontonada."
 
 def ai_text(prompt):
     if not gemini:
@@ -228,12 +228,12 @@ def ai_text(prompt):
         r = gemini.models.generate_content(model="gemini-2.5-flash", contents=[ASESOR_SYSTEM, prompt])
         t = (r.text or "").strip()
         if not t:
-            raise HTTPException(500, "El Asesor Mexicano no produjo información.")
+            raise HTTPException(500, "AURA no produjo información.")
         return t
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, f"Asesor Mexicano: {e}")
+        raise HTTPException(500, f"AURA: {e}")
 
 def ai_json(prompt):
     t = ai_text(prompt + "\nRESPONDE ÚNICAMENTE CON JSON VÁLIDO. NO USES MARKDOWN NI ```.")
@@ -242,7 +242,7 @@ def ai_json(prompt):
     try:
         return json.loads(t)
     except:
-        raise HTTPException(500, "El Asesor Mexicano devolvió una estructura no válida.")
+        raise HTTPException(500, "AURA devolvió una estructura no válida.")
 
 def construir_perfil(c, m="", contexto="", datos=None):
     datos = datos or {}
@@ -262,7 +262,7 @@ def home():
 
 @app.get("/api/estado")
 def estado():
-    return {"ok": True, "app": "SAVE MÉXICO AYUDAR", "version": "11.0", "asesor": "Gemini / Asesor Mexicano", "pdf": "dinámico por trámite"}
+    return {"ok": True, "app": "AURA BY MAY ROGA", "version": "11.0", "asesor": "Gemini / AURA", "pdf": "dinámico por trámite"}
 
 @app.post("/api/admin-login")
 def admin_login(credentials: HTTPBasicCredentials = Depends(security)):
@@ -438,7 +438,7 @@ async def extraer_pdf(file: UploadFile = File(...), _ = Depends(require_access))
             )
             t = (r.text or "").strip()
             if t:
-                text = (text + "\n\n--- REVISIÓN DEL ASESOR MEXICANO ---\n" + t)[:50000]
+                text = (text + "\n\n--- REVISIÓN DE AURA ---\n" + t)[:50000]
         except:
             pass
     return {"ok": True, "nombre": file.filename, "texto": text[:50000], "paginas": pages}
@@ -483,7 +483,7 @@ def pdf_content(data):
     )
 
 def generar_pdf(data, content):
-    nombre = f"SAVE_MEXICO_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{secrets.token_hex(3)}.pdf"
+    nombre = f"AURA_MAY_ROGA_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{secrets.token_hex(3)}.pdf"
     path = OUT / nombre
     c = canvas.Canvas(str(path), pagesize=LETTER)
     W, H = LETTER
@@ -604,13 +604,12 @@ def generar_pdf(data, content):
     item("Otra información", data.extra_2)
 
     if content.get("avisos"):
-        section("AVISOS DEL ASESOR MEXICANO")
+        section("AVISOS DE AURA")
         for x in content["avisos"]:
             item("Aviso", x)
 
     section("AVISO IMPORTANTE")
-    wrap("SAVE MÉXICO AYUDAR es un servicio privado e independiente de MAY ROGA LLC, Florida.", 8.5, 12)
-    wrap("No es una agencia del Gobierno de México ni representa a ningún consulado mexicano.", 8.5, 12)
+    wrap("AURA BY MAY ROGA LLC es un servicio privado e independiente, Florida.", 8.5, 12)
     wrap("Este documento es una herramienta privada de organización y preparación. Los requisitos, documentos, decisiones y resultados corresponden a la autoridad competente.", 8.5, 12)
 
     c.save()
@@ -624,7 +623,7 @@ def generar_guia(data: DatosTramite, _ = Depends(require_access)):
         raise HTTPException(400, "Debe indicar el trámite.")
     content = pdf_content(data)
     nombre = generar_pdf(data, content)
-    return {"ok": True, "archivo": f"/descargar/{nombre}", "nombre": nombre, "tramite": data.categoria_tramite, "modalidad": data.modalidad, "pdf_dinamico": True, "asesor_mexicano": True}
+    return {"ok": True, "archivo": f"/descargar/{nombre}", "nombre": nombre, "tramite": data.categoria_tramite, "modalidad": data.modalidad, "pdf_dinamico": True, "aura": True}
 
 @app.get("/descargar/{nombre}")
 def descargar(nombre: str, _ = Depends(require_access)):
