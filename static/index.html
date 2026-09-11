@@ -1,795 +1,1261 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#07111f">
 <title>SAVE MÉXICO AYUDAR</title>
 <style>
-:root{--bg:#f5f7fa;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9dee7;--primary:#174ea6;--primary2:#0d3d82;--ok:#18794e;--warn:#9a6700;--danger:#b42318}
+:root{--bg:#07111f;--card:#0d1b2a;--card2:#112438;--line:#29435b;--txt:#f5f7fa;--muted:#aebdcc;--blue:#38bdf8;--blue2:#0ea5e9;--green:#34d399;--red:#fb7185;--yellow:#fbbf24}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:Arial,Helvetica,sans-serif}
+body{min-height:100vh}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
-.top{background:#fff;border-bottom:1px solid var(--line);padding:18px 20px}
-.topin{max-width:920px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px}
-.brand{font-size:22px;font-weight:800;letter-spacing:.2px}
-.lang{display:flex;gap:6px}
-.lang button,.smallbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px}
-.lang button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-main{max-width:920px;margin:0 auto;padding:25px 16px 50px}
+#app{width:100%;max-width:900px;margin:auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+.logo{font-weight:800;font-size:20px;letter-spacing:.4px}
+.logo span{color:var(--blue)}
+.lang{border:1px solid var(--line);background:var(--card);color:var(--txt);padding:8px 12px;border-radius:9px}
 .screen{display:none}
 .screen.active{display:block}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:25px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-h1,h2,h3{margin-top:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px;box-shadow:0 8px 30px #0003}
+h1,h2,h3{margin:0 0 13px;line-height:1.25}
 h1{font-size:30px}
-h2{font-size:24px}
+h2{font-size:23px}
 h3{font-size:18px}
-p{line-height:1.55}
+p{line-height:1.55;margin:8px 0}
 .muted{color:var(--muted)}
-.notice{border-left:4px solid var(--primary);background:#f1f6ff;padding:14px 16px;margin:18px 0;line-height:1.5}
-.warning{border-left-color:#b7791f;background:#fff8e6}
-.error{color:var(--danger);background:#fff1f0;border:1px solid #f1b8b4;padding:12px;border-radius:9px;margin:12px 0}
-.success{color:var(--ok);background:#edf9f2;border:1px solid #b8dfc8;padding:12px;border-radius:9px;margin:12px 0}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
-.primary,.secondary,.danger{border:0;border-radius:9px;padding:12px 18px;font-weight:700}
-.primary{background:var(--primary);color:#fff}
-.primary:hover{background:var(--primary2)}
-.secondary{background:#fff;border:1px solid var(--line)}
-.danger{background:var(--danger);color:#fff}
-.field{margin:16px 0}
-.field label{display:block;font-weight:700;margin-bottom:7px}
-input,select,textarea{width:100%;border:1px solid #cbd2dc;border-radius:8px;padding:11px;background:#fff;color:var(--text)}
-textarea{min-height:100px;resize:vertical}
-.option{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:9px;padding:12px;margin:9px 0;background:#fff}
-.option:hover{background:#f8fafc}
-.option input{width:auto;margin-top:3px}
-.option label{font-weight:400;cursor:pointer;flex:1}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-@media(max-width:650px){.grid{grid-template-columns:1fr}.topin{align-items:flex-start}.brand{font-size:18px}.card{padding:19px}h1{font-size:25px}}
-.progress{height:7px;background:#e5e7eb;border-radius:10px;overflow:hidden;margin:12px 0 22px}
-.progress>div{height:100%;background:var(--primary);width:0}
-.step{font-size:13px;color:var(--muted);margin-bottom:8px}
-.badge{display:inline-block;border-radius:20px;padding:5px 9px;background:#eef2f7;font-size:12px;font-weight:700}
-.list{margin:10px 0;padding-left:20px}
-.resultbox{border:1px solid var(--line);border-radius:10px;padding:15px;margin:12px 0;background:#fff}
-.resultbox h3{margin-bottom:8px}
-.doc{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:12px 0}
-.doc:last-child{border-bottom:0}
-.status{font-size:12px;font-weight:700;padding:5px 8px;border-radius:15px;white-space:nowrap}
-.status.ok{background:#e8f6ee;color:var(--ok)}
-.status.bad{background:#fff0ef;color:var(--danger)}
-.status.review{background:#fff7df;color:var(--warn)}
-.hidden{display:none!important}
+.small{font-size:13px}
 .center{text-align:center}
-footer{max-width:920px;margin:0 auto;padding:0 16px 35px;color:var(--muted);font-size:12px;text-align:center}
-hr{border:0;border-top:1px solid var(--line);margin:22px 0}
-.loginbox{max-width:500px;margin:auto}
-.pricegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-@media(max-width:700px){.pricegrid{grid-template-columns:1fr}}
-.price{border:1px solid var(--line);border-radius:10px;padding:18px;background:#fff}
-.price strong{display:block;font-size:18px;margin-bottom:7px}
-.checkline{display:flex;gap:9px;align-items:center;margin:9px 0}
-.checkline input{width:auto}
+.notice{border-left:4px solid var(--blue);background:#0a1929;padding:14px;margin:15px 0;border-radius:8px;line-height:1.55}
+.warning{border-left-color:var(--yellow)}
+.danger{border-left-color:var(--red)}
+.success{border-left-color:var(--green)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{width:100%;min-width:0;text-align:left;border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:13px;padding:17px;min-height:78px;transition:.15s;white-space:normal;overflow-wrap:anywhere}
+.choice:hover{border-color:var(--blue);transform:translateY(-1px)}
+.choice strong{display:block;margin-bottom:7px;line-height:1.35}
+.choice small{display:block;color:var(--muted);line-height:1.45;white-space:normal}
+.choice.selected{border-color:var(--blue);box-shadow:0 0 0 2px #38bdf833;background:#15324a}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:0;border-radius:10px;padding:12px 18px;background:var(--blue2);color:white;font-weight:700;min-height:44px}
+.btn:hover{filter:brightness(1.1)}
+.btn.secondary{background:#24384b}
+.btn.green{background:#059669}
+.btn.red{background:#be123c}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.field{margin:14px 0}
+label{display:block;font-weight:700;margin-bottom:7px}
+input,select,textarea{width:100%;background:#081521;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+textarea{min-height:110px;resize:vertical}
+.option-list{display:grid;gap:10px}
+.option{display:flex;align-items:flex-start;gap:10px;background:#091725;border:1px solid var(--line);border-radius:10px;padding:13px;line-height:1.45;cursor:pointer}
+.option:hover{border-color:var(--blue)}
+.option input{width:auto;min-width:18px;margin-top:3px}
+.option span{flex:1;white-space:normal;overflow-wrap:anywhere}
+.progress{height:7px;background:#132638;border-radius:10px;overflow:hidden;margin:0 0 20px}
+.progress i{display:block;height:100%;width:0;background:var(--blue);transition:.25s}
+.step{font-size:13px;color:var(--muted);margin-bottom:8px}
+.question-number{font-size:13px;color:var(--blue);font-weight:700;margin-bottom:7px}
+.help{background:#091725;border:1px solid var(--line);padding:12px;border-radius:9px;margin:12px 0;line-height:1.5}
+.doc{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;background:#091725;border:1px solid var(--line);border-radius:10px;padding:14px;margin:9px 0}
+.doc-name{flex:1;line-height:1.45;min-width:0;overflow-wrap:anywhere}
+.doc-status{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.doc-status button{border:1px solid var(--line);background:#15283a;color:var(--txt);border-radius:7px;padding:8px 9px;font-size:12px;white-space:normal}
+.doc-status button.active.have{background:#047857}
+.doc-status button.active.missing{background:#be123c}
+.doc-status button.active.unsure{background:#a16207}
+.tag{display:inline-block;padding:5px 9px;border-radius:99px;background:#17324a;color:#bfe9ff;font-size:12px;margin:3px}
+.summary{background:#091725;border:1px solid var(--line);border-radius:10px;padding:14px;margin:10px 0;line-height:1.5;overflow-wrap:anywhere}
+.summary b{display:block;margin-bottom:6px}
+.plan{border:1px solid var(--line);background:var(--card2);border-radius:13px;padding:17px;min-width:0}
+.plan strong{font-size:20px}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#12263a;border:1px solid var(--line);padding:12px 16px;border-radius:10px;display:none;z-index:99;max-width:90%;text-align:center}
+#loading{display:none;position:fixed;inset:0;background:#0009;z-index:90;align-items:center;justify-content:center}
+#loading div{background:var(--card);border:1px solid var(--line);padding:22px;border-radius:14px;max-width:90%;text-align:center}
+.hidden{display:none!important}
+@media(max-width:650px){
+#app{padding:12px}
+.card{padding:17px}
+h1{font-size:25px}
+h2{font-size:21px}
+.grid{grid-template-columns:1fr}
+.doc{display:block}
+.doc-status{margin-top:10px;justify-content:flex-start}
+.btn{width:100%}
+.btns{display:grid}
+.choice{padding:15px}
+}
 </style>
 </head>
 <body>
-<header class="top">
-<div class="topin">
-<div class="brand">SAVE MÉXICO AYUDAR</div>
-<div class="lang">
-<button id="esBtn" class="active" onclick="setLang('es')">ES</button>
-<button id="enBtn" onclick="setLang('en')">ENGLISH</button>
-</div>
-</div>
+<div id="loading"><div id="loadingText">Procesando...</div></div>
+<div id="toast"></div>
+
+<div id="app">
+<header>
+<div class="logo">SAVE MÉXICO <span>AYUDAR</span></div>
+<button class="lang" id="langBtn" onclick="toggleLang()">EN</button>
 </header>
 
-<main>
-<section id="s0" class="screen active">
-<div class="card">
-<h1 id="title">SAVE MÉXICO AYUDAR</h1>
-<p id="intro">Preparación documental para trámites mexicanos, paso a paso y de acuerdo con la información que usted proporcione.</p>
-<div class="notice">
-<strong>Importante:</strong> esta es una herramienta privada de preparación documental. No es el Gobierno de México, la SRE, un Consulado ni el INE.
-</div>
-<p class="muted">La aplicación hará preguntas según su caso. No le mostrará automáticamente una lista enorme de documentos.</p>
-<div class="actions">
-<button class="primary" onclick="goAccess()" id="startBtn">COMENZAR</button>
-</div>
-</div>
-</section>
+<div class="progress"><i id="progressBar"></i></div>
 
-<section id="s1" class="screen">
-<div class="card loginbox">
-<h2 id="accessTitle">Acceso</h2>
-<p class="muted" id="accessText">Para utilizar la preparación documental necesita acceso autorizado.</p>
-<div id="accessError"></div>
-<div id="adminArea">
-<h3>Acceso administrativo</h3>
-<div class="field"><label>Usuario</label><input id="username" autocomplete="username"></div>
-<div class="field"><label>Contraseña</label><input id="password" type="password" autocomplete="current-password"></div>
-<button class="primary" onclick="adminLogin()">Entrar</button>
-</div>
-<hr>
-<div id="payArea">
-<h3>Acceso mediante pago</h3>
-<p class="muted">Seleccione el acceso que corresponda.</p>
-<div class="pricegrid">
-<div class="price">
-<strong>Acceso diario</strong>
-<span class="muted">Un acceso de preparación.</span>
-<button class="primary" style="margin-top:12px;width:100%" onclick="pay('daily')">Pagar</button>
-</div>
-<div class="price">
-<strong>Acceso mensual</strong>
-<span class="muted">Acceso mediante suscripción.</span>
-<button class="primary" style="margin-top:12px;width:100%" onclick="pay('monthly')">Pagar</button>
-</div>
-<div class="price">
-<strong>Acceso anual</strong>
-<span class="muted">Acceso mediante suscripción anual.</span>
-<button class="primary" style="margin-top:12px;width:100%" onclick="pay('annual')">Pagar</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-
-<section id="s2" class="screen">
-<div class="card">
-<div class="step" id="selectionStep">1. Seleccione el trámite</div>
-<h2 id="tramiteTitle">¿Qué trámite necesita preparar?</h2>
-<p class="muted">Seleccione solamente el trámite que desea realizar.</p>
-<div id="tramitesList"></div>
-<div id="tramiteError"></div>
-<div class="actions"><button class="secondary" onclick="logout()">Salir</button></div>
-</div>
-</section>
-
-<section id="s3" class="screen">
-<div class="card">
-<div class="step">2. Tipo de trámite</div>
-<h2 id="modalidadTitle">Seleccione la situación que corresponde</h2>
-<p class="muted">La opción elegida determinará las preguntas que verá después.</p>
-<div id="modalidadesList"></div>
-<div id="modalidadError"></div>
-<div class="actions">
-<button class="secondary" onclick="show('s2')">Atrás</button>
-</div>
-</div>
-</section>
-
-<section id="s4" class="screen">
-<div class="card">
-<div class="step" id="questionStep">3. Preguntas</div>
-<div class="progress"><div id="progressBar"></div></div>
-<h2 id="questionTitle">Pregunta</h2>
-<p id="questionHelp" class="muted"></p>
-<div id="questionArea"></div>
-<div id="questionError"></div>
-<div class="actions">
-<button class="secondary" id="prevQuestion" onclick="previousQuestion()">Atrás</button>
-<button class="primary" id="nextQuestion" onclick="nextQuestion()">Continuar</button>
-</div>
-</div>
-</section>
-
-<section id="s5" class="screen">
-<div class="card">
-<div class="step">4. Sus documentos</div>
-<h2>Revise cada documento</h2>
-<p class="muted">No marque que tiene un documento si no está seguro de contar con él.</p>
-<div id="documentsArea"></div>
-<div id="documentsError"></div>
-<div class="actions">
-<button class="secondary" onclick="backToQuestions()">Atrás</button>
-<button class="primary" onclick="finishDocuments()">Continuar</button>
-</div>
-</div>
-</section>
-
-<section id="s6" class="screen">
-<div class="card">
-<div class="step">5. Datos personales</div>
-<h2>Datos para preparar su guía</h2>
-<p class="muted">Escriba solamente los datos necesarios para su caso.</p>
-<div id="personalArea"></div>
-<div id="personalError"></div>
-<div class="actions">
-<button class="secondary" onclick="show('s5')">Atrás</button>
-<button class="primary" onclick="finishPersonal()">Revisar caso</button>
-</div>
-</div>
-</section>
-
-<section id="s7" class="screen">
-<div class="card">
-<div class="step">6. Resultado</div>
-<h2>Resultado de su preparación</h2>
-<div id="resultArea"></div>
-<div class="actions">
-<button class="secondary" onclick="show('s6')">Modificar datos</button>
-<button class="primary" onclick="generatePdf()">Generar guía PDF</button>
-</div>
-</div>
-</section>
-
-<section id="s8" class="screen">
+<section class="screen active" id="s0">
 <div class="card center">
-<h2>Guía preparada</h2>
-<div id="pdfResult"></div>
-<div class="actions" style="justify-content:center">
-<button class="primary" id="downloadBtn">DESCARGAR PDF</button>
-<button class="secondary" onclick="restart()">Nuevo trámite</button>
+<h1>SAVE MÉXICO AYUDAR</h1>
+<p id="introText">Preparación clara de trámites mexicanos desde Estados Unidos.</p>
+
+<div class="notice" id="introNotice">
+Te ayudamos a organizar tus datos, documentos y respuestas para preparar tu trámite. La decisión final siempre corresponde a la autoridad.
+</div>
+
+<div class="notice warning">
+<b id="importantTitle">Importante</b><br>
+<span id="importantText">No sustituimos al Consulado de México ni al INE. Los requisitos pueden cambiar y algunos deben confirmarse directamente con la autoridad.</span>
+</div>
+
+<div class="btns">
+<button class="btn" id="startBtn" onclick="go(1)">Comenzar</button>
 </div>
 </div>
 </section>
-</main>
 
-<footer>
-SAVE MÉXICO AYUDAR · Herramienta privada de preparación documental · Verifique siempre la información oficial vigente.
-</footer>
+<section class="screen" id="s1">
+<div class="card">
+<h2 id="accessTitle">Acceso</h2>
+<p class="muted" id="accessHelp">Selecciona una forma de entrar.</p>
+
+<div class="grid">
+<div class="plan">
+<strong id="paidTitle">Acceso de pago</strong>
+<p class="small" id="paidText">Puedes contratar una guía individual o un acceso mensual/anual.</p>
+
+<div class="btns">
+<button class="btn" onclick="checkout('daily')" id="dailyBtn">Individual · $35.99</button>
+<button class="btn secondary" onclick="checkout('monthly')" id="monthlyBtn">Mensual · $69.99</button>
+<button class="btn secondary" onclick="checkout('annual')" id="annualBtn">Anual · $300</button>
+</div>
+</div>
+
+<div class="plan">
+<strong id="adminTitle">Acceso administrativo</strong>
+<p class="small" id="adminText">Acceso gratuito para el administrador autorizado.</p>
+
+<div class="field">
+<label id="userLabel">Usuario</label>
+<input id="adminUser" autocomplete="username">
+</div>
+
+<div class="field">
+<label id="passLabel">Contraseña</label>
+<input id="adminPass" type="password" autocomplete="current-password">
+</div>
+
+<button class="btn green" onclick="adminLogin()" id="adminBtn">Entrar como administrador</button>
+
+</div>
+</div>
+
+<div class="notice small" id="stripeNotice">
+El acceso de pago se verifica mediante Stripe. No introduzcas aquí datos de tarjeta.
+</div>
+</div>
+</section>
+
+<section class="screen" id="s2">
+<div class="card">
+<div class="step" id="step1">PASO 1 DE 7</div>
+<h2 id="tramiteTitle">¿Qué trámite necesitas?</h2>
+<p class="muted" id="tramiteHelp">Selecciona el trámite que deseas preparar.</p>
+<div id="tramitesBox" class="grid"></div>
+<div class="btns">
+<button class="btn secondary" onclick="go(1)" id="backAccessBtn">Atrás</button>
+</div>
+</div>
+</section>
+
+<section class="screen" id="s3">
+<div class="card">
+<div class="step" id="step2">PASO 2 DE 7</div>
+<h2 id="modalidadTitle">¿Qué necesitas hacer?</h2>
+<p class="muted" id="modalidadHelp">Escoge la opción que corresponda a tu situación.</p>
+<div id="modalidadesBox" class="grid"></div>
+<div class="btns">
+<button class="btn secondary" onclick="go(2)" id="backTramiteBtn">Atrás</button>
+</div>
+</div>
+</section>
+
+<section class="screen" id="s4">
+<div class="card">
+<div class="step" id="step3">PASO 3 DE 7</div>
+<div class="question-number" id="questionCounter"></div>
+<h2 id="preguntaTitle">Información del trámite</h2>
+<p id="preguntaHelp" class="muted">Responde una pregunta a la vez.</p>
+<div id="preguntaBox"></div>
+<div class="btns">
+<button class="btn secondary" onclick="preguntaBack()" id="questionBackBtn">Atrás</button>
+<button class="btn" id="preguntaNext" onclick="preguntaNext()">Siguiente</button>
+</div>
+</div>
+</section>
+
+<section class="screen" id="s5">
+<div class="card">
+<div class="step" id="step4">PASO 4 DE 7</div>
+<h2 id="docsTitle">Documentos</h2>
+<p class="muted" id="docsHelp">Revisa cada documento según tu situación actual.</p>
+
+<div class="notice small" id="docsNotice">
+Marca una opción para cada documento. Si no sabes si sirve, está vigente o es aceptado para tu caso, utiliza “No estoy seguro”.
+</div>
+
+<div id="docsBox"></div>
+
+<div class="btns">
+<button class="btn secondary" onclick="go(4)" id="backQuestionsBtn">Atrás</button>
+<button class="btn" onclick="saveDocsAndContinue()" id="docsNextBtn">Continuar</button>
+</div>
+</div>
+</section>
+
+<section class="screen" id="s6">
+<div class="card">
+<div class="step" id="step5">PASO 5 DE 7</div>
+<h2 id="personalTitle">Tus datos</h2>
+<p class="muted" id="personalHelp">Escribe únicamente la información que corresponda a tu caso.</p>
+<div id="personalBox"></div>
+<div class="btns">
+<button class="btn secondary" onclick="go(5)" id="backDocsBtn">Atrás</button>
+<button class="btn" onclick="savePersonalAndContinue()" id="personalNextBtn">Continuar</button>
+</div>
+</div>
+</section>
+
+<section class="screen" id="s7">
+<div class="card">
+<div class="step" id="step6">PASO 6 DE 7</div>
+<h2 id="reviewTitle">Revisa tu información</h2>
+<p class="muted" id="reviewHelp">Antes de generar la guía, revisa todo con calma.</p>
+<div id="reviewBox"></div>
+<div class="btns">
+<button class="btn secondary" onclick="go(6)" id="backPersonalBtn">Atrás</button>
+<button class="btn green" onclick="generatePDF()" id="pdfBtn">Generar guía PDF</button>
+</div>
+</div>
+</section>
+
+<section class="screen" id="s8">
+<div class="card center">
+<div class="step" id="step7">PASO 7 DE 7</div>
+<h2 id="readyTitle">Tu guía está lista</h2>
+<p id="readyText">La información fue organizada en un PDF de preparación.</p>
+
+<div class="notice success" id="readyNotice">
+Recuerda: esta guía no reemplaza las instrucciones finales del Consulado de México o del INE.
+</div>
+
+<div id="pdfInfo"></div>
+
+<div class="btns">
+<button class="btn green" id="downloadBtn">Descargar PDF</button>
+<button class="btn secondary" onclick="startOver()" id="anotherBtn">Comenzar otro trámite</button>
+<button class="btn red" onclick="logout()" id="logoutBtn">Cerrar sesión</button>
+</div>
+</div>
+</section>
+</div>
 
 <script>
+"use strict";
+
 const state={
- lang:"es",
- tramite:"",
- modalidad:"",
- tramiteData:null,
- modalidadData:null,
- questions:[],
- qIndex:0,
- answers:{},
- documents:[],
- docStates:{},
- personal:{},
- result:null
+lang:"es",
+access:false,
+admin:false,
+tramite:"",
+modalidad:"",
+ficha:null,
+preguntas:[],
+preguntaIndex:0,
+respuestas:{},
+documentos:[],
+docEstados:{},
+personal:{},
+pdf:""
 };
 
-const T={
- es:{
-  start:"COMENZAR",
-  access:"Acceso",
-  accessText:"Para utilizar la preparación documental necesita acceso autorizado.",
-  select:"¿Qué trámite necesita preparar?",
-  selectHint:"Seleccione solamente el trámite que desea realizar.",
-  type:"Seleccione la situación que corresponde",
-  typeHint:"La opción elegida determinará las preguntas que verá después.",
-  back:"Atrás",
-  next:"Continuar",
-  review:"Revisar caso",
-  docs:"Revise cada documento",
-  docsHint:"No marque que tiene un documento si no está seguro de contar con él.",
-  personal:"Datos para preparar su guía",
-  result:"Resultado de su preparación",
-  pdf:"Generar guía PDF",
-  loading:"Cargando...",
-  yes:"Lo tengo",
-  no:"No lo tengo",
-  unsure:"No estoy seguro",
-  na:"No aplica",
-  required:"Debe responder esta pregunta.",
-  choose:"Seleccione una opción.",
-  other:"Otro",
-  otherDetail:"Explique brevemente",
-  contradiction:"Hay información que necesita aclararse.",
-  missing:"Faltan documentos.",
-  advanced:"Preparación avanzada",
-  reviewNeeded:"Revisión necesaria",
-  pending:"Preguntas pendientes",
-  applicable:"Documentos aplicables a este caso",
-  available:"Documentos que usted tiene",
-  missingDocs:"Documentos faltantes",
-  doubtful:"Documentos por revisar",
-  situations:"Situaciones detectadas",
-  clarifications:"Aclaraciones necesarias",
-  confirm:"Información que debe confirmarse",
-  download:"DESCARGAR PDF"
- },
- en:{
-  start:"START",
-  access:"Access",
-  accessText:"Authorized access is required to use document preparation.",
-  select:"Which procedure do you need to prepare?",
-  selectHint:"Select only the procedure you need.",
-  type:"Select the situation that applies",
-  typeHint:"Your selection determines the questions you will see.",
-  back:"Back",
-  next:"Continue",
-  review:"Review case",
-  docs:"Review each document",
-  docsHint:"Do not mark a document as available if you are not sure you have it.",
-  personal:"Information for your guide",
-  result:"Preparation result",
-  pdf:"Generate PDF guide",
-  loading:"Loading...",
-  yes:"I have it",
-  no:"I do not have it",
-  unsure:"I am not sure",
-  na:"Not applicable",
-  required:"This question is required.",
-  choose:"Select an option.",
-  other:"Other",
-  otherDetail:"Briefly explain",
-  contradiction:"Some information needs clarification.",
-  missing:"Documents are missing.",
-  advanced:"Advanced preparation",
-  reviewNeeded:"Review needed",
-  pending:"Pending questions",
-  applicable:"Documents applicable to this case",
-  available:"Documents you have",
-  missingDocs:"Missing documents",
-  doubtful:"Documents to review",
-  situations:"Detected situations",
-  clarifications:"Clarifications needed",
-  confirm:"Information that must be confirmed",
-  download:"DOWNLOAD PDF"
- }
+const fallbackModalidades={
+pasaporte:{
+primera_vez_adulto:"Primera vez - adulto",
+renovacion:"Renovación / canje",
+robo_extravio:"Robo o extravío",
+menor:"Pasaporte para menor de edad",
+emergencia:"Situación urgente / emergencia"
+},
+matricula_consular:{
+primera_vez_adulto:"Primera vez - adulto",
+renovacion:"Renovación",
+robo_extravio:"Robo o extravío",
+menor:"Matrícula Consular para menor de edad"
+},
+ine_extranjero:{
+primera_vez:"Primera vez",
+correccion:"Corrección o actualización de datos",
+cambio_domicilio:"Cambio de domicilio",
+reposicion:"Reposición",
+vigencia:"Consulta de vigencia y situación de la credencial"
+}
 };
 
-function L(k){return T[state.lang][k]||k}
+const texts={
+es:{
+intro:"Preparación clara de trámites mexicanos desde Estados Unidos.",
+introNotice:"Te ayudamos a organizar tus datos, documentos y respuestas para preparar tu trámite. La decisión final siempre corresponde a la autoridad.",
+important:"Importante",
+importantText:"No sustituimos al Consulado de México ni al INE. Los requisitos pueden cambiar y algunos deben confirmarse directamente con la autoridad.",
+start:"Comenzar",
+access:"Acceso",
+accessHelp:"Selecciona una forma de entrar.",
+paid:"Acceso de pago",
+paidText:"Puedes contratar una guía individual o un acceso mensual/anual.",
+daily:"Individual · $35.99",
+monthly:"Mensual · $69.99",
+annual:"Anual · $300",
+admin:"Acceso administrativo",
+adminText:"Acceso gratuito para el administrador autorizado.",
+user:"Usuario",
+pass:"Contraseña",
+adminBtn:"Entrar como administrador",
+stripe:"El acceso de pago se verifica mediante Stripe. No introduzcas aquí datos de tarjeta.",
+step1:"PASO 1 DE 7",
+step2:"PASO 2 DE 7",
+step3:"PASO 3 DE 7",
+step4:"PASO 4 DE 7",
+step5:"PASO 5 DE 7",
+step6:"PASO 6 DE 7",
+step7:"PASO 7 DE 7",
+tramite:"¿Qué trámite necesitas?",
+tramiteHelp:"Selecciona el trámite que deseas preparar.",
+modalidad:"¿Qué necesitas hacer?",
+modalidadHelp:"Escoge la opción que corresponda a tu situación.",
+questionHelp:"Responde una pregunta a la vez.",
+back:"Atrás",
+next:"Siguiente",
+continue:"Continuar",
+docs:"Documentos",
+docsHelp:"Revisa cada documento según tu situación actual.",
+docsNotice:"Marca una opción para cada documento. Si no sabes si sirve, está vigente o es aceptado para tu caso, utiliza “No estoy seguro”.",
+have:"Lo tengo",
+missing:"No lo tengo",
+unsure:"No estoy seguro",
+personal:"Tus datos",
+personalHelp:"Escribe únicamente la información que corresponda a tu caso.",
+review:"Revisa tu información",
+reviewHelp:"Antes de generar la guía, revisa todo con calma.",
+pdf:"Generar guía PDF",
+ready:"Tu guía está lista",
+readyText:"La información fue organizada en un PDF de preparación.",
+readyNotice:"Recuerda: esta guía no reemplaza las instrucciones finales del Consulado de México o del INE.",
+download:"Descargar PDF",
+another:"Comenzar otro trámite",
+logout:"Cerrar sesión",
+processing:"Procesando...",
+loading:"Cargando...",
+verify:"Verificando acceso...",
+payment:"Preparando pago seguro...",
+verifyPayment:"Verificando el pago..."
+},
+en:{
+intro:"Clear preparation for Mexican procedures from the United States.",
+introNotice:"We help organize your information, documents and answers to prepare your procedure. The final decision always belongs to the authority.",
+important:"Important",
+importantText:"We are not the Mexican Government, SRE, a Mexican Consulate or the INE. Requirements may change and some must be confirmed directly with the authority.",
+start:"Start",
+access:"Access",
+accessHelp:"Select a way to enter.",
+paid:"Paid access",
+paidText:"You can purchase an individual guide or monthly/annual access.",
+daily:"Individual · $35.99",
+monthly:"Monthly · $69.99",
+annual:"Annual · $300",
+admin:"Administrative access",
+adminText:"Free access for the authorized administrator.",
+user:"Username",
+pass:"Password",
+adminBtn:"Enter as administrator",
+stripe:"Paid access is verified through Stripe. Do not enter card information here.",
+step1:"STEP 1 OF 7",
+step2:"STEP 2 OF 7",
+step3:"STEP 3 OF 7",
+step4:"STEP 4 OF 7",
+step5:"STEP 5 OF 7",
+step6:"STEP 6 OF 7",
+step7:"STEP 7 OF 7",
+tramite:"Which procedure do you need?",
+tramiteHelp:"Select the procedure you want to prepare.",
+modalidad:"What do you need to do?",
+modalidadHelp:"Choose the option that matches your situation.",
+questionHelp:"Answer one question at a time.",
+back:"Back",
+next:"Next",
+continue:"Continue",
+docs:"Documents",
+docsHelp:"Review each document according to your current situation.",
+docsNotice:"Choose one option for each document. If you are unsure whether it is valid, current or accepted for your case, choose “Not sure”.",
+have:"I have it",
+missing:"I don't have it",
+unsure:"Not sure",
+personal:"Your information",
+personalHelp:"Enter only the information that applies to your case.",
+review:"Review your information",
+reviewHelp:"Before generating the guide, review everything carefully.",
+pdf:"Generate PDF guide",
+ready:"Your guide is ready",
+readyText:"Your information was organized into a preparation PDF.",
+readyNotice:"Remember: this guide does not replace the final instructions of the Mexican Consulate or INE.",
+download:"Download PDF",
+another:"Start another procedure",
+logout:"Log out",
+processing:"Processing...",
+loading:"Loading...",
+verify:"Verifying access...",
+payment:"Preparing secure payment...",
+verifyPayment:"Verifying payment..."
+}
+};
+
+function $(id){return document.getElementById(id)}
+
 function esc(v){
- return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 }
-function show(id){
- document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
- document.getElementById(id).classList.add("active");
- window.scrollTo({top:0,behavior:"smooth"});
+
+function loading(v,text){
+$("loading").style.display=v?"flex":"none";
+if(text)$("loadingText").textContent=text;
 }
-function setLang(lang){
- state.lang=lang;
- document.documentElement.lang=lang;
- document.getElementById("esBtn").classList.toggle("active",lang==="es");
- document.getElementById("enBtn").classList.toggle("active",lang==="en");
- document.getElementById("startBtn").textContent=L("start");
- if(state.tramite)renderSelectionTexts();
+
+function toast(text){
+$("toast").textContent=text;
+$("toast").style.display="block";
+clearTimeout(window.toastTimer);
+window.toastTimer=setTimeout(()=>$("toast").style.display="none",3200);
 }
-async function api(url,options={}){
- const r=await fetch(url,{credentials:"include",...options});
- let d={};
- try{d=await r.json()}catch{}
- if(!r.ok)throw new Error(d.detail||d.message||`HTTP ${r.status}`);
- return d;
+
+async function api(url,opt={}){
+const r=await fetch(url,opt);
+let d={};
+try{d=await r.json()}catch(e){}
+if(!r.ok)throw new Error(d.detail||d.error||"No fue posible completar la operación.");
+return d;
 }
-function renderSelectionTexts(){
- document.getElementById("tramiteTitle").textContent=L("select");
- document.getElementById("modalidadTitle").textContent=L("type");
- document.querySelector("#s3 .muted").textContent=L("typeHint");
+
+function setText(id,value){
+const el=$(id);
+if(el)el.textContent=value;
 }
-async function goAccess(){
- const d=await api("/api/check-access");
- if(d.access){await loadTramites();return}
- show("s1");
+
+function applyLanguage(){
+const t=texts[state.lang];
+document.documentElement.lang=state.lang;
+
+setText("introText",t.intro);
+setText("introNotice",t.introNotice);
+setText("importantTitle",t.important);
+setText("importantText",t.importantText);
+setText("startBtn",t.start);
+
+setText("accessTitle",t.access);
+setText("accessHelp",t.accessHelp);
+setText("paidTitle",t.paid);
+setText("paidText",t.paidText);
+setText("dailyBtn",t.daily);
+setText("monthlyBtn",t.monthly);
+setText("annualBtn",t.annual);
+setText("adminTitle",t.admin);
+setText("adminText",t.adminText);
+setText("userLabel",t.user);
+setText("passLabel",t.pass);
+setText("adminBtn",t.adminBtn);
+setText("stripeNotice",t.stripe);
+
+["step1","step2","step3","step4","step5","step6","step7"].forEach(x=>setText(x,t[x]));
+
+setText("tramiteTitle",t.tramite);
+setText("tramiteHelp",t.tramiteHelp);
+setText("modalidadTitle",state.ficha?.nombre||t.modalidad);
+setText("modalidadHelp",t.modalidadHelp);
+setText("questionHelp",t.questionHelp);
+setText("questionBackBtn",t.back);
+setText("docsTitle",t.docs);
+setText("docsHelp",t.docsHelp);
+setText("docsNotice",t.docsNotice);
+setText("backQuestionsBtn",t.back);
+setText("docsNextBtn",t.continue);
+setText("personalTitle",t.personal);
+setText("personalHelp",t.personalHelp);
+setText("backDocsBtn",t.back);
+setText("personalNextBtn",t.continue);
+setText("reviewTitle",t.review);
+setText("reviewHelp",t.reviewHelp);
+setText("backPersonalBtn",t.back);
+setText("pdfBtn",t.pdf);
+setText("readyTitle",t.ready);
+setText("readyText",t.readyText);
+setText("readyNotice",t.readyNotice);
+setText("downloadBtn",t.download);
+setText("anotherBtn",t.another);
+setText("logoutBtn",t.logout);
+setText("backAccessBtn",t.back);
+setText("backTramiteBtn",t.back);
+
+$("langBtn").textContent=state.lang==="es"?"EN":"ES";
+
+if(state.preguntas.length)renderPregunta();
+if(state.documentos.length)renderDocs();
+if($("s7").classList.contains("active"))renderReview();
 }
-async function checkPayment(){
- const sid=new URLSearchParams(location.search).get("session_id");
- if(!sid)return false;
- try{
-  const d=await api("/api/verify-payment?session_id="+encodeURIComponent(sid));
-  if(d.access){history.replaceState({},document.title,"/");await loadTramites();return true}
- }catch(e){showError("accessError",e.message)}
- return false;
+
+function go(n){
+document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+const screen=$("s"+n);
+if(screen)screen.classList.add("active");
+$("progressBar").style.width=Math.min(100,(n/8)*100)+"%";
+window.scrollTo({top:0,behavior:"smooth"});
+
+if(n===2)loadTramites();
+if(n===3)loadModalidades();
+if(n===5)renderDocs();
+if(n===6)renderPersonal();
+if(n===7)renderReview();
 }
+
+function toggleLang(){
+state.lang=state.lang==="es"?"en":"es";
+applyLanguage();
+toast(state.lang==="es"?"Idioma español seleccionado":"English selected");
+}
+
+async function checkAccess(){
+try{
+const d=await api("/api/check-access");
+state.access=!!d.access;
+state.admin=!!d.admin;
+if(state.access)go(2);
+}catch(e){}
+}
+
 async function adminLogin(){
- const box=document.getElementById("accessError");
- box.innerHTML="";
- try{
-  await api("/api/admin-login",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    username:document.getElementById("username").value.trim(),
-    password:document.getElementById("password").value
-   })
-  });
-  await loadTramites();
- }catch(e){showError("accessError",e.message)}
+const username=$("adminUser").value.trim();
+const password=$("adminPass").value;
+
+if(!username||!password){
+toast(state.lang==="es"?"Escribe usuario y contraseña.":"Enter username and password.");
+return;
 }
-async function pay(plan){
- const box=document.getElementById("accessError");
- box.innerHTML="";
- try{
-  const d=await api("/api/create-checkout-session",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({plan})
-  });
-  if(d.url)location.href=d.url;
-  else throw new Error("No se recibió la dirección de pago.");
- }catch(e){showError("accessError",e.message)}
+
+loading(true,texts[state.lang].verify);
+
+try{
+const d=await api("/api/admin-login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username,password})
+});
+state.access=true;
+state.admin=true;
+toast(d.message||"Acceso autorizado.");
+go(2);
+}catch(e){toast(e.message)}
+finally{loading(false)}
 }
-async function logout(){
- try{await api("/api/logout",{method:"POST"})}catch{}
- location.reload();
+
+async function checkout(plan){
+const map={daily:"daily",monthly:"monthly",annual:"annual"};
+
+loading(true,texts[state.lang].payment);
+
+try{
+const d=await api("/api/create-checkout-session",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({plan:map[plan]})
+});
+
+if(d.url){location.href=d.url;return}
+if(d.checkout_url){location.href=d.checkout_url;return}
+if(d.id){location.href="https://checkout.stripe.com/c/pay/"+d.id;return}
+
+throw new Error("Stripe no devolvió una sesión de pago.");
+}catch(e){
+toast(e.message);
+loading(false);
 }
+}
+
+async function verifyPayment(){
+const params=new URLSearchParams(location.search);
+const session=params.get("session_id")||params.get("checkout_session_id");
+
+if(!session)return;
+
+loading(true,texts[state.lang].verifyPayment);
+
+try{
+const d=await api("/api/verify-payment?session_id="+encodeURIComponent(session));
+
+if(d.access){
+state.access=true;
+history.replaceState({},document.title,location.pathname);
+toast(state.lang==="es"?"Pago verificado. Acceso autorizado.":"Payment verified. Access authorized.");
+go(2);
+}else{
+toast(state.lang==="es"?"El pago todavía no está confirmado.":"The payment has not been confirmed yet.");
+}
+}catch(e){
+toast(e.message);
+}finally{
+loading(false);
+}
+}
+
 async function loadTramites(){
- try{
-  const d=await api("/api/tramites");
-  const box=document.getElementById("tramitesList");
-  box.innerHTML="";
-  (d.tramites||[]).forEach(t=>{
-   const b=document.createElement("button");
-   b.className="option";
-   b.style.width="100%";
-   b.style.textAlign="left";
-   b.innerHTML=`<span style="flex:1"><strong>${esc(t.nombre)}</strong>${t.autoridad?`<br><small class="muted">${esc(t.autoridad)}</small>`:""}</span><span>›</span>`;
-   b.onclick=()=>selectTramite(t.id);
-   box.appendChild(b);
-  });
-  show("s2");
- }catch(e){showError("tramiteError",e.message)}
+if(!state.access){go(1);return}
+
+const box=$("tramitesBox");
+box.innerHTML="<p class='muted'>"+esc(texts[state.lang].loading)+"</p>";
+
+try{
+const d=await api("/api/tramites");
+const list=d.tramites||d.data||d;
+let arr=[];
+
+if(Array.isArray(list))arr=list;
+else if(list&&typeof list==="object"){
+arr=Object.entries(list).map(([id,v])=>({
+id,
+nombre:v?.nombre||id,
+nombre_corto:v?.nombre_corto||v?.nombre||id,
+autoridad:v?.autoridad||""
+}));
 }
-async function selectTramite(id){
- state.tramite=id;
- state.modalidad="";
- state.answers={};
- state.qIndex=0;
- try{
-  const d=await api("/api/modalidades?tramite="+encodeURIComponent(id));
-  const box=document.getElementById("modalidadesList");
-  box.innerHTML="";
-  (d.modalidades||[]).forEach(m=>{
-   const b=document.createElement("button");
-   b.className="option";
-   b.style.width="100%";
-   b.style.textAlign="left";
-   b.innerHTML=`<span style="flex:1"><strong>${esc(m.nombre)}</strong>${m.descripcion?`<br><small class="muted">${esc(m.descripcion)}</small>`:""}</span><span>›</span>`;
-   b.onclick=()=>selectModalidad(m.id);
-   box.appendChild(b);
-  });
-  show("s3");
- }catch(e){showError("modalidadError",e.message)}
+
+box.innerHTML="";
+
+arr.forEach(t=>{
+const id=t.id||t.key||t.codigo;
+const name=t.nombre||t.name||id;
+if(!id)return;
+
+const b=document.createElement("button");
+b.className="choice";
+b.innerHTML="<strong>"+esc(name)+"</strong><small>"+
+esc(t.autoridad||"Preparar este trámite.")+
+"</small>";
+
+b.onclick=()=>selectTramite(id,name);
+box.appendChild(b);
+});
+
+if(!arr.length)throw new Error("No se encontraron trámites.");
+}catch(e){
+box.innerHTML="<div class='notice danger'>No se pudieron cargar los trámites.</div>";
+toast(e.message);
 }
+}
+
+async function selectTramite(id,name){
+state.tramite=id;
+state.modalidad="";
+state.ficha=null;
+state.preguntas=[];
+state.preguntaIndex=0;
+state.respuestas={};
+state.docEstados={};
+state.documentos=[];
+state.personal={};
+state.pdf="";
+
+$("modalidadTitle").textContent=name||texts[state.lang].modalidad;
+
+await loadModalidades();
+go(3);
+}
+
+async function loadModalidades(){
+const box=$("modalidadesBox");
+box.innerHTML="<p class='muted'>"+esc(texts[state.lang].loading)+"</p>";
+
+let data=null;
+
+try{
+data=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite));
+}catch(e){}
+
+let mods=data?.modalidades||data?.ficha?.modalidades||null;
+
+if(!mods&&data?.data?.modalidades)mods=data.data.modalidades;
+if(!mods)mods=fallbackModalidades[state.tramite]||{};
+
+box.innerHTML="";
+
+Object.entries(mods).forEach(([id,v])=>{
+const name=typeof v==="string"?v:(v?.nombre||id);
+const desc=typeof v==="object"?(v?.descripcion||""):"";
+
+const b=document.createElement("button");
+b.className="choice";
+b.innerHTML="<strong>"+esc(name)+"</strong>"+
+(desc?"<small>"+esc(desc)+"</small>":"");
+
+b.onclick=()=>selectModalidad(id);
+box.appendChild(b);
+});
+
+if(!Object.keys(mods).length){
+box.innerHTML="<div class='notice danger'>No hay modalidades configuradas para este trámite.</div>";
+}
+}
+
 async function selectModalidad(id){
- state.modalidad=id;
- try{
-  const d=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite)+"&modalidad="+encodeURIComponent(id));
-  state.modalidadData=d.ficha||{};
-  state.questions=state.modalidadData.preguntas||[];
-  state.answers={};
-  state.qIndex=0;
-  buildVisibleQuestions();
-  if(!state.questions.length){prepareDocuments();return}
-  renderQuestion();
-  show("s4");
- }catch(e){showError("modalidadError",e.message)}
+state.modalidad=id;
+
+loading(true,texts[state.lang].loading);
+
+try{
+const d=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite)+"&modalidad="+encodeURIComponent(id));
+
+state.ficha=d.ficha||d.data||d;
+state.preguntas=Array.isArray(state.ficha.preguntas)?state.ficha.preguntas:[];
+state.preguntaIndex=0;
+state.respuestas={};
+state.docEstados={};
+
+state.documentos=Array.isArray(state.ficha.documentos)
+?state.ficha.documentos
+:Object.values(state.ficha.documentos||{});
+
+go(4);
+renderPregunta();
+}catch(e){
+toast(e.message);
+}finally{
+loading(false);
 }
-function buildVisibleQuestions(){
- state.visibleQuestions=(state.questions||[]).filter(q=>questionVisible(q,state.answers));
 }
-function flatten(v){
- if(Array.isArray(v))return v.flatMap(flatten);
- if(v&&typeof v==="object")return Object.values(v).flatMap(flatten);
- return [String(v??"")];
+
+function normalizeQuestionType(q){
+let type=q.tipo||q.type||"texto";
+type=String(type).toLowerCase();
+
+if(["multiple","multi_select","checkbox","check","seleccion_multiple"].includes(type))return"multiple";
+if(["si_no","sí_no","yes_no","boolean"].includes(type))return"si_no";
+if(["opciones","single","select","radio"].includes(type))return"opciones";
+if(["numero","number"].includes(type))return"numero";
+if(["fecha","date"].includes(type))return"fecha";
+if(["email","correo"].includes(type))return"email";
+if(["textarea","texto_largo"].includes(type))return"textarea";
+
+return"texto";
 }
-function valuesMatch(v,x){
- const a=flatten(v).map(norm),b=flatten(x).map(norm);
- return a.some(i=>b.some(j=>j&&(i===j||i.includes(j)||j.includes(i))));
+
+function questionOptions(q){
+return Array.isArray(q.opciones)?q.opciones:
+Array.isArray(q.options)?q.options:[];
 }
-function norm(v){
- return String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();
+
+function renderPregunta(){
+const q=state.preguntas[state.preguntaIndex];
+const box=$("preguntaBox");
+
+if(!q){
+go(5);
+return;
 }
-function conditionMatch(c){
- if(!c||typeof c!=="object")return true;
- const key=c.respuesta||c.pregunta||c.campo;
- const v=key?state.answers[key]:undefined;
- if("incluye"in c)return valuesMatch(v,c.incluye);
- if("contiene"in c)return valuesMatch(v,c.contiene);
- if("igual_a"in c)return valuesMatch(v,c.igual_a);
- if("es"in c)return valuesMatch(v,c.es);
- if("alguno_de"in c)return c.alguno_de.some(x=>valuesMatch(v,x));
- if("todos_de"in c)return c.todos_de.every(x=>valuesMatch(v,x));
- if("no_incluye"in c)return !valuesMatch(v,c.no_incluye);
- if("no_es"in c)return !valuesMatch(v,c.no_es);
- if("existe"in c)return (v!==undefined&&v!==null&&v!==""&&(!Array.isArray(v)||v.length>0))===!!c.existe;
- return true;
+
+const total=state.preguntas.length;
+const number=state.preguntaIndex+1;
+const type=normalizeQuestionType(q);
+
+$("questionCounter").textContent=(state.lang==="es"?"PREGUNTA ":"QUESTION ")+number+" / "+total;
+$("preguntaTitle").textContent=q.texto||q.pregunta||q.question||"Información";
+$("preguntaHelp").textContent=q.ayuda||q.help||texts[state.lang].questionHelp;
+
+box.innerHTML="";
+
+if(q.descripcion||q.description){
+const h=document.createElement("div");
+h.className="help";
+h.textContent=q.descripcion||q.description;
+box.appendChild(h);
 }
-function questionVisible(q){
- const c=q.mostrar_si||q.si||q.condicion;
- if(!c)return true;
- return Array.isArray(c)?c.every(conditionMatch):conditionMatch(c);
+
+if(type==="si_no"){
+const saved=state.respuestas[q.id];
+
+box.insertAdjacentHTML("beforeend",`
+<div class="option-list">
+<label class="option">
+<input type="radio" name="q" value="Sí" ${saved==="Sí"?"checked":""}>
+<span>${state.lang==="es"?"Sí":"Yes"}</span>
+</label>
+<label class="option">
+<input type="radio" name="q" value="No" ${saved==="No"?"checked":""}>
+<span>No</span>
+</label>
+</div>`);
 }
-function renderQuestion(){
- buildVisibleQuestions();
- if(state.qIndex>=state.visibleQuestions.length){prepareDocuments();return}
- const q=state.visibleQuestions[state.qIndex];
- const total=state.visibleQuestions.length;
- document.getElementById("questionStep").textContent=`3. ${state.qIndex+1} / ${total}`;
- document.getElementById("progressBar").style.width=((state.qIndex+1)/Math.max(total,1)*100)+"%";
- document.getElementById("questionTitle").textContent=q.texto||q.pregunta||"";
- document.getElementById("questionHelp").textContent=q.ayuda||q.help||"";
- document.getElementById("questionError").innerHTML="";
- const area=document.getElementById("questionArea");
- area.innerHTML="";
- const type=q.tipo||"single";
- const value=state.answers[q.id];
- if(type==="texto"||type==="text"||type==="date"||type==="fecha"||type==="numero"||type==="number"||type==="email"){
-  const input=document.createElement("input");
-  input.type=type==="fecha"?"date":type==="numero"?"number":type==="email"?"email":"text";
-  input.value=value??"";
-  input.id="answerInput";
-  input.placeholder=q.placeholder||"";
-  area.appendChild(input);
- }else if(type==="multiple"||type==="multi_select"){
-  const values=Array.isArray(value)?value:[];
-  renderOptions(area,q,values,true);
- }else if(type==="casillas"){
-  const values=Array.isArray(value)?value:[];
-  renderOptions(area,q,values,true);
- }else if(type==="select"||type==="single"||type==="radio"){
-  renderOptions(area,q,value,false);
- }else if(type==="textarea"){
-  const input=document.createElement("textarea");
-  input.id="answerInput";
-  input.value=value??"";
-  area.appendChild(input);
- }else{
-  renderOptions(area,q,value,false);
- }
- if(q.permite_otro!==false && (type==="single"||type==="radio"||type==="multiple"||type==="multi_select")){
-  const current=Array.isArray(value)?value:[value];
-  const hasOther=current.some(x=>norm(x)==="otro");
-  if(hasOther){
-   const f=document.createElement("div");
-   f.className="field";
-   f.innerHTML=`<label>${L("otherDetail")}</label><textarea id="otherDetail">${esc(state.answers[q.id+"_OTRO_DETALLE"]||"")}</textarea>`;
-   area.appendChild(f);
-  }
- }
- document.getElementById("prevQuestion").style.display=state.qIndex?"inline-block":"none";
- document.getElementById("nextQuestion").textContent=state.qIndex===total-1?L("review"):L("next");
+else if(type==="multiple"){
+let saved=state.respuestas[q.id]||[];
+if(!Array.isArray(saved))saved=[saved];
+
+const options=questionOptions(q);
+
+box.insertAdjacentHTML("beforeend",
+"<div class='option-list'>"+
+options.map((x,i)=>`
+<label class="option">
+<input type="checkbox" name="qmulti" value="${esc(x)}" ${saved.includes(x)?"checked":""}>
+<span>${esc(x)}</span>
+</label>`).join("")+
+"</div>");
+
+if(q.permite_otro!==false){
+box.insertAdjacentHTML("beforeend",`
+<div class="field">
+<label>${state.lang==="es"?"Otro (especifica si corresponde)":"Other (specify if applicable)"}</label>
+<input id="qOther" type="text" value="${esc(saved.find(x=>String(x).startsWith("__OTRO__:"))?.replace("__OTRO__:","")||"")}">
+</div>`);
 }
-function renderOptions(area,q,value,multiple){
- let options=q.opciones||q.options||[];
- if(!Array.isArray(options))options=[];
- const values=Array.isArray(value)?value:[value];
- options.forEach((o,i)=>{
-  const val=typeof o==="object"?(o.valor??o.value??o.id??""):o;
-  const text=typeof o==="object"?(o.texto??o.label??o.nombre??val):o;
-  const wrap=document.createElement("div");
-  wrap.className="option";
-  const input=document.createElement("input");
-  input.type=multiple?"checkbox":"radio";
-  input.name="questionOption";
-  input.value=val;
-  input.checked=values.some(x=>String(x)===String(val));
-  const label=document.createElement("label");
-  label.textContent=text;
-  wrap.append(input,label);
-  area.appendChild(wrap);
- });
 }
-function readQuestion(){
- const q=state.visibleQuestions[state.qIndex];
- if(!q)return true;
- const type=q.tipo||"single";
- let value;
- if(["texto","text","date","fecha","numero","number","email","textarea"].includes(type)){
-  value=document.getElementById("answerInput")?.value.trim()||"";
- }else{
-  const inputs=[...document.querySelectorAll('input[name="questionOption"]:checked')];
-  value=(type==="multiple"||type==="multi_select"||type==="casillas")?inputs.map(x=>x.value):(inputs[0]?.value||"");
- }
- if(q.obligatoria){
-  const empty=value===""||value===undefined||(Array.isArray(value)&&!value.length);
-  if(empty){showError("questionError",L("required"));return false}
- }
- state.answers[q.id]=value;
- if(Array.isArray(value)&&value.some(x=>norm(x)==="otro")){
-  state.answers[q.id+"_OTRO_DETALLE"]=document.getElementById("otherDetail")?.value.trim()||"";
- }
- return true;
+else if(type==="opciones"){
+const saved=state.respuestas[q.id];
+
+box.insertAdjacentHTML("beforeend",
+"<div class='option-list'>"+
+questionOptions(q).map(x=>`
+<label class="option">
+<input type="radio" name="q" value="${esc(x)}" ${saved===x?"checked":""}>
+<span>${esc(x)}</span>
+</label>`).join("")+
+"</div>");
+
+if(q.permite_otro!==false){
+box.insertAdjacentHTML("beforeend",`
+<div class="field">
+<label>${state.lang==="es"?"Otro (especifica si corresponde)":"Other (specify if applicable)"}</label>
+<input id="qOther" type="text">
+</div>`);
 }
-function nextQuestion(){
- if(!readQuestion())return;
- buildVisibleQuestions();
- state.qIndex++;
- if(state.qIndex>=state.visibleQuestions.length){prepareDocuments();return}
- renderQuestion();
 }
-function previousQuestion(){
- if(state.qIndex>0){state.qIndex--;renderQuestion()}
- else show("s3");
+else{
+const saved=state.respuestas[q.id];
+const value=Array.isArray(saved)?saved.join(", "):saved||"";
+const inputType=type==="numero"?"number":type==="fecha"?"date":type==="email"?"email":"text";
+
+if(type==="textarea"){
+box.insertAdjacentHTML("beforeend",`
+<div class="field">
+<textarea id="qInput">${esc(value)}</textarea>
+
+</div>`);
+}else{
+box.insertAdjacentHTML("beforeend",`
+<div class="field">
+<input id="qInput" type="${inputType}" value="${esc(value)}" autocomplete="off">
+</div>`);
 }
-function backToQuestions(){
- state.qIndex=Math.max(0,state.visibleQuestions.length-1);
- renderQuestion();
- show("s4");
 }
-async function prepareDocuments(){
- try{
-  const d=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite)+"&modalidad="+encodeURIComponent(state.modalidad));
-  state.modalidadData=d.ficha||state.modalidadData;
-  state.documents=(state.modalidadData.documentos||[]).filter(documentVisible);
-  state.docStates={};
-  renderDocuments();
-  show("s5");
- }catch(e){showError("documentsError",e.message)}
+
+$("preguntaNext").textContent=state.preguntaIndex===total-1?texts[state.lang].continue:texts.next;
 }
-function documentVisible(d){
- if(!d||typeof d!=="object")return true;
- const c=d.mostrar_si||d.si||d.condicion;
- if(!c)return true;
- return Array.isArray(c)?c.every(conditionMatch):conditionMatch(c);
+
+function getPreguntaValue(){
+const q=state.preguntas[state.preguntaIndex];
+if(!q)return null;
+
+const type=normalizeQuestionType(q);
+
+if(type==="si_no"||type==="opciones"){
+const r=document.querySelector("input[name='q']:checked");
+let value=r?r.value:"";
+
+if(!value&&q.permite_otro!==false){
+const other=$("qOther")?.value.trim();
+if(other)value="**OTRO**:"+other;
 }
-function renderDocuments(){
- const box=document.getElementById("documentsArea");
- box.innerHTML="";
- if(!state.documents.length){
-  box.innerHTML='<div class="notice">No hay una lista documental adicional determinada para este caso. POR CONFIRMAR CON LA AUTORIDAD.</div>';
-  return;
- }
- state.documents.forEach((d,i)=>{
-  const name=typeof d==="object"?(d.nombre||d.documento||d.titulo):d;
-  const reason=typeof d==="object"?(d.motivo||""):"";
-  const wrap=document.createElement("div");
-  wrap.className="resultbox";
-  wrap.innerHTML=`<strong>${esc(name)}</strong>${reason?`<p class="muted">${esc(reason)}</p>`:""}
-  <div class="grid">
-  <label class="option"><input type="radio" name="doc_${i}" value="LO_TENGO"> ${L("yes")}</label>
-  <label class="option"><input type="radio" name="doc_${i}" value="NO_LO_TENGO"> ${L("no")}</label>
-  <label class="option"><input type="radio" name="doc_${i}" value="NO_ESTOY_SEGURO"> ${L("unsure")}</label>
-  <label class="option"><input type="radio" name="doc_${i}" value="NO_APLICA"> ${L("na")}</label>
-  </div>`;
-  box.appendChild(wrap);
- });
+
+return value;
 }
-function finishDocuments(){
- const disponibles=[],faltantes=[],dudosos=[];
- for(let i=0;i<state.documents.length;i++){
-  const d=state.documents[i];
-  const name=typeof d==="object"?(d.nombre||d.documento||d.titulo):d;
-  const checked=document.querySelector(`input[name="doc_${i}"]:checked`);
-  if(!checked){
-   const required=typeof d==="object"?d.obligatorio!==false:true;
-   if(required){showError("documentsError","Debe indicar qué sucede con cada documento solicitado.");return}
-   continue;
-  }
-  state.docStates[name]=checked.value;
-  if(checked.value==="LO_TENGO")disponibles.push(name);
-  if(checked.value==="NO_LO_TENGO")faltantes.push(name);
-  if(checked.value==="NO_ESTOY_SEGURO")dudosos.push(name);
- }
- state.disponibles=disponibles;
- state.faltantes=faltantes;
- state.dudosos=dudosos;
- buildPersonal();
- show("s6");
+
+if(type==="multiple"){
+let values=[...document.querySelectorAll("input[name='qmulti']:checked")].map(x=>x.value);
+const other=$("qOther")?.value.trim();
+
+if(other)values.push("**OTRO**:"+other);
+
+return values;
 }
-function buildPersonal(){
- const box=document.getElementById("personalArea");
- box.innerHTML="";
- const fields=[
-  ["nombres","Nombres"],
-  ["apellido_paterno","Apellido paterno"],
-  ["apellido_materno","Apellido materno"],
-  ["fecha_nacimiento","Fecha de nacimiento"],
-  ["lugar_nacimiento","Lugar de nacimiento"],
-  ["entidad_nacimiento","Entidad de nacimiento"],
-  ["sexo","Sexo"],
-  ["nacionalidad","Nacionalidad"],
-  ["estado_residencia_usa","Estado donde vive en EE. UU."],
-  ["ciudad_residencia_usa","Ciudad donde vive"],
-  ["domicilio_usa","Domicilio"],
-  ["codigo_postal","Código postal"],
-  ["telefono","Teléfono"],
-  ["email","Correo electrónico"]
- ];
- const data=state.personal||{};
- fields.forEach(([id,label])=>{
-  const div=document.createElement("div");
-  div.className="field";
-  div.innerHTML=`<label>${label}</label><input id="p_${id}" value="${esc(data[id]||"")}" ${id==="email"?"type=email":id==="fecha_nacimiento"?"type=date":""}>`;
-  box.appendChild(div);
- });
+
+return $("qInput")?.value.trim()||"";
 }
-function finishPersonal(){
- const fields=["nombres","apellido_paterno","apellido_materno","fecha_nacimiento","lugar_nacimiento","entidad_nacimiento","sexo","nacionalidad","estado_residencia_usa","ciudad_residencia_usa","domicilio_usa","codigo_postal","telefono","email"];
- state.personal={};
- fields.forEach(id=>{state.personal[id]=document.getElementById("p_"+id)?.value.trim()||""});
- submitResult();
+
+function preguntaNext(){
+const q=state.preguntas[state.preguntaIndex];
+if(!q)return;
+
+const v=getPreguntaValue();
+const required=q.obligatoria!==false&&q.required!==false;
+
+const empty=Array.isArray(v)?v.length===0:!v&&v!==0;
+
+if(required&&empty){
+toast(state.lang==="es"?"Responde esta pregunta antes de continuar.":"Answer this question before continuing.");
+return;
 }
-async function submitResult(){
- const box=document.getElementById("personalError");
- box.innerHTML="";
- try{
-  const d=await api("/api/resultado-tramite",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    tramite:state.tramite,
-    modalidad:state.modalidad,
-    datos_personales:state.personal,
-    datos_especificos:state.answers,
-    documentos_disponibles:state.disponibles||[],
-    documentos_faltantes:state.faltantes||[],
-    documentos_dudosos:state.dudosos||[],
-    situaciones:[],
-    aclaraciones:[],
-    idioma:state.lang
-   })
-  });
-  state.result=d;
-  renderResult();
-  show("s7");
- }catch(e){showError("personalError",e.message)}
+
+state.respuestas[q.id]=v;
+
+if(state.preguntaIndex<state.preguntas.length-1){
+state.preguntaIndex++;
+renderPregunta();
+}else{
+go(5);
 }
-function renderResult(){
- const r=state.result;
- const box=document.getElementById("resultArea");
- let cls=r.estado==="Preparación avanzada"?"ok":r.estado==="Falta documentación"?"bad":"review";
- let html=`<div class="resultbox"><span class="status ${cls}">${esc(r.estado)}</span></div>`;
- if(r.preguntas_pendientes?.length){
-  html+=`<div class="resultbox"><h3>${L("pending")}</h3><ul class="list">${r.preguntas_pendientes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
- }
- html+=renderDocList(L("applicable"),r.documentos_correspondientes||[]);
- html+=renderSimpleList(L("available"),r.documentos_disponibles||[],"ok");
- html+=renderSimpleList(L("missingDocs"),r.documentos_faltantes||[],"bad");
- html+=renderSimpleList(L("doubtful"),r.documentos_dudosos||[],"review");
- if(r.situaciones?.length)html+=renderSimpleList(L("situations"),r.situaciones,"review");
- if(r.contradicciones?.length)html+=renderSimpleList(L("clarifications"),r.contradicciones,"bad");
- html+=`<div class="notice warning"><strong>${L("confirm")}:</strong> verifique la información oficial vigente antes de acudir.</div>`;
- box.innerHTML=html;
 }
-function renderDocList(title,docs){
- if(!docs.length)return "";
- return `<div class="resultbox"><h3>${esc(title)}</h3>${docs.map(d=>{
-  const name=d.documento||d.nombre||d;
-  const st=d.estado||"Por revisar";
-  const cls=st==="Disponible"?"ok":st==="Falta"?"bad":"review";
-  return `<div class="doc"><span>${esc(name)}</span><span class="status ${cls}">${esc(st)}</span></div>`;
- }).join("")}</div>`;
+
+function preguntaBack(){
+if(state.preguntaIndex>0){
+state.preguntaIndex--;
+renderPregunta();
+}else{
+go(3);
 }
-function renderSimpleList(title,list,cls){
- if(!list?.length)return "";
- return `<div class="resultbox"><h3>${esc(title)}</h3><ul class="list">${list.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
 }
-async function generatePdf(){
- const box=document.getElementById("pdfResult");
- box.innerHTML='<p class="muted">Generando documento...</p>';
- try{
-  const d=await api("/api/generar-guia-consular",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    tramite:state.tramite,
-    modalidad:state.modalidad,
-    datos_personales:state.personal,
-    datos_especificos:state.answers,
-    documentos_disponibles:state.disponibles||[],
-    documentos_faltantes:state.faltantes||[],
-    documentos_dudosos:state.dudosos||[],
-    situaciones:state.result?.situaciones||[],
-    aclaraciones:state.result?.contradicciones||[],
-    idioma:state.lang
-   })
-  });
-  box.innerHTML=`<div class="success"><strong>La guía fue preparada correctamente.</strong><br>Estado: ${esc(d.estado)}</div>`;
-  const btn=document.getElementById("downloadBtn");
-  btn.style.display="inline-block";
-  btn.textContent=L("download");
-  btn.onclick=()=>location.href=d.download;
-  show("s8");
- }catch(e){
-  box.innerHTML=`<div class="error">${esc(e.message)}</div>`;
- }
+
+function docName(doc){
+if(typeof doc==="string")return doc;
+return doc?.nombre||doc?.name||doc?.documento||"Documento";
 }
-function showError(id,msg){
- const el=document.getElementById(id);
- if(el)el.innerHTML=`<div class="error">${esc(msg)}</div>`;
+
+function renderDocs(){
+const box=$("docsBox");
+const docs=Array.isArray(state.documentos)?state.documentos:[];
+
+if(!docs.length){
+box.innerHTML="<div class='notice'>No hay una lista específica configurada para esta modalidad. Debes confirmar los documentos con la autoridad.</div>";
+return;
 }
-function restart(){
- state.tramite="";
- state.modalidad="";
- state.answers={};
- state.documents=[];
- state.personal={};
- state.result=null;
- loadTramites();
+
+box.innerHTML=docs.map((doc,i)=>{
+const id="d"+i;
+const s=state.docEstados[id]||"";
+const name=docName(doc);
+
+return `<div class="doc">
+
+<div class="doc-name"><b>${esc(name)}</b>${
+typeof doc==="object"&&doc.motivo?
+"<div class='small muted'>"+esc(doc.motivo)+"</div>":""
+}</div>
+<div class="doc-status">
+<button class="${s==="have"?"active have":""}" onclick="setDoc('${id}','have')">${esc(texts[state.lang].have)}</button>
+<button class="${s==="missing"?"active missing":""}" onclick="setDoc('${id}','missing')">${esc(texts[state.lang].missing)}</button>
+<button class="${s==="unsure"?"active unsure":""}" onclick="setDoc('${id}','unsure')">${esc(texts[state.lang].unsure)}</button>
+</div>
+</div>`;
+}).join("");
 }
-(async function(){
- setLang("es");
- await checkPayment();
-})();
-</script>
+
+function setDoc(id,status){
+state.docEstados[id]=status;
+renderDocs();
+}
+
+function saveDocsAndContinue(){
+const docs=state.documentos||[];
+const unanswered=docs.filter((_,i)=>!state.docEstados["d"+i]);
+
+if(unanswered.length){
+toast(state.lang==="es"?"Revisa todos los documentos antes de continuar.":"Review every document before continuing.");
+return;
+}
+
+go(6);
+}
+
+const personalFields=[
+["nombre","Nombre(s)","text",true],
+["apellido_paterno","Apellido paterno","text",true],
+["apellido_materno","Apellido materno","text",false],
+["fecha_nacimiento","Fecha de nacimiento","date",true],
+["lugar_nacimiento","Lugar de nacimiento","text",false],
+["nacionalidad","Nacionalidad","text",false],
+["sexo","Sexo","text",false],
+["CURP","CURP","text",false],
+["telefono","Teléfono","text",false],
+["correo","Correo electrónico","email",false],
+["domicilio","Domicilio actual","text",false],
+["numero_exterior","Número exterior","text",false],
+["numero_interior","Número interior","text",false],
+["colonia","Colonia","text",false],
+["ciudad","Ciudad","text",false],
+["estado","Estado","text",false],
+["codigo_postal","Código postal","text",false]
+];
+
+function personalLabel(k){
+const es={
+nombre:"Nombre(s)",
+apellido_paterno:"Apellido paterno",
+apellido_materno:"Apellido materno",
+fecha_nacimiento:"Fecha de nacimiento",
+lugar_nacimiento:"Lugar de nacimiento",
+nacionalidad:"Nacionalidad",
+sexo:"Sexo",
+CURP:"CURP",
+telefono:"Teléfono",
+correo:"Correo electrónico",
+domicilio:"Domicilio actual",
+numero_exterior:"Número exterior",
+numero_interior:"Número interior",
+colonia:"Colonia",
+ciudad:"Ciudad",
+estado:"Estado",
+codigo_postal:"Código postal"
+};
+
+const en={
+nombre:"First name(s)",
+apellido_paterno:"Father's surname",
+apellido_materno:"Mother's surname",
+fecha_nacimiento:"Date of birth",
+lugar_nacimiento:"Place of birth",
+nacionalidad:"Nationality",
+sexo:"Sex",
+CURP:"CURP",
+telefono:"Phone",
+correo:"Email",
+domicilio:"Current address",
+numero_exterior:"Street number",
+numero_interior:"Apartment/unit number",
+colonia:"Neighborhood",
+ciudad:"City",
+estado:"State",
+codigo_postal:"ZIP/postal code"
+};
+
+return(state.lang==="es"?es:en)[k]||k;
+}
+
+function renderPersonal(){
+$("personalBox").innerHTML=personalFields.map(f=>`
+
+<div class="field">
+<label>${esc(personalLabel(f[0]))}${f[3]?" *":""}</label>
+<input id="p_${esc(f[0])}" type="${f[2]}" value="${esc(state.personal[f[0]]||"")}" ${f[3]?"required":""}>
+</div>`).join("");
+}
+
+function savePersonalAndContinue(){
+const required=["nombre","apellido_paterno","fecha_nacimiento"];
+
+for(const x of required){
+const el=$("p_"+x);
+if(!el||!el.value.trim()){
+toast(state.lang==="es"?"Completa los datos obligatorios.":"Complete the required information.");
+el?.focus();
+return;
+}
+}
+
+document.querySelectorAll("#personalBox input").forEach(el=>{
+state.personal[el.id.substring(2)]=el.value.trim();
+});
+
+go(7);
+}
+
+function getTramiteName(){
+const map={
+pasaporte:state.lang==="es"?"Pasaporte mexicano":"Mexican passport",
+matricula_consular:state.lang==="es"?"Matrícula Consular de Alta Seguridad":"High-Security Consular Registration",
+ine_extranjero:state.lang==="es"?"Credencial para Votar desde el Extranjero":"Voter Credential from Abroad"
+};
+
+return map[state.tramite]||state.tramite;
+}
+
+function getModalidadName(){
+const f=state.ficha;
+
+return f?.nombre||
+fallbackModalidades[state.tramite]?.[state.modalidad]||
+state.modalidad;
+}
+
+function formatAnswer(v){
+if(Array.isArray(v)){
+return v.map(x=>String(x).replace(/^**OTRO**:/,"")).join(", ");
+}
+return String(v??"").replace(/^**OTRO**:/,"");
+}
+
+function renderReview(){
+let html="";
+
+html+=`<div class="summary"><b>${state.lang==="es"?"Trámite":"Procedure"}</b>${esc(getTramiteName())}</div>`;
+
+html+=`<div class="summary"><b>${state.lang==="es"?"Modalidad":"Type"}</b>${esc(getModalidadName())}</div>`;
+
+html+="<div class='summary'><b>"+(state.lang==="es"?"Datos personales":"Personal information")+"</b>";
+
+Object.entries(state.personal).forEach(([k,v])=>{
+if(v)html+=`<div>${esc(personalLabel(k))}: ${esc(v)}</div>`;
+});
+
+html+="</div>";
+
+html+="<div class='summary'><b>"+(state.lang==="es"?"Preguntas y respuestas":"Questions and answers")+"</b>";
+
+state.preguntas.forEach(q=>{
+const value=state.respuestas[q.id];
+if(value!==undefined){
+html+=`<div style="margin-bottom:10px"><b>${esc(q.texto||q.pregunta||q.question||q.id)}</b>${esc(formatAnswer(value)||"Sin respuesta")}</div>`;
+}
+});
+
+html+="</div>";
+
+html+="<div class='summary'><b>"+(state.lang==="es"?"Documentos":"Documents")+"</b>";
+
+(state.documentos||[]).forEach((d,i)=>{
+const s=state.docEstados["d"+i];
+const text=s==="have"?texts[state.lang].have:s==="missing"?texts[state.lang].missing:texts.unsure;
+
+html+=`<div>${esc(docName(d))} — <span class="tag">${esc(text)}</span></div>`;
+});
+
+html+="</div>";
+
+html+=`<div class="notice warning small"><b>${
+state.lang==="es"?"Antes de generar el PDF":"Before generating the PDF"
+}</b><br>${
+state.lang==="es"
+?"Revisa que los datos estén escritos correctamente. La guía organizará la información que proporcionaste; no garantiza que la autoridad acepte el trámite."
+:"Review that the information is correct. The guide will organize the information you provided; it does not guarantee acceptance by the authority."
+}</div>`;
+
+$("reviewBox").innerHTML=html;
+}
+
+async function generatePDF(){
+loading(true,state.lang==="es"?"Generando tu guía PDF...":"Generating your PDF guide...");
+
+try{
+const docs=state.documentos||[];
+
+const payload={
+tramite:state.tramite,
+modalidad:state.modalidad,
+datos_personales:state.personal,
+datos_especificos:state.respuestas,
+documentos:state.docEstados,
+documentos_disponibles:docs.filter((*,i)=>state.docEstados["d"+i]==="have").map(docName),
+documentos_faltantes:docs.filter((*,i)=>state.docEstados["d"+i]==="missing").map(docName),
+documentos_dudosos:docs.filter((_,i)=>state.docEstados["d"+i]==="unsure").map(docName),
+situaciones:[],
+aclaraciones:[],
+idioma:state.lang
+};
+
+const d=await api("/api/generar-guia-consular",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(payload)
+});
+
+state.pdf=d.filename||d.file||d.pdf||"";
+
+if(!state.pdf)throw new Error("El servidor no devolvió el archivo PDF.");
+
+$("pdfInfo").innerHTML=`
+
+<div class="summary">
+<b>${state.lang==="es"?"Trámite":"Procedure"}</b>${esc(getTramiteName())}
+</div>
+<div class="summary">
+<b>${state.lang==="es"?"Modalidad":"Type"}</b>${esc(getModalidadName())}
+</div>
+<p class="muted small">${
+state.lang==="es"
+?"Archivo preparado correctamente."
+:"File prepared successfully."
+}</p>`;
+
+$("downloadBtn").onclick=()=>downloadPDF(state.pdf);
+go(8);
+
+}catch(e){
+toast(e.message);
+}finally{
+loading(false);
+}
+}
+
+function downloadPDF(name){
+if(!name){
+toast(state.lang==="es"?"No hay PDF disponible.":"No PDF available.");
+return;
+}
+
+location.href="/descargar/"+encodeURIComponent(name);
+}
+
+async function logout(){
+try{
+await api("/api/logout",{method:"POST"});
+}catch(e){}
+
+state.access=false;
+state.admin=false;
+startOver();
+go(1);
+}
+
+function startOver(){
+state.tramite="";
+state.modalidad="";
+state.ficha=null;
+state.preguntas=[];
+state.preguntaIndex=0;
+state.respuestas={};
+state.documentos=[];
+state.docEstados={};
+state.personal={};
+state.pdf="";
+
+$("adminUser").value="";
+$("adminPass").value="";
+$("tramitesBox").innerHTML="";
+$("modalidadesBox").innerHTML="";
+$("preguntaBox").innerHTML="";
+$("docsBox").innerHTML="";
+$("personalBox").innerHTML="";
+$("reviewBox").innerHTML="";
+$("pdfInfo").innerHTML="";
+}
+
+window.addEventListener("load",async()=>{
+applyLanguage();
+await verifyPayment();
+await checkAccess();
+}); </script>
+
 </body>
 </html>
