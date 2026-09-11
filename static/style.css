@@ -1,134 +1,197 @@
-```css
 *{box-sizing:border-box}
 
-body{
-    margin:0;
-    background:#f5f5f5;
-    color:#111;
-    font-family:Arial,sans-serif;
+html,body{
+ margin:0;
+ padding:0;
+ width:100%;
+ min-height:100%;
+ font-family:Arial,sans-serif;
+ background:#f4f4f4;
+ color:#111;
 }
 
+body{display:flex;justify-content:center}
+
 main{
-    width:100%;
-    max-width:700px;
-    margin:auto;
+ width:100%;
+ max-width:720px;
+ min-height:100vh;
 }
 
 .pantalla{
-    display:none;
-    min-height:100vh;
-    padding:35px 22px;
-    text-align:center;
-    justify-content:center;
-    flex-direction:column;
+ display:none;
+ min-height:100vh;
+ padding:30px 18px;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+ text-align:center;
 }
 
 .pantalla.activa{display:flex}
 
 .bandera{
-    font-size:60px;
-    margin-bottom:15px;
+ font-size:64px;
+ margin-bottom:12px;
 }
 
 h1{
-    font-size:38px;
-    line-height:1.08;
-    margin:0 0 20px;
+ margin:0 0 22px;
+ font-size:38px;
+ line-height:1.08;
+ font-weight:900;
 }
 
 h2{
-    font-size:30px;
-    line-height:1.15;
-    margin:0 0 28px;
+ width:100%;
+ margin:0 0 25px;
+ font-size:31px;
+ line-height:1.15;
+ font-weight:900;
 }
 
-.subtitulo{
-    font-size:22px;
-    line-height:1.4;
-    margin:0 auto 40px;
-    max-width:560px;
+.grande{
+ font-size:23px;
+ line-height:1.4;
+ margin:10px 0 25px;
 }
 
-.texto,.aviso{
-    background:white;
-    border-radius:16px;
-    padding:22px;
-    font-size:20px;
-    line-height:1.55;
-    text-align:left;
-    margin-bottom:25px;
+.caja{
+ width:100%;
+ background:#fff;
+ border:2px solid #ddd;
+ border-radius:18px;
+ padding:22px;
+ margin:8px 0 20px;
+ font-size:21px;
+ line-height:1.5;
+ text-align:left;
 }
 
-.aviso{
-    border:3px solid #222;
+.caja p{margin:0 0 16px}
+.caja p:last-child{margin-bottom:0}
+
+.caja ol{
+ margin:10px 0 0;
+ padding-left:28px;
 }
 
-.pequeno{
-    font-size:24px;
-    margin-top:15px;
+.caja li{
+ margin:10px 0;
 }
 
-button{
-    font-family:Arial,sans-serif;
-    cursor:pointer;
+.principal,
+.voz,
+.textoBtn{
+ width:100%;
+ border:0;
+ border-radius:18px;
+ padding:21px 16px;
+ margin-top:10px;
+ font-size:25px;
+ font-weight:900;
+ cursor:pointer;
 }
 
 .principal{
-    width:100%;
-    border:0;
-    border-radius:16px;
-    padding:22px 15px;
-    background:#111;
-    color:white;
-    font-size:25px;
-    font-weight:bold;
-    margin-top:12px;
+ background:#111;
+ color:#fff;
+}
+
+.voz{
+ background:#087f3e;
+ color:#fff;
+}
+
+.textoBtn{
+ background:#175da8;
+ color:#fff;
 }
 
 .principal:active,
+.voz:active,
+.textoBtn:active,
 .opcion:active{
-    transform:scale(.98);
+ transform:scale(.98);
 }
 
 .opcion{
-    width:100%;
-    border:0;
-    border-radius:18px;
-    padding:28px 20px;
-    margin:10px 0;
-    color:white;
-    text-align:left;
-    font-size:20px;
+ width:100%;
+ border:0;
+ border-radius:18px;
+ padding:24px 18px;
+ margin:7px 0;
+ color:#fff;
+ text-align:left;
+ cursor:pointer;
 }
 
 .opcion strong{
-    display:block;
-    font-size:25px;
-    margin-bottom:10px;
+ display:block;
+ font-size:23px;
+ line-height:1.15;
+ margin-bottom:8px;
 }
 
 .opcion span{
-    display:block;
-    line-height:1.4;
+ display:block;
+ font-size:18px;
+ line-height:1.35;
 }
 
-.azul{background:#1261a0}
-.verde{background:#16834b}
+.azul{background:#1769aa}
+.verde{background:#148447}
+.rojo{background:#b52b2b}
+.amarillo{background:#a56b00}
+.morado{background:#68449a}
 
-.servidor{
-    font-size:14px;
-    color:#666;
-    margin-top:18px;
+.hablar{
+ width:100%;
+ margin-top:18px;
+ padding-top:20px;
+ border-top:2px solid #ddd;
+}
+
+.hablar p{
+ font-size:20px;
+ margin:5px 0 12px;
+}
+
+textarea{
+ width:100%;
+ min-height:150px;
+ margin:15px 0 5px;
+ padding:18px;
+ border:2px solid #aaa;
+ border-radius:16px;
+ background:#fff;
+ color:#111;
+ font-family:Arial,sans-serif;
+ font-size:21px;
+ line-height:1.4;
+ resize:vertical;
+}
+
+textarea:focus{
+ outline:4px solid #b9d8f5;
+ border-color:#1769aa;
+}
+
+.estado{
+ min-height:22px;
+ margin:15px 0 0;
+ font-size:16px;
+ color:#555;
 }
 
 @media(max-width:500px){
-    .pantalla{padding:25px 16px}
-    h1{font-size:31px}
-    h2{font-size:27px}
-    .subtitulo{font-size:19px}
-    .texto,.aviso{font-size:18px;padding:18px}
-    .principal{font-size:22px;padding:20px 12px}
-    .opcion strong{font-size:22px}
-    .opcion{font-size:18px}
+ .pantalla{padding:25px 14px}
+ .bandera{font-size:56px}
+ h1{font-size:31px}
+ h2{font-size:27px}
+ .grande{font-size:20px}
+ .caja{font-size:18px;padding:18px}
+ .principal,.voz,.textoBtn{font-size:22px;padding:20px 12px}
+ .opcion strong{font-size:21px}
+ .opcion span{font-size:17px}
 }
-```
