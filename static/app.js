@@ -16,7 +16,8 @@ function toast(t){
  let x=$("toast");
  if(!x){x=document.createElement("div");x.id="toast";x.className="toast";document.body.appendChild(x)}
  x.textContent=t;x.classList.add("show");
- clearTimeout(window.__toast);window.__toast=setTimeout(()=>x.classList.remove("show"),2800);
+ clearTimeout(window.__toast);
+ window.__toast=setTimeout(()=>x.classList.remove("show"),2800);
 }
 function guardar(d){
  if(d.respuestas)state.respuestas={...d.respuestas};
@@ -31,21 +32,25 @@ function limpiar(){
  state.respuestas={};state.perfil={};state.resultado=null;
  if($("textoUsuario"))$("textoUsuario").value="";
 }
-function seguro(x){
- return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function safe(x){
+ return String(x??"").replace(/[&<>"']/g,m=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[m]));
 }
-function lista(a,v=true){
+function lista(a,pendiente=true){
  a=Array.isArray(a)?a:[];
- if(!a.length)return v?'<p class="vacio">PENDIENTE DE COMPLETAR</p>':"";
- return `<ul>${a.map(x=>`<li>${seguro(x)}</li>`).join("")}</ul>`;
+ if(!a.length)return pendiente?'<p class="vacio">PENDIENTE DE COMPLETAR</p>':"";
+ return `<ul>${a.map(x=>`<li>${safe(x)}</li>`).join("")}</ul>`;
 }
 function bloque(t,h){
- return `<div class="bloque"><h3>${seguro(t)}</h3>${h}</div>`;
+ return `<div class="bloque"><h3>${safe(t)}</h3>${h}</div>`;
 }
-function tabla(f){
- return `<div class="datos">${(f||[]).map(x=>`<div><strong>${seguro(x[0])}</strong><span>${seguro(x[1]||"PENDIENTE DE COMPLETAR")}</span></div>`).join("")}</div>`;
+function tabla(a){
+ return `<div class="datos">${(a||[]).map(x=>`
+ <div><strong>${safe(x[0])}</strong><span>${safe(x[1]||"PENDIENTE DE COMPLETAR")}</span></div>
+ `).join("")}</div>`;
 }
-function perfil(p){
+function datosPersonales(p){
  p=p||{};
  return tabla([
   ["Nombre",p.nombre],
@@ -58,16 +63,16 @@ function perfil(p){
  ]);
 }
 function renderOpciones(a){
- const b=$("opciones");
- if(!b)return;
- b.innerHTML="";
+ const box=$("opciones");
+ if(!box)return;
+ box.innerHTML="";
  (a||[]).forEach(o=>{
   const id=typeof o==="string"?o:o.id;
-  const t=typeof o==="string"?o:(o.nombre||o.titulo||o.texto||o.id);
-  const x=document.createElement("button");
-  x.type="button";x.className="opcion";x.textContent=t;
-  x.onclick=()=>seleccionarOpcion(id,t);
-  b.appendChild(x);
+  const text=typeof o==="string"?o:(o.nombre||o.titulo||o.texto||o.id);
+  const b=document.createElement("button");
+  b.type="button";b.className="opcion";b.textContent=text;
+  b.onclick=()=>seleccionarOpcion(id,text);
+  box.appendChild(b);
  });
 }
 function renderCatalogo(d){
@@ -83,28 +88,38 @@ function renderCatalogo(d){
  mostrar("pregunta");
 }
 function renderPregunta(d){
- guardar(d);state.caso=d.caso||state.caso;state.pregunta_id=d.pregunta_id||"";
+ guardar(d);
+ state.caso=d.caso||state.caso;
+ state.pregunta_id=d.pregunta_id||"";
  if($("paso"))$("paso").textContent=d.titulo?"TRÁMITE: "+d.titulo:"";
  if($("preguntaTexto"))$("preguntaTexto").textContent=d.pregunta||"";
  renderOpciones(d.opciones||[]);
  if($("textoEntrada")){
   $("textoEntrada").style.display="block";
   $("textoUsuario").value="";
-  $("textoUsuario").placeholder=d.opciones?.length?"También puedes escribir o hablar tu respuesta...":"Escribe aquí con tus propias palabras...";
+  $("textoUsuario").placeholder=d.opciones?.length?
+   "También puedes escribir o hablar tu respuesta...":
+   "Escribe aquí con tus propias palabras...";
  }
  mostrar("pregunta");
  setTimeout(()=>$("textoUsuario")?.focus(),100);
 }
 function renderResultado(d){
  guardar(d);state.resultado=d;
- const n=d.nivel||"amarillo";
- const c=n==="verde"?"estado-verde":n==="rojo"?"estado-rojo":"estado-amarillo";
- const r=d.respuestas||state.respuestas||{},k=d.checklist||{},esp=d.especiales||[],imp=d.importante||[];
- let h=`<div class="resultadoCabecera ${c}">${seguro(d.estado_texto||"TE FALTA ALGO")}</div>`;
- h+=bloque("1. DATOS PERSONALES",perfil(d.perfil||state.perfil));
- h+=bloque("2. TRÁMITE",`<p>${seguro(d.tramite||d.titulo||"PENDIENTE DE COMPLETAR")}</p>`);
- if((d.personas_obligatorias||[]).length)h+=bloque("3. PERSONAS QUE DEBEN PRESENTARSE",lista(d.personas_obligatorias));
- h+=bloque("4. REQUISITOS OBLIGATORIOS",lista(d.requisitos_obligatorios));
+ const nivel=d.nivel||"amarillo";
+ const clase=nivel==="verde"?"estado-verde":nivel==="rojo"?"estado-rojo":"estado-amarillo";
+ const r=d.respuestas||state.respuestas||{};
+ const k=d.checklist||{};
+ const importantes=[...(d.importante||[]),...(d.especiales||[])];
+ let h=`<div class="resultadoCabecera ${clase}">${safe(d.estado_texto||"TE FALTA ALGO")}</div>`;
+
+ h+=bloque("1. DATOS PERSONALES",datosPersonales(d.perfil||state.perfil));
+ h+=bloque("2. TRÁMITE",`<p>${safe(d.tramite||d.titulo||"PENDIENTE DE COMPLETAR")}</p>`);
+ h+=bloque("3. PERSONAS QUE DEBEN PRESENTARSE",
+  lista(d.personas_obligatorias||["PENDIENTE DE COMPLETAR"]));
+ h+=bloque("4. REQUISITOS OBLIGATORIOS",
+  lista(d.requisitos_obligatorios));
+
  if(d.caso==="pasaporte_menor"||d.caso==="matricula_menor"){
   h+=bloque("5. INFORMACIÓN DEL MENOR",tabla([
    ["Nombre del menor",r.menor_nombre||d.perfil?.nombre],
@@ -119,31 +134,38 @@ function renderResultado(d){
   ]));
   h+=bloque("7. LO QUE YA TIENES",lista(k.tiene));
   h+=bloque("8. LO QUE TE FALTA",lista(k.falta));
-  h+=bloque("9. LO QUE DEBES CONFIRMAR",lista([...(k.revisar||[]),...esp]));
-  h+=bloque("10. ¿QUÉ DEBES HACER?",`<p>${seguro(d.prepara||"PENDIENTE DE COMPLETAR")}</p>`);
+  h+=bloque("9. LO QUE DEBES CONFIRMAR",lista(k.revisar));
+  h+=bloque("10. ¿QUÉ DEBES HACER?",`<p>${safe(d.prepara||"PENDIENTE DE COMPLETAR")}</p>`);
   h+=bloque("11. CITA",lista(d.cita));
   h+=bloque("12. DOCUMENTOS ORIGINALES",lista(d.originales));
-  h+=bloque("13. COPIAS",lista(d.copias||[],false)||'<p class="vacio">No se identificaron copias obligatorias con la información disponible.</p>');
-  h+=bloque("14. PAGO",`<p>${seguro(d.pago||"Confirma la tarifa y forma de pago vigente.")}</p>`);
-  h+=bloque("15. ANTES DE FIRMAR O IMPRIMIR",`<p>${seguro(d.revision||"Revisa cuidadosamente todos los datos.")}</p>`);
-  if(d.vigencia)h+=bloque("16. VIGENCIA",`<p>${seguro(d.vigencia)}</p>`);
-  if(d.entrega)h+=bloque("17. ENTREGA",`<p>${seguro(d.entrega)}</p>`);
-  h+=bloque("18. INFORMACIÓN IMPORTANTE",lista([...imp,...esp,...(d.confirma?[d.confirma]:[])]));
+  h+=bloque("13. COPIAS",lista(d.copias,false)||'<p class="vacio">No se identificaron copias obligatorias.</p>');
+  h+=bloque("14. PAGO",`<p>${safe(d.pago||"Confirma la tarifa y forma de pago vigente.")}</p>`);
+  h+=bloque("15. ANTES DE FIRMAR O IMPRIMIR",`<p>${safe(d.revision||"Revisa cuidadosamente todos los datos.")}</p>`);
+  if(d.vigencia)h+=bloque("16. VIGENCIA",`<p>${safe(d.vigencia)}</p>`);
+  if(d.entrega)h+=bloque("17. ENTREGA",`<p>${safe(d.entrega)}</p>`);
+  h+=bloque("18. INFORMACIÓN IMPORTANTE",lista(importantes));
  }else{
   h+=bloque("5. LO QUE YA TIENES",lista(k.tiene));
   h+=bloque("6. LO QUE TE FALTA",lista(k.falta));
-  h+=bloque("7. LO QUE DEBES CONFIRMAR",lista([...(k.revisar||[]),...esp]));
-  h+=bloque("8. ¿QUÉ DEBES HACER?",`<p>${seguro(d.prepara||"PENDIENTE DE COMPLETAR")}</p>`);
+  h+=bloque("7. LO QUE DEBES CONFIRMAR",lista(k.revisar));
+  h+=bloque("8. ¿QUÉ DEBES HACER?",`<p>${safe(d.prepara||"PENDIENTE DE COMPLETAR")}</p>`);
   h+=bloque("9. CITA",lista(d.cita));
   h+=bloque("10. DOCUMENTOS ORIGINALES",lista(d.originales));
-  h+=bloque("11. COPIAS",lista(d.copias||[],false)||'<p class="vacio">No se identificaron copias obligatorias con la información disponible.</p>');
-  h+=bloque("12. PAGO",`<p>${seguro(d.pago||"Confirma la tarifa y forma de pago vigente.")}</p>`);
-  h+=bloque("13. ANTES DE FIRMAR O IMPRIMIR",`<p>${seguro(d.revision||"Revisa cuidadosamente todos los datos.")}</p>`);
-  if(d.vigencia)h+=bloque("14. VIGENCIA",`<p>${seguro(d.vigencia)}</p>`);
-  if(d.entrega)h+=bloque("15. ENTREGA",`<p>${seguro(d.entrega)}</p>`);
-  h+=bloque("16. INFORMACIÓN IMPORTANTE",lista([...imp,...esp,...(d.confirma?[d.confirma]:[])]));
+  h+=bloque("11. COPIAS",lista(d.copias,false)||'<p class="vacio">No se identificaron copias obligatorias.</p>');
+  h+=bloque("12. PAGO",`<p>${safe(d.pago||"Confirma la tarifa y forma de pago vigente.")}</p>`);
+  h+=bloque("13. ANTES DE FIRMAR O IMPRIMIR",`<p>${safe(d.revision||"Revisa cuidadosamente todos los datos.")}</p>`);
+  if(d.vigencia)h+=bloque("14. VIGENCIA",`<p>${safe(d.vigencia)}</p>`);
+  if(d.entrega)h+=bloque("15. ENTREGA",`<p>${safe(d.entrega)}</p>`);
+  h+=bloque("16. INFORMACIÓN IMPORTANTE",lista(importantes));
  }
- if(d.fuente)h+=`<div class="bloque"><h3>INFORMACIÓN OFICIAL</h3><a class="fuente" href="${seguro(d.fuente)}" target="_blank" rel="noopener noreferrer">ABRIR INFORMACIÓN OFICIAL</a></div>`;
+
+ if(d.confirma)h+=bloque("CONFIRMACIÓN IMPORTANTE",`<p>${safe(d.confirma)}</p>`);
+
+ if(d.fuente){
+  h+=`<div class="bloque"><h3>INFORMACIÓN OFICIAL</h3>
+  <a class="fuente" href="${safe(d.fuente)}" target="_blank" rel="noopener noreferrer">
+  ABRIR INFORMACIÓN OFICIAL</a></div>`;
+ }
  if($("respuesta"))$("respuesta").innerHTML=h;
  if($("fuenteOficial")){
   $("fuenteOficial").href=d.fuente||"#";
@@ -155,10 +177,18 @@ function procesar(d){
  if(!d)return;
  if(d.estado==="error"){toast(d.mensaje||"Ocurrió un error.");return}
  guardar(d);
- if(d.tipo==="catalogo"||d.tipo==="seleccionar_caso"||d.catalogo){renderCatalogo(d);return}
- if(d.tipo==="pregunta"){renderPregunta(d);return}
- if(d.tipo==="resultado"&&d.estado==="resuelto"){renderResultado(d);return}
- if(d.pregunta){renderPregunta(d);return}
+ if(d.tipo==="catalogo"||d.tipo==="seleccionar_caso"||d.catalogo){
+  renderCatalogo(d);return;
+ }
+ if(d.tipo==="pregunta"){
+  renderPregunta(d);return;
+ }
+ if(d.tipo==="resultado"&&d.estado==="resuelto"){
+  renderResultado(d);return;
+ }
+ if(d.pregunta){
+  renderPregunta(d);return;
+ }
  toast("La aplicación no recibió una respuesta válida.");
 }
 async function iniciarServicio(s){
@@ -170,27 +200,40 @@ async function iniciarServicio(s){
 }
 async function iniciarCaso(c){
  try{
-  const d=await api("/api/iniciar",{method:"POST",body:JSON.stringify({
-   servicio:state.servicio,caso:c,respuestas:state.respuestas
-  })});
+  const d=await api("/api/iniciar",{
+   method:"POST",
+   body:JSON.stringify({
+    servicio:state.servicio,
+    caso:c,
+    respuestas:state.respuestas
+   })
+  });
   if(d.estado==="error"){toast(d.mensaje||"No se pudo iniciar.");return}
   state.caso=c;procesar(d);
  }catch(e){toast(e.message)}
 }
-async function seleccionarOpcion(id,t){
- if(state.pregunta_id==="tramite"||!state.caso)return iniciarCaso(id);
- await responder(t||id);
+async function seleccionarOpcion(id,texto){
+ if(state.pregunta_id==="tramite"||!state.caso){
+  await iniciarCaso(id);return;
+ }
+ await responder(texto||id);
 }
-async function responder(t){
- t=String(t||"").trim();
- if(!t){toast("Escribe o selecciona una respuesta.");return}
+async function responder(texto){
+ texto=String(texto||"").trim();
+ if(!texto){toast("Escribe o selecciona una respuesta.");return}
  if(!state.caso){toast("Primero selecciona el trámite.");return}
  if(!state.pregunta_id){toast("No hay una pregunta activa.");return}
  try{
-  procesar(await api("/api/responder",{method:"POST",body:JSON.stringify({
-   servicio:state.servicio,caso:state.caso,pregunta_id:state.pregunta_id,
-   texto:t,respuestas:state.respuestas
-  })}));
+  procesar(await api("/api/responder",{
+   method:"POST",
+   body:JSON.stringify({
+    servicio:state.servicio,
+    caso:state.caso,
+    pregunta_id:state.pregunta_id,
+    texto:texto,
+    respuestas:state.respuestas
+   })
+  }));
  }catch(e){toast(e.message)}
 }
 async function usarTexto(){
@@ -206,17 +249,25 @@ async function descargarPDF(){
    method:"POST",
    headers:{"Content-Type":"application/json"},
    body:JSON.stringify({
-    servicio:state.servicio,caso:state.caso,
-    respuestas:state.respuestas,resultado:state.resultado
+    servicio:state.servicio,
+    caso:state.caso,
+    respuestas:state.respuestas,
+    resultado:state.resultado
    })
   });
   if(!r.ok){
-   let e={};try{e=await r.json()}catch(x){}
+   let e={};
+   try{e=await r.json()}catch(x){}
    throw Error(e.detail||"No se pudo generar el PDF.");
   }
-  const u=URL.createObjectURL(await r.blob()),a=document.createElement("a");
-  a.href=u;a.download="Hoja_de_Ruta_Mexicano_Apoya_Mexicano.pdf";
-  document.body.appendChild(a);a.click();a.remove();
+  const blob=await r.blob();
+  const u=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=u;
+  a.download="Hoja_de_Ruta_Mexicano_Apoya_Mexicano.pdf";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
   setTimeout(()=>URL.revokeObjectURL(u),1000);
  }catch(e){toast(e.message)}
  finally{if(b)b.disabled=false}
@@ -226,10 +277,13 @@ function nuevo(){limpiar();mostrar("inicio")}
 function salir(){$("salida")?.classList.remove("oculto")}
 function cancelarSalida(){$("salida")?.classList.add("oculto")}
 function confirmarSalida(){
- $("salida")?.classList.add("oculto");limpiar();mostrar("inicio");
+ $("salida")?.classList.add("oculto");
+ limpiar();
+ mostrar("inicio");
 }
 function abrirOficial(){$("infoOficial")?.classList.remove("oculto")}
 function cerrarOficial(){$("infoOficial")?.classList.add("oculto")}
+
 let reconocimiento=null;
 function voz(){
  const b=$("voz"),x=$("textoUsuario");
@@ -239,7 +293,8 @@ function voz(){
  }
  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(reconocimiento){
-  reconocimiento.stop();reconocimiento=null;
+  reconocimiento.stop();
+  reconocimiento=null;
   if(b)b.textContent="🎤 HABLAR";
   return;
  }
@@ -250,7 +305,8 @@ function voz(){
  if(b)b.textContent="🔴 ESCUCHANDO...";
  reconocimiento.onresult=e=>{
   const t=e.results?.[0]?.[0]?.transcript||"";
-  x.value=t;responder(t);
+  x.value=t;
+  responder(t);
  };
  reconocimiento.onerror=()=>toast("No se pudo reconocer la voz.");
  reconocimiento.onend=()=>{
@@ -261,7 +317,8 @@ function voz(){
 }
 function teclado(e){
  if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){
-  e.preventDefault();usarTexto();
+  e.preventDefault();
+  usarTexto();
  }
 }
 document.addEventListener("DOMContentLoaded",async()=>{
