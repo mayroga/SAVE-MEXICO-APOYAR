@@ -1,4 +1,3 @@
-```python
 import os,io,re,uuid,tempfile
 from pathlib import Path
 from fastapi import FastAPI,HTTPException,Request,Depends,UploadFile,File
@@ -311,4 +310,3 @@ async def limpiar_salidas():
   for f in SALIDAS_DIR.glob("*.pdf"):
    if f.is_file(): f.unlink()
  except Exception as e: print("Limpieza:",e)
-```
