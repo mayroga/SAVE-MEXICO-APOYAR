@@ -19,11 +19,9 @@ async function despertar(){
 }
 
 function limpiar(){
- const q=$("preguntaTexto"),o=$("opciones"),r=$("respuesta"),t=$("textoUsuario");
- if(q)q.textContent="";
- if(o)o.innerHTML="";
- if(r)r.innerHTML="";
- if(t)t.value="";
+ ["preguntaTexto","respuesta"].forEach(id=>{const e=$(id);if(e)e.innerHTML=""});
+ const o=$("opciones");if(o)o.innerHTML="";
+ const t=$("textoUsuario");if(t)t.value="";
 }
 
 function boton(label,fn,clase="opcion"){
@@ -39,26 +37,24 @@ function entrar(){
  mostrar("resultado",false);
 }
 
-function iniciarCita(){iniciarServicioInterno("cita")}
-function iniciarDocumento(){iniciarServicioInterno("documento")}
-function cita(){iniciarServicioInterno("cita")}
-function documento(){iniciarServicioInterno("documento")}
-function servicioCita(){iniciarServicioInterno("cita")}
-function servicioDocumento(){iniciarServicioInterno("documento")}
-
 function iniciarServicioInterno(tipo){
  servicio=tipo;caso="";preguntaId="";respuestas={};fuenteActual="";
  limpiar();
- mostrar("inicio",false);
- mostrar("servicios",false);
- mostrar("resultado",false);
- mostrar("pregunta",true);
+ mostrar("inicio",false);mostrar("servicios",false);
+ mostrar("resultado",false);mostrar("pregunta",true);
  mostrar("textoEntrada",false);
  mostrarTitulo("Un momento...");
  fetch("/api/inicio/"+encodeURIComponent(tipo),{cache:"no-store"})
  .then(r=>r.json()).then(procesar)
  .catch(()=>error("No pudimos iniciar. Intenta nuevamente."));
 }
+
+function iniciarCita(){iniciarServicioInterno("cita")}
+function iniciarDocumento(){iniciarServicioInterno("documento")}
+function cita(){iniciarCita()}
+function documento(){iniciarDocumento()}
+function servicioCita(){iniciarCita()}
+function servicioDocumento(){iniciarDocumento()}
 
 function procesar(d){
  if(!d)return error("No recibimos una respuesta.");
@@ -69,18 +65,17 @@ function procesar(d){
  if(d.estado==="necesita_descripcion"){
   mostrar("pregunta",true);mostrar("resultado",false);
   mostrarTitulo(d.pregunta||"¿Qué necesitas?");
-  if(d.opciones?.length){
-   mostrarOpciones(d.opciones,id=>{
-    if(id==="no_se")mostrarEntrada();
-    else seleccionarCaso(id);
-   });
-  }else mostrarEntrada();
+  mostrarOpciones(d.opciones||[],id=>{
+   if(id==="no_se")mostrarEntrada();
+   else seleccionarCaso(id);
+  });
+  if(!d.opciones?.length)mostrarEntrada();
   return;
  }
 
  if(d.estado==="seleccionar"){
   mostrar("pregunta",true);mostrar("resultado",false);
-  mostrarTitulo(d.pregunta||"¿Cuál de estas opciones necesitas?");
+  mostrarTitulo(d.pregunta||"¿Cuál de estas opciones se parece más a lo que necesitas?");
   mostrarOpciones(d.opciones||[],id=>seleccionarCaso(id));
   return;
  }
@@ -100,13 +95,7 @@ function procesar(d){
   return;
  }
 
- if(d.estado==="no_identificado"){
-  mostrar("pregunta",true);mostrar("resultado",false);
-  mostrarTitulo(d.mensaje||"No encontramos esa opción.");
-  mostrarEntrada();
-  return;
- }
-
+ if(d.estado==="no_identificado")return error(d.mensaje||"No encontramos esa opción.");
  if(d.estado==="error")return error(d.mensaje||"Ocurrió un error.");
  error("No entendimos la respuesta.");
 }
@@ -129,45 +118,35 @@ function mostrarOpciones(opciones,fn){
 
 function seleccionarCaso(id){
  if(!id)return;
- caso=id;
- preguntaId="";
- respuestas={_caso:id};
- const box=$("opciones");
- if(box)box.innerHTML="";
+ caso=id;preguntaId="";respuestas={_caso:id};
+ const box=$("opciones");if(box)box.innerHTML="";
  mostrarTitulo("Un momento...");
  fetch("/api/responder",{
   method:"POST",
   headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({
-   servicio,
-   caso:id,
-   texto:"",
-   respuestas,
-   pregunta_id:""
-  })
+  body:JSON.stringify({servicio,caso:id,texto:"",respuestas,pregunta_id:""})
  })
- .then(r=>r.json())
- .then(procesar)
+ .then(r=>r.json()).then(procesar)
  .catch(()=>error("No pudimos continuar."));
 }
 
 function mostrarPregunta(d){
- mostrar("pregunta",true);
- mostrar("resultado",false);
+ mostrar("pregunta",true);mostrar("resultado",false);
  const q=$("preguntaTexto"),box=$("opciones");
  if(q)q.textContent=d.pregunta||"Responde esta pregunta";
  if(box)box.innerHTML="";
 
  if(d.titulo){
   const t=document.createElement("div");
-  t.className="tituloCaso";
-  t.textContent=d.titulo;
+  t.className="tituloCaso";t.textContent=d.titulo;
   if(box)box.appendChild(t);
  }
 
  if(d.opciones?.length){
   mostrarOpciones(d.opciones,(id,label)=>enviarRespuesta(label||id));
- }else mostrarEntrada();
+ }else{
+  mostrarEntrada();
+ }
 
  mostrar("textoEntrada",true);
  hablar(d.pregunta||"Responde esta pregunta");
@@ -180,83 +159,77 @@ function mostrarEntrada(){
   t.placeholder="Escribe aquí con tus propias palabras...";
   setTimeout(()=>t.focus(),50);
  }
-
- const box=$("opciones");
- if(box&&!box.querySelector(".continuar")){
-  const b=boton("CONTINUAR",()=>enviarRespuesta(),"continuar");
-  b.classList.add("continuar");
-  box.appendChild(b);
- }
 }
 
 async function enviarRespuesta(valor){
  valor=texto(valor||$("textoUsuario")?.value);
-
  if(!valor){
   hablar("Necesito tu respuesta para continuar.");
-  if($("textoUsuario"))$("textoUsuario").focus();
+  $("textoUsuario")?.focus();
   return;
  }
 
  if(preguntaId)respuestas[preguntaId]=valor;
  if(caso)respuestas._caso=caso;
 
- const box=$("opciones");
- if(box)box.innerHTML="";
+ const box=$("opciones");if(box)box.innerHTML="";
  mostrarTitulo("Un momento...");
 
  try{
   const r=await fetch("/api/responder",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    servicio,
-    caso,
-    texto:valor,
-    respuestas,
-    pregunta_id:preguntaId
-   })
+   body:JSON.stringify({servicio,caso,texto:valor,respuestas,pregunta_id:preguntaId})
   });
-
   const d=await r.json();
-
+  if(!r.ok||d.ok===false&&d.mensaje)throw new Error(d.mensaje||"error");
   if(d.respuestas)respuestas=d.respuestas;
   if(d.caso)caso=d.caso;
-
   procesar(d);
  }catch(e){
-  error("No pudimos continuar. Intenta nuevamente.");
+  error(e.message&&e.message!=="Failed to fetch"?e.message:"No pudimos continuar. Intenta nuevamente.");
  }
 }
 
-function agregarResultado(box,titulo,contenido){
- if(!contenido)return;
+function tituloResultado(box,titulo){
  const h=document.createElement("h3");
  h.textContent=titulo;
  box.appendChild(h);
+}
 
+function agregarTexto(box,titulo,contenido){
+ if(!contenido)return;
+ tituloResultado(box,titulo);
  const p=document.createElement("p");
  p.textContent=contenido;
  box.appendChild(p);
 }
 
-function agregarLista(box,titulo,items,simbolo){
- const h=document.createElement("h3");
- h.textContent=titulo;
- box.appendChild(h);
-
- if(!items||!items.length){
+function agregarLista(box,titulo,items,simbolo="•"){
+ tituloResultado(box,titulo);
+ if(!items?.length){
   const p=document.createElement("p");
   p.textContent="No hay elementos en esta categoría.";
   box.appendChild(p);
   return;
  }
-
  items.forEach(x=>{
   const p=document.createElement("p");
-  p.textContent=(simbolo||"•")+" "+x;
+  p.textContent=simbolo+" "+x;
   box.appendChild(p);
  });
+}
+
+function mostrarEstado(box,d){
+ const nivel=d.nivel||"";
+ const h=document.createElement("h3");
+ h.textContent="ESTADO DE TU PREPARACIÓN";
+ box.appendChild(h);
+
+ const p=document.createElement("p");
+ p.textContent=d.estado_texto||"Revisa el resultado antes de acudir.";
+ p.className="estado-"+nivel;
+ box.appendChild(p);
 }
 
 function mostrarResultado(d){
@@ -275,20 +248,30 @@ function mostrarResultado(d){
  if(!box)return;
  box.innerHTML="";
 
+ mostrarEstado(box,d);
+
  const c=d.checklist||{};
  agregarLista(box,"LO QUE YA TIENES",c.tiene,"☑");
  agregarLista(box,"LO QUE TE FALTA",c.falta,"☐");
  agregarLista(box,"LO QUE NO ESTÁS SEGURO DE TENER",c.revisar,"□");
 
- agregarResultado(box,"PREPARA",d.prepara);
- agregarResultado(box,"PAGO",d.pago);
- agregarResultado(box,"IMPORTANTE",d.confirma);
+ if(d.especiales?.length){
+  agregarLista(box,"ATENCIÓN A TU CASO",d.especiales,"⚠");
+ }
+
+ agregarTexto(box,"¿QUÉ DEBES PREPARAR?",d.prepara);
+ agregarTexto(box,"PAGO",d.pago);
 
  if(d.ruta){
-  agregarResultado(box,"CITA",d.ruta.cita);
-  agregarResultado(box,"ORIGINAL",d.ruta.llevar_original);
-  agregarResultado(box,"COPIA",d.ruta.copias);
+  agregarTexto(box,"CITA",d.ruta.cita);
+  agregarTexto(box,"ORIGINALES",d.ruta.llevar_original);
+  agregarTexto(box,"COPIAS",d.ruta.copias);
  }
+
+ agregarTexto(box,"VIGENCIA",d.vigencia);
+ agregarTexto(box,"ENTREGA",d.entrega);
+ agregarTexto(box,"ANTES DE FIRMAR / IMPRIMIR",d.revision);
+ agregarTexto(box,"IMPORTANTE",d.confirma);
 
  const oficial=$("oficial");
  if(oficial)oficial.style.display=fuenteActual?"block":"none";
@@ -296,10 +279,12 @@ function mostrarResultado(d){
  const pdf=$("pdf");
  if(pdf)pdf.style.display=caso?"block":"none";
 
- hablar(
-  (d.prepara||"")+" "+
-  (d.confirma||"")
- );
+ let voz="";
+ if(d.estado_texto)voz+=d.estado_texto+" ";
+ if(d.prepara)voz+=d.prepara+" ";
+ if(d.especiales?.length)voz+=d.especiales.join(". ")+" ";
+ if(d.confirma)voz+=d.confirma;
+ hablar(voz);
 }
 
 function abrirFuente(){
@@ -322,19 +307,13 @@ async function descargarPDF(){
  }
 
  const b=$("pdf");
- if(b){
-  b.disabled=true;
-  b.textContent="PREPARANDO PDF...";
- }
+ if(b){b.disabled=true;b.textContent="PREPARANDO PDF..."}
 
  try{
   const r=await fetch("/api/pdf",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    caso,
-    respuestas
-   })
+   body:JSON.stringify({caso,respuestas})
   });
 
   if(!r.ok)throw new Error("PDF");
@@ -342,13 +321,11 @@ async function descargarPDF(){
   const blob=await r.blob();
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
-
   a.href=url;
   a.download="Hoja_Ruta_Mexicano_Apoya_Mexicano.pdf";
   document.body.appendChild(a);
   a.click();
   a.remove();
-
   setTimeout(()=>URL.revokeObjectURL(url),1500);
  }catch(e){
   alert("No pudimos generar el PDF. Intenta nuevamente.");
@@ -384,28 +361,14 @@ function error(msg){
  const box=$("respuesta");
  if(box){
   box.innerHTML="";
-  const h=document.createElement("h3");
-  h.textContent="AVISO";
-  box.appendChild(h);
-
-  const p=document.createElement("p");
-  p.textContent=msg;
-  box.appendChild(p);
-
-  box.appendChild(
-   boton("INTENTAR DE NUEVO",reiniciar,"continuar")
-  );
+  agregarTexto(box,"AVISO",msg);
+  box.appendChild(boton("INTENTAR DE NUEVO",reiniciar,"continuar"));
  }
-
  hablar(msg);
 }
 
 function reiniciar(){
- servicio="";
- caso="";
- preguntaId="";
- respuestas={};
- fuenteActual="";
+ servicio="";caso="";preguntaId="";respuestas={};fuenteActual="";
  escuchando=false;
 
  if("speechSynthesis"in window){
@@ -413,20 +376,16 @@ function reiniciar(){
  }
 
  limpiar();
-
  mostrar("inicio",true);
  mostrar("servicios",false);
  mostrar("pregunta",false);
  mostrar("resultado",false);
  mostrar("textoEntrada",false);
 
- const m1=$("infoOficial");
- const m2=$("salida");
- if(m1)m1.classList.add("oculto");
- if(m2)m2.classList.add("oculto");
-
- const q=$("preguntaTexto");
- if(q)q.textContent="¿Qué necesitas?";
+ ["infoOficial","salida"].forEach(id=>{
+  const e=$(id);
+  if(e)e.classList.add("oculto");
+ });
 
  window.casoActual="";
  window.respuestasActuales={};
@@ -434,12 +393,10 @@ function reiniciar(){
 
 function iniciarVoz(){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-
  if(!SR){
   hablar("Tu navegador no tiene reconocimiento de voz.");
   return;
  }
-
  if(escuchando)return;
 
  const r=new SR();
@@ -454,7 +411,10 @@ function iniciarVoz(){
  r.onresult=e=>{
   const v=texto(e.results?.[0]?.[0]?.transcript);
   const t=$("textoUsuario");
-  if(t)t.value=v;
+  if(t){
+   t.value=v;
+   setTimeout(()=>enviarRespuesta(v),150);
+  }
  };
 
  r.onerror=()=>{
@@ -467,7 +427,8 @@ function iniciarVoz(){
   if(b)b.textContent="🎤 HABLAR";
  };
 
- try{r.start()}catch(e){
+ try{r.start()}
+ catch(e){
   escuchando=false;
   if(b)b.textContent="🎤 HABLAR";
  }
@@ -496,41 +457,25 @@ window.cancelarSalida=cancelarSalida;
 document.addEventListener("DOMContentLoaded",()=>{
  despertar();
 
- const entrarBtn=$("entrar");
- if(entrarBtn)entrarBtn.onclick=entrar;
+ const eventos={
+  entrar:entrar,
+  servicioCita:iniciarCita,
+  servicioDocumento:iniciarDocumento,
+  voz:iniciarVoz,
+  continuar:enviarRespuesta,
+  nuevo:reiniciar,
+  pdf:descargarPDF,
+  oficial:abrirFuente,
+  cerrarOficial:cerrarFuente,
+  salir:pedirSalir,
+  confirmarSalida:confirmarSalida,
+  cancelarSalida:cancelarSalida
+ };
 
- const citaBtn=$("servicioCita");
- if(citaBtn)citaBtn.onclick=iniciarCita;
-
- const docBtn=$("servicioDocumento");
- if(docBtn)docBtn.onclick=iniciarDocumento;
-
- const vozBtn=$("voz");
- if(vozBtn)vozBtn.onclick=iniciarVoz;
-
- const cont=$("continuar");
- if(cont)cont.onclick=enviarRespuesta;
-
- const nuevo=$("nuevo");
- if(nuevo)nuevo.onclick=reiniciar;
-
- const pdf=$("pdf");
- if(pdf)pdf.onclick=descargarPDF;
-
- const oficial=$("oficial");
- if(oficial)oficial.onclick=abrirFuente;
-
- const cerrar=$("cerrarOficial");
- if(cerrar)cerrar.onclick=cerrarFuente;
-
- const salir=$("salir");
- if(salir)salir.onclick=pedirSalir;
-
- const confirmar=$("confirmarSalida");
- if(confirmar)confirmar.onclick=confirmarSalida;
-
- const cancelar=$("cancelarSalida");
- if(cancelar)cancelar.onclick=cancelarSalida;
+ Object.entries(eventos).forEach(([id,fn])=>{
+  const e=$(id);
+  if(e)e.onclick=fn;
+ });
 
  const t=$("textoUsuario");
  if(t)t.addEventListener("keydown",e=>{
