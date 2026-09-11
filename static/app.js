@@ -1,10 +1,10 @@
-let servicioActual="";
+let servicio="";
+let paso=0;
 let ultimaRespuesta="";
 
 function mostrar(id){
-  document.querySelectorAll(".pantalla").forEach(x=>x.classList.remove("activa"));
-  const p=document.getElementById(id);
-  if(p)p.classList.add("activa");
+  document.querySelectorAll(".pantalla").forEach(p=>p.classList.remove("activa"));
+  document.getElementById(id)?.classList.add("activa");
   window.scrollTo(0,0);
 }
 
@@ -12,7 +12,7 @@ function entrar(){
   mostrar("info");
 }
 
-async function despertarServidor(){
+async function despertar(){
   const e=document.getElementById("servidor");
   try{
     const r=await fetch("/api/estado",{cache:"no-store"});
@@ -22,138 +22,155 @@ async function despertarServidor(){
   }
 }
 
-function elegirServicio(servicio){
-  servicioActual=servicio;
-  cargarServicio(servicio);
-}
-
-async function cargarServicio(servicio){
-  mostrar("resultado");
-  const titulo=document.getElementById("tituloResultado");
-  const caja=document.getElementById("resultadoTexto");
-  titulo.textContent="PREPARANDO...";
-  caja.innerHTML="<p>Un momento, por favor.</p>";
+async function iniciarServicio(tipo){
+  servicio=tipo;
+  paso=0;
+  mostrar("pregunta");
 
   try{
-    const r=await fetch("/api/servicio/"+encodeURIComponent(servicio),{cache:"no-store"});
+    const r=await fetch("/api/inicio/"+tipo,{cache:"no-store"});
     const d=await r.json();
 
-    if(!r.ok||!d.ok)throw new Error();
+    if(!r.ok||!d.ok)throw Error();
 
-    titulo.textContent=d.nombre;
-
-    caja.innerHTML=
-      "<p><strong>"+d.mensaje+"</strong></p>"+
-      "<p>La aplicación hará lo siguiente:</p>"+
-      "<ol>"+d.proceso.map(x=>"<li>"+x+"</li>").join("")+"</ol>";
-
-    ultimaRespuesta=d.mensaje+" La aplicación hará lo siguiente: "+
-      d.proceso.join(". ")+".";
-
+    mostrarPregunta(d);
   }catch{
-    titulo.textContent="NO SE PUDO CONECTAR";
-    caja.innerHTML="<p>Hubo un problema al conectar. Inténtalo nuevamente.</p>";
-    ultimaRespuesta="Hubo un problema al conectar. Inténtalo nuevamente.";
+    mostrarError("No pudimos conectar con el servicio. Inténtalo nuevamente.");
   }
 }
 
-function mostrarEntrada(){
-  mostrar("entrada");
-  setTimeout(()=>{
-    document.getElementById("texto")?.focus();
-  },100);
+function mostrarPregunta(d){
+  paso=d.paso;
+
+  document.getElementById("paso").textContent=
+    "PREGUNTA "+(paso+1)+" DE "+d.total;
+
+  document.getElementById("preguntaTexto").textContent=d.pregunta;
+
+  const opciones=document.getElementById("opciones");
+  opciones.innerHTML="";
+
+  if(d.opciones&&d.opciones.length){
+    d.opciones.forEach(op=>{
+      const b=document.createElement("button");
+      b.className="respuesta";
+      b.textContent=op;
+      b.onclick=()=>{
+        document.querySelectorAll(".respuesta")
+          .forEach(x=>x.classList.remove("seleccionada"));
+        b.classList.add("seleccionada");
+        document.getElementById("respuestaTexto").value=op;
+      };
+      opciones.appendChild(b);
+    });
+  }
+
+  document.getElementById("respuestaTexto").value="";
+  document.getElementById("estadoPregunta").textContent="";
 }
 
-function escuchar(){
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+async function enviarRespuesta(){
+  const campo=document.getElementById("respuestaTexto");
+  const respuesta=campo.value.trim();
 
-  if(!SpeechRecognition){
-    mostrarEntrada();
-    document.getElementById("escuchando").textContent=
-      "Tu navegador no permite escuchar. Puedes escribir.";
+  if(!respuesta){
+    document.getElementById("estadoPregunta").textContent=
+      "Dime tu respuesta o elige una opción.";
     return;
   }
 
-  const r=new SpeechRecognition();
+  const estado=document.getElementById("estadoPregunta");
+  estado.textContent="Un momento...";
+
+  try{
+    const r=await fetch("/api/responder",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        servicio,
+        paso,
+        respuesta
+      })
+    });
+
+    const d=await r.json();
+
+    if(!r.ok||!d.ok)throw Error();
+
+    if(d.terminado){
+      mostrarResultado(d);
+      return;
+    }
+
+    mostrarPregunta(d);
+
+  }catch{
+    estado.textContent=
+      "No pudimos continuar. Inténtalo nuevamente.";
+  }
+}
+
+function mostrarResultado(d){
+  mostrar("resultado");
+
+  document.getElementById("resultadoTitulo").textContent=
+    d.titulo||"TU RESULTADO";
+
+  const caja=document.getElementById("resultadoTexto");
+  caja.innerHTML="";
+
+  if(Array.isArray(d.resultado)){
+    d.resultado.forEach((texto,i)=>{
+      const p=document.createElement("p");
+      p.textContent=(i+1)+". "+texto;
+      caja.appendChild(p);
+    });
+    ultimaRespuesta=d.resultado.join(". ");
+  }else{
+    caja.textContent=d.resultado||"Tu preparación terminó.";
+    ultimaRespuesta=d.resultado||"Tu preparación terminó.";
+  }
+
+  leerResultado();
+}
+
+function escuchar(){
+  const Recognition=
+    window.SpeechRecognition||
+    window.webkitSpeechRecognition;
+
+  if(!Recognition){
+    document.getElementById("estadoPregunta").textContent=
+      "Tu navegador no permite usar el micrófono. Puedes escribir.";
+    return;
+  }
+
+  const r=new Recognition();
   r.lang="es-MX";
   r.continuous=false;
   r.interimResults=false;
   r.maxAlternatives=1;
 
-  mostrar("entrada");
-
-  const estado=document.getElementById("escuchando");
+  const estado=document.getElementById("estadoPregunta");
   estado.textContent="🎙️ TE ESTOY ESCUCHANDO...";
 
   r.onresult=e=>{
     const texto=e.results[0][0].transcript;
-    document.getElementById("texto").value=texto;
-    estado.textContent="Esto fue lo que entendí. Pulsa CONTINUAR.";
+    document.getElementById("respuestaTexto").value=texto;
+    estado.textContent="Te escuché. Pulsa CONTINUAR.";
   };
 
   r.onerror=()=>{
-    estado.textContent="No pude escucharte. Puedes intentarlo otra vez o escribir.";
+    estado.textContent=
+      "No pude escucharte. Inténtalo nuevamente.";
   };
 
   r.onend=()=>{
-    if(!document.getElementById("texto").value)
-      estado.textContent="Puedes hablar otra vez o escribir.";
+    if(!document.getElementById("respuestaTexto").value)
+      estado.textContent="Puedes hablar nuevamente.";
   };
 
   r.start();
-}
-
-async function enviarTexto(){
-  const campo=document.getElementById("texto");
-  const texto=campo.value.trim();
-
-  if(!texto){
-    document.getElementById("escuchando").textContent=
-      "Primero dime qué necesitas.";
-    return;
-  }
-
-  mostrar("resultado");
-
-  const titulo=document.getElementById("tituloResultado");
-  const caja=document.getElementById("resultadoTexto");
-
-  titulo.textContent="ESTOY ENTENDIENDO...";
-  caja.innerHTML="<p>Un momento.</p>";
-
-  try{
-    const r=await fetch("/api/entender",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({texto})
-    });
-
-    const d=await r.json();
-
-    if(!r.ok||!d.ok)throw new Error();
-
-    titulo.textContent=d.encontrado?d.nombre:"VAMOS A INTENTARLO";
-
-    if(d.encontrado){
-      caja.innerHTML=
-        "<p><strong>"+d.mensaje+"</strong></p>"+
-        "<p>"+d.siguiente+"</p>";
-      ultimaRespuesta=d.mensaje+" "+d.siguiente;
-    }else{
-      caja.innerHTML=
-        "<p>"+d.mensaje+"</p>"+
-        "<p>"+d.siguiente+"</p>";
-      ultimaRespuesta=d.mensaje+" "+d.siguiente;
-    }
-
-    leerResultado();
-
-  }catch{
-    titulo.textContent="NO SE PUDO CONECTAR";
-    caja.innerHTML=
-      "<p>Hubo un problema. Inténtalo nuevamente.</p>";
-    ultimaRespuesta="Hubo un problema. Inténtalo nuevamente.";
-  }
 }
 
 function leerResultado(){
@@ -169,4 +186,12 @@ function leerResultado(){
   speechSynthesis.speak(voz);
 }
 
-despertarServidor();
+function mostrarError(texto){
+  mostrar("resultado");
+  document.getElementById("resultadoTitulo").textContent="AVISO";
+  document.getElementById("resultadoTexto").textContent=texto;
+  ultimaRespuesta=texto;
+}
+
+despertar();
+
