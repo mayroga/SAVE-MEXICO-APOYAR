@@ -1,708 +1,87 @@
-<!doctype html>
+```html
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b0f19">
-<title>SAVE MÉXICO AYUDAR</title>
+<title>MEXICANO APOYA MEXICANO</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<div id="app">
-<header class="top">
-  <div>
-    <h1>SAVE MÉXICO AYUDAR</h1>
-    <p>Preparación privada para trámites de mexicanos en Estados Unidos</p>
-  </div>
-  <button id="helpBtn" class="small" onclick="showManual()">¿Cómo funciona?</button>
-</header>
 
 <main>
-<section id="gate" class="screen">
-  <div class="card">
-    <h2>Antes de comenzar</h2>
-    <p>Esta aplicación te ayuda a preparar tu información, revisar tus documentos y crear una guía personalizada para tu trámite.</p>
-    <p><b>No somos el gobierno de México.</b> La decisión final corresponde al consulado o a la autoridad correspondiente.</p>
 
-    <div class="plans">
-      <button onclick="pay(1)">
-        <b>Servicio individual</b>
-        <span>$200</span>
-        <small>Un trámite / un servicio</small>
-      </button>
-      <button onclick="pay(2)">
-        <b>Servicio mensual</b>
-        <span>$499</span>
-        <small>Acceso por suscripción</small>
-      </button>
+<section id="inicio" class="pantalla activa">
+    <div class="bandera">🇲🇽</div>
+    <h1>MEXICANO<br>APOYA MEXICANO</h1>
+    <p class="subtitulo">Ayuda para preparar tu visita al Consulado de México</p>
+    <button class="principal" onclick="entrar()">ENTRAR</button>
+    <p id="servidor" class="servidor">Preparando...</p>
+</section>
+
+<section id="paraQue" class="pantalla">
+    <h2>¿PARA QUÉ SIRVE?</h2>
+
+    <div class="texto">
+        <p>Esta aplicación ayuda a mexicanos que necesitan prepararse para una visita al Consulado de México.</p>
+
+        <p>Te hace pocas preguntas y organiza la información de tu caso de una manera sencilla.</p>
+
+        <p>La aplicación es un servicio privado.</p>
     </div>
 
-    <div id="gateMsg" class="msg"></div>
+    <button class="principal" onclick="mostrar('legal')">CONTINUAR</button>
+</section>
 
-    <div class="adminBox">
-      <h3>Entrada administrativa</h3>
-      <p>Si tienes usuario y contraseña autorizados, puedes entrar sin pagar.</p>
-      <input id="adminUser" autocomplete="username" placeholder="Usuario">
-      <input id="adminPass" type="password" autocomplete="current-password" placeholder="Contraseña">
-      <button class="primary" onclick="adminLogin()">Entrar</button>
-      <div id="adminMsg" class="msg"></div>
+<section id="legal" class="pantalla">
+    <h2>IMPORTANTE</h2>
+
+    <div class="aviso">
+        <p><strong>ESTE SERVICIO NO ES EL CONSULADO DE MÉXICO.</strong></p>
+
+        <p>No somos el Gobierno de México ni hablamos en nombre del Consulado.</p>
+
+        <p>La información que prepares aquí debe ser confirmada con el Consulado correspondiente.</p>
+
+        <p>La aplicación no garantiza que un trámite sea aprobado.</p>
     </div>
-  </div>
-</section>
 
-<section id="manual" class="screen hidden">
-  <div class="card">
-    <h2>Cómo funciona</h2>
-    <div id="manualText"></div>
-    <button class="primary" onclick="closeManual()">Comenzar</button>
-  </div>
-</section>
+    <h2 class="pequeno">PROTECCIÓN Y PRIVACIDAD</h2>
 
-<section id="start" class="screen hidden">
-  <div class="card">
-    <h2>Comencemos</h2>
-    <p>Primero vamos a identificar el trámite que necesitas.</p>
-    <div id="tramitesBox"></div>
-  </div>
-</section>
+    <div class="texto">
+        <p>Usa la aplicación solamente para preparar tu información.</p>
 
-<section id="modality" class="screen hidden">
-  <div class="card">
-    <div class="step" id="modStep"></div>
-    <h2 id="modTitle">¿Qué necesitas hacer?</h2>
-    <p id="modHelp"></p>
-    <div id="modalidadesBox"></div>
-    <button class="back" onclick="goStart()">Atrás</button>
-  </div>
-</section>
+        <p>No escribas contraseñas, números de tarjetas ni información que no sea necesaria para tu preparación.</p>
 
-<section id="question" class="screen hidden">
-  <div class="card">
-    <div class="step" id="qStep"></div>
-    <h2 id="qTitle"></h2>
-    <p id="qHelp"></p>
-    <div id="questionBox"></div>
-    <div id="qError" class="error"></div>
-    <div class="nav">
-      <button class="back" onclick="prevQuestion()">Atrás</button>
-      <button class="primary" onclick="nextQuestion()">Continuar</button>
+        <p>Al continuar aceptas utilizar este servicio bajo estas condiciones.</p>
     </div>
-  </div>
+
+    <button class="principal" onclick="mostrar('servicios')">ACEPTO Y CONTINUAR</button>
 </section>
 
-<section id="personal" class="screen hidden">
-  <div class="card">
-    <div class="step" id="personalStep"></div>
-    <h2 id="personalTitle">Tus datos</h2>
-    <p id="personalHelp">Necesitamos estos datos para preparar correctamente tu guía.</p>
-    <div id="personalBox"></div>
-    <div id="personalError" class="error"></div>
-    <div class="nav">
-      <button class="back" onclick="prevPersonal()">Atrás</button>
-      <button class="primary" onclick="nextPersonal()">Continuar</button>
-    </div>
-  </div>
+<section id="servicios" class="pantalla">
+    <h2>¿QUÉ NECESITAS?</h2>
+
+    <button class="opcion azul" onclick="abrirServicio('cita')">
+        <strong>TENGO UNA CITA</strong>
+        <span>Quiero saber qué debo preparar antes de ir.</span>
+    </button>
+
+    <button class="opcion verde" onclick="abrirServicio('documento')">
+        <strong>NO SÉ QUÉ DOCUMENTO NECESITO</strong>
+        <span>Tengo una situación y quiero saber qué debo preparar.</span>
+    </button>
 </section>
 
-<section id="consulate" class="screen hidden">
-  <div class="card">
-    <div class="step">Último paso de información</div>
-    <h2>¿Dónde vives en Estados Unidos?</h2>
-    <p>Esto nos ayuda a identificar el consulado que corresponde. No vamos a inventar un consulado si no podemos confirmarlo.</p>
-    <div id="consulateBox"></div>
-    <div id="consulateError" class="error"></div>
-    <div class="nav">
-      <button class="back" onclick="prevConsulate()">Atrás</button>
-      <button class="primary" onclick="finishConsulate()">Revisar</button>
-    </div>
-  </div>
+<section id="resultado" class="pantalla">
+    <h2 id="resultadoTitulo"></h2>
+    <div id="resultadoTexto" class="texto"></div>
+    <button class="principal" onclick="mostrar('servicios')">REGRESAR</button>
 </section>
 
-<section id="documents" class="screen hidden">
-  <div class="card">
-    <div class="step">Revisión de documentos</div>
-    <h2>¿Qué documentos tienes?</h2>
-    <p>Solo aparecen los documentos que corresponden a tu trámite y situación.</p>
-    <div id="docsBox"></div>
-    <div id="docsError" class="error"></div>
-    <div class="nav">
-      <button class="back" onclick="backFromDocs()">Atrás</button>
-      <button class="primary" onclick="evaluateCase()">Ver resultado</button>
-    </div>
-  </div>
-</section>
-
-<section id="result" class="screen hidden">
-  <div class="card">
-    <div class="step">Resultado de tu preparación</div>
-    <h2 id="resultTitle"></h2>
-    <div id="resultBox"></div>
-    <div id="resultDocs"></div>
-    <div id="resultActions"></div>
-  </div>
-</section>
-
-<section id="busy" class="screen hidden">
-  <div class="card center">
-    <div class="loader"></div>
-    <h2>Estamos preparando tu información</h2>
-    <p>Espera un momento.</p>
-  </div>
-</section>
 </main>
 
-<footer>
-  <span>SAVE MÉXICO AYUDAR · Servicio privado</span>
-  <button onclick="logout()">Salir</button>
-</footer>
-</div>
-
-<script>
-"use strict";
-
-const $=id=>document.getElementById(id);
-const esc=x=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-const txt=x=>Array.isArray(x)?x.join(", "):(x??"");
-const api=async(url,opt={})=>{
-  const r=await fetch(url,{headers:{"Content-Type":"application/json",...(opt.headers||{})},...opt});
-  let d={};try{d=await r.json()}catch{}
-  if(!r.ok)throw new Error(d.detail||d.message||"No se pudo completar la operación.");
-  return d;
-};
-
-let token=sessionStorage.getItem("save_token")||"";
-let DATA=null,TR=null,MOD=null,QUEST=[],DOCS=[];
-let state={
-  tramite_id:"",modalidad_id:"",respuestas:{},documentos:{},
-  personales:{},consulado:{},qIndex:0,pIndex:0,result:null
-};
-
-function auth(){
-  return token?{"Authorization":"Bearer "+token}:{};
-}
-function show(id){
-  document.querySelectorAll(".screen").forEach(x=>x.classList.add("hidden"));
-  $(id).classList.remove("hidden");
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-function msg(id,t,ok=false){
-  $(id).textContent=t||"";
-  $(id).className=t?"msg "+(ok?"ok":"bad"):"msg";
-}
-function busy(v){
-  if(v)show("busy");
-}
-function save(){
-  try{sessionStorage.setItem("save_state",JSON.stringify(state))}catch{}
-}
-function load(){
-  try{
-    const x=JSON.parse(sessionStorage.getItem("save_state")||"null");
-    if(x&&typeof x==="object")state={...state,...x};
-  }catch{}
-}
-function logout(){
-  token="";
-  sessionStorage.removeItem("save_token");
-  sessionStorage.removeItem("save_state");
-  location.reload();
-}
-
-async function boot(){
-  load();
-  const q=new URLSearchParams(location.search);
-  if(q.get("stripe")==="success"&&q.get("session_id")){
-    show("busy");
-    try{
-      const d=await api("/api/payment-success?session_id="+encodeURIComponent(q.get("session_id")));
-      if(d.token){
-        token=d.token;sessionStorage.setItem("save_token",token);
-        history.replaceState({},document.title,"/");
-      }
-    }catch(e){
-      show("gate");msg("gateMsg",e.message);
-      return;
-    }
-  }
-  if(token){
-    try{
-      const d=await api("/api/check-access",{method:"POST",headers:auth(),body:JSON.stringify({token})});
-      if(d.allowed){await openApp();return}
-    }catch{}
-  }
-  show("gate");
-}
-
-async function pay(plan){
-  msg("gateMsg","Abriendo pago...");
-  try{
-    const d=await api("/api/create-checkout-session",{
-      method:"POST",headers:auth(),
-      body:JSON.stringify({plan:String(plan)})
-    });
-    if(d.url)location.href=d.url;
-    else throw new Error("Stripe no devolvió el enlace de pago.");
-  }catch(e){msg("gateMsg",e.message)}
-}
-
-async function adminLogin(){
-  const username=$("adminUser").value.trim();
-  const password=$("adminPass").value;
-  if(!username||!password){msg("adminMsg","Escribe usuario y contraseña.");return}
-  try{
-    const d=await api("/api/admin-login",{method:"POST",body:JSON.stringify({username,password})});
-    token=d.token||"";
-    if(!token)throw new Error("No se recibió acceso.");
-    sessionStorage.setItem("save_token",token);
-    msg("adminMsg","Acceso autorizado.",true);
-    await openApp();
-  }catch(e){msg("adminMsg",e.message)}
-}
-
-async function openApp(){
-  busy(true);
-  try{
-    const d=await api("/api/tramites",{headers:auth()});
-    DATA=d;
-    renderManual();
-    renderTramites();
-    show("start");
-  }catch(e){
-    show("gate");
-    msg("gateMsg",e.message);
-  }
-}
-
-function arr(x){
-  if(Array.isArray(x))return x;
-  if(x==null)return[];
-  return[x];
-}
-function listFrom(d,key){
-  if(Array.isArray(d))return d;
-  if(Array.isArray(d?.[key]))return d[key];
-  return[];
-}
-function label(x){
-  return x?.nombre||x?.titulo||x?.label||x?.texto||x?.descripcion||x?.id||"";
-}
-function idOf(x){
-  return x?.id||x?.codigo||x?.valor||"";
-}
-
-function renderManual(){
-  const m=DATA?.manual||DATA?.manual_usuario||DATA?.manual_autoservicio||
-    DATA?.manual_de_uso||DATA?.ayuda||{};
-  let html="";
-  if(typeof m==="string")html="<p>"+esc(m)+"</p>";
-  else{
-    const parts=[];
-    for(const k of ["titulo","objetivo","como_funciona","que_significa","documentos","si_no_se","pdf","importante"]){
-      if(m[k])parts.push("<div class='manualPart'><h3>"+esc(k.replaceAll("_"," "))+"</h3><p>"+esc(typeof m[k]==="string"?m[k]:JSON.stringify(m[k]))+"</p></div>");
-    }
-    html=parts.join("")||`
-      <div class="manualPart"><h3>1. Elige tu trámite</h3><p>Selecciona el trámite que quieres preparar.</p></div>
-      <div class="manualPart"><h3>2. Responde una pregunta a la vez</h3><p>Lee con calma y responde según tu situación real.</p></div>
-      <div class="manualPart"><h3>3. Revisa tus documentos</h3><p>Indica si tienes cada documento, si no lo tienes o si no estás seguro.</p></div>
-      <div class="manualPart"><h3>4. Recibe tu resultado</h3><p>La aplicación te dirá qué tienes, qué falta y qué debes confirmar.</p></div>
-      <div class="manualPart"><h3>5. Descarga tu guía</h3><p>La guía reúne tu situación y los documentos relacionados con tu trámite.</p></div>
-      <p><b>Importante:</b> SAVE MÉXICO AYUDAR es un servicio privado. La autoridad mexicana decide finalmente qué acepta.</p>`;
-  }
-  $("manualText").innerHTML=html;
-}
-function showManual(){renderManual();show("manual")}
-function closeManual(){show("start")}
-
-function renderTramites(){
-  const a=listFrom(DATA,"tramites");
-  $("tramitesBox").innerHTML=a.map(x=>`
-    <button class="choice" onclick="selectTramite('${esc(idOf(x))}')">
-      <b>${esc(label(x))}</b>
-      ${x.autoridad?`<small>${esc(x.autoridad)}</small>`:""}
-      ${x.descripcion?`<small>${esc(x.descripcion)}</small>`:""}
-    </button>`).join("");
-}
-async function selectTramite(id){
-  state.tramite_id=id;state.modalidad_id="";state.respuestas={};state.documentos={};save();
-  busy(true);
-  try{
-    let d;
-    try{d=await api("/api/ficha-tramite?tramite_id="+encodeURIComponent(id),{headers:auth()})}
-    catch{d=await api("/api/ficha-tramite",{method:"POST",headers:auth(),body:JSON.stringify({tramite_id:id})})}
-    TR=d?.tramite||d;
-    let md;
-    try{md=await api("/api/modalidades?tramite_id="+encodeURIComponent(id),{headers:auth()})}
-    catch{md=await api("/api/modalidades",{method:"POST",headers:auth(),body:JSON.stringify({tramite_id:id})})}
-    MOD=listFrom(md,"modalidades");
-    if(!MOD.length)MOD=TR?.modalidades||[];
-    renderModalidades();
-    show("modality");
-  }catch(e){show("start");alert(e.message)}
-}
-function renderModalidades(){
-  $("modStep").textContent=TR?.nombre||TR?.titulo||"Trámite";
-  $("modTitle").textContent=TR?.pregunta_modalidad||"¿Qué necesitas hacer?";
-  $("modHelp").textContent=TR?.ayuda_modalidad||"Selecciona la opción que corresponde a tu situación.";
-  $("modalidadesBox").innerHTML=MOD.map(x=>`
-    <button class="choice" onclick="selectMod('${esc(idOf(x))}')">
-      <b>${esc(label(x))}</b>
-      ${x.descripcion?`<small>${esc(x.descripcion)}</small>`:""}
-    </button>`).join("");
-}
-function goStart(){show("start")}
-async function selectMod(id){
-  state.modalidad_id=id;state.respuestas={};state.documentos={};state.qIndex=0;save();
-  const m=MOD.find(x=>idOf(x)===id)||{};
-  QUEST=arr(m.preguntas||m.questions);
-  DOCS=arr(m.documentos||m.docs);
-  if(!QUEST.length){
-    try{
-      const d=await api("/api/ficha-tramite?tramite_id="+encodeURIComponent(state.tramite_id)+"&modalidad_id="+encodeURIComponent(id),{headers:auth()});
-      const z=d?.modalidad||d;
-      QUEST=arr(z.preguntas||z.questions);
-      DOCS=arr(z.documentos||z.docs);
-    }catch{}
-  }
-  showQuestion();
-}
-
-function valFor(id){return state.respuestas[id]}
-function scalar(v){return Array.isArray(v)?v.join(", "):v??""}
-function cond(c){
-  if(!c)return true;
-  const all=Array.isArray(c)?c:[c];
-  return all.every(one=>{
-    if(!one||typeof one!=="object")return true;
-    const actual=valFor(one.respuesta);
-    if("es" in one||"igual_a" in one)return scalar(actual)==String(one.es??one.igual_a);
-    if("no_es" in one||"distinto_de" in one)return scalar(actual)!=String(one.no_es??one.distinto_de);
-    if("incluye" in one)return arr(actual).includes(one.incluye);
-    if("no_incluye" in one)return !arr(actual).includes(one.no_incluye);
-    if("alguno_de" in one)return arr(actual).some(v=>one.alguno_de.includes(v));
-    if("todos_de" in one)return one.todos_de.every(v=>arr(actual).includes(v));
-    if("existe" in one)return (actual!==undefined&&actual!==null&&scalar(actual)!=="")===!!one.existe;
-    if("cantidad_mayor_que" in one){
-      const a=arr(actual),exc=one.excepto||[];
-      return a.filter(v=>!exc.includes(v)).length>Number(one.cantidad_mayor_que);
-    }
-    if("cantidad_igual_a" in one)return arr(actual).length===Number(one.cantidad_igual_a);
-    if("cantidad_menor_que" in one)return arr(actual).length<Number(one.cantidad_menor_que);
-    return true;
-  });
-}
-function visibleQ(q){
-  return cond(q?.mostrar_si??q?.visible_si??q?.cuando);
-}
-function requiredQ(q){
-  if(q?.required===false)return false;
-  return cond(q?.obligatoria_si??q?.required_si??null);
-}
-function visibleQuestions(){
-  return QUEST.filter(visibleQ);
-}
-function normalizeOptions(q){
-  return arr(q.opciones||q.options||q.valores||[]).map(o=>{
-    if(typeof o==="string")return{id:o,label:o};
-    return{id:o.id??o.valor??o.value??o.codigo??o.nombre,label:o.label??o.nombre??o.texto??o.valor??o.id};
-  });
-}
-function questionType(q){
-  return q.tipo||q.type||"texto";
-}
-function showQuestion(){
-  const qs=visibleQuestions();
-  if(!qs.length){goPersonal();return}
-  if(state.qIndex>=qs.length){goPersonal();return}
-  const q=qs[state.qIndex];
-  $("qStep").textContent=`Pregunta ${state.qIndex+1} de ${qs.length}`;
-  $("qTitle").textContent=q.pregunta||q.titulo||q.texto||q.label||q.id;
-  $("qHelp").textContent=q.ayuda||q.descripcion||"";
-  $("qError").textContent="";
-  const v=valFor(q.id),type=questionType(q);
-  let h="";
-  if(type==="si_no"){
-    h=["SI","NO","NO_SE","NO_APLICA"].map(x=>radio(q,x,v)).join("");
-  }else if(type==="multiple"||type==="opciones_multiples"){
-    h=normalizeOptions(q).map(o=>check(q,o,v)).join("");
-  }else if(type==="opciones"||type==="select"){
-    h=normalizeOptions(q).map(o=>radio(q,o.id,v,o.label)).join("");
-    if(q.permite_otro!==false)h+=radio(q,{id:"__OTRO__",label:"OTRO"},v);
-    h+=`<input id="otherInput" class="other ${arr(v).includes("__OTRO__")||v==="__OTRO__"?"show":""}" placeholder="Escribe cuál" value="${esc(state.respuestas[q.id+"_otro"]||"")}">`;
-  }else if(type==="fecha"){
-    h=`<input id="answerInput" type="date" value="${esc(v||"")}">`;
-  }else if(type==="numero"){
-    h=`<input id="answerInput" type="number" value="${esc(v||"")}">`;
-  }else if(type==="textarea"||type==="texto_largo"){
-    h=`<textarea id="answerInput" rows="5" placeholder="${esc(q.placeholder||"Escribe aquí")}">${esc(v||"")}</textarea>`;
-  }else{
-    h=`<input id="answerInput" type="text" value="${esc(v||"")}" placeholder="${esc(q.placeholder||"Escribe aquí")}">`;
-  }
-  $("questionBox").innerHTML=h;
-  document.querySelectorAll("input[name='q']").forEach(x=>x.addEventListener("change",toggleOther));
-  toggleOther();
-  show("question");
-}
-function radio(q,o,v,lab){
-  const id=typeof o==="string"?o:o.id;
-  const l=lab??(typeof o==="string"?o:o.label);
-  const checked=Array.isArray(v)?v.includes(id):String(v??"")===String(id);
-  return `<label class="option"><input type="radio" name="q" value="${esc(id)}" ${checked?"checked":""}><span>${esc(l)}</span></label>`;
-}
-function check(q,o,v){
-  const id=o.id,l=o.label,checked=arr(v).includes(id);
-  return `<label class="option"><input type="checkbox" name="q" value="${esc(id)}" ${checked?"checked":""}><span>${esc(l)}</span></label>`;
-}
-function toggleOther(){
-  const x=document.querySelector("input[name='q']:checked");
-  const o=$("otherInput");
-  if(o)o.classList.toggle("show",x?.value==="__OTRO__");
-}
-function readQuestion(){
-  const q=visibleQuestions()[state.qIndex],type=questionType(q);
-  let v;
-  if(type==="multiple"||type==="opciones_multiples")v=[...document.querySelectorAll("input[name='q']:checked")].map(x=>x.value);
-  else if(type==="si_no"||type==="opciones"||type==="select")v=document.querySelector("input[name='q']:checked")?.value||"";
-  else v=$("answerInput")?.value?.trim()||"";
-  if(type==="opciones"&&v==="__OTRO__"){
-    const o=$("otherInput")?.value.trim()||"";
-    if(!o)return{error:"Escribe cuál es la opción."};
-    state.respuestas[q.id+"_otro"]=o;
-  }
-  if((type==="multiple"||type==="opciones_multiples")&&Array.isArray(v)){
-    if(v.includes("NO_SE")&&v.length>1)return{error:"Si no estás seguro, selecciona solamente NO_SE."};
-    if(v.includes("NO_APLICA")&&v.length>1)return{error:"NO_APLICA debe seleccionarse sola."};
-    if(v.includes("NINGUNO")&&v.length>1)return{error:"NINGUNO debe seleccionarse solo."};
-  }
-  if(requiredQ(q)){
-    const empty=Array.isArray(v)?v.length===0:v==="";
-    if(empty)return{error:"Necesitamos esta respuesta para continuar."};
-  }
-  state.respuestas[q.id]=v;
-  return{};
-}
-function nextQuestion(){
-  const z=readQuestion();
-  if(z.error){$("qError").textContent=z.error;return}
-  save();
-  const qs=visibleQuestions();
-  if(state.qIndex<qs.length-1){state.qIndex++;showQuestion()}
-  else goPersonal();
-}
-function prevQuestion(){
-  if(state.qIndex>0){state.qIndex--;showQuestion()}
-  else show("modality");
-}
-
-async function goPersonal(){
-  state.pIndex=0;
-  let p=DATA?.datos_personales?.campos||DATA?.datos_personales||[];
-  if(!Array.isArray(p)){
-    try{const d=await api("/api/datos-personales",{headers:auth()});p=d.campos||d.datos_personales||[]}
-    catch{}
-  }
-  PERSONAL=Array.isArray(p)?p:[];
-  renderPersonal();
-}
-let PERSONAL=[];
-function renderPersonal(){
-  if(!PERSONAL.length){goConsulate();return}
-  const p=PERSONAL[state.pIndex];
-  $("personalStep").textContent=`Dato ${state.pIndex+1} de ${PERSONAL.length}`;
-  $("personalTitle").textContent=p.pregunta||p.titulo||p.label||p.nombre||"Dato personal";
-  $("personalHelp").textContent=p.ayuda||p.descripcion||"";
-  const id=p.id||p.nombre||p.codigo;
-  const v=state.personales[id]??"";
-  let h="";
-  if((p.tipo||p.type)==="select"||(p.opciones||p.options)){
-    const os=normalizeOptions(p);
-    h=os.map(o=>`<label class="option"><input type="radio" name="p" value="${esc(o.id)}" ${String(v)===String(o.id)?"checked":""}><span>${esc(o.label)}</span></label>`).join("");
-  }else{
-    const type=(p.tipo||p.type)==="fecha"?"date":"text";
-    h=`<input id="personalInput" type="${type}" value="${esc(v)}" placeholder="${esc(p.placeholder||"Escribe aquí")}">`;
-  }
-  $("personalBox").innerHTML=h;
-  $("personalError").textContent="";
-  show("personal");
-}
-function readPersonal(){
-  const p=PERSONAL[state.pIndex],id=p.id||p.nombre||p.codigo;
-  const v=$("personalInput")?.value.trim()||document.querySelector("input[name='p']:checked")?.value||"";
-  const req=p.required!==false;
-  if(req&&!v)return{error:"Necesitamos este dato para continuar."};
-  state.personales[id]=v;return{};
-}
-function nextPersonal(){
-  const z=readPersonal();
-  if(z.error){$("personalError").textContent=z.error;return}
-  save();
-  if(state.pIndex<PERSONAL.length-1){state.pIndex++;renderPersonal()}
-  else goConsulate();
-}
-function prevPersonal(){
-  if(state.pIndex>0){state.pIndex--;renderPersonal()}
-  else{
-    state.qIndex=Math.max(0,visibleQuestions().length-1);
-    showQuestion();
-  }
-}
-
-function renderConsulate(){
-  const fields=[
-    ["estado","Estado donde vives","Ejemplo: Florida"],
-    ["ciudad","Ciudad donde vives","Ejemplo: Miami"],
-    ["consulado","Consulado que corresponde","Si no lo sabes, escribe NO_SE"]
-  ];
-  $("consulateBox").innerHTML=fields.map(x=>`
-    <label class="field"><b>${x[1]}</b><input id="c_${x[0]}" value="${esc(state.consulado[x[0]]||"")}" placeholder="${x[2]}"></label>`).join("");
-}
-function goConsulate(){renderConsulate();show("consulate")}
-function prevConsulate(){PERSONAL.length? (state.pIndex=PERSONAL.length-1,renderPersonal()):showQuestion()}
-function finishConsulate(){
-  const a=["estado","ciudad","consulado"],z={};
-  for(const k of a)z[k]=$("c_"+k).value.trim();
-  if(!z.estado||!z.ciudad||!z.consulado){
-    $("consulateError").textContent="Completa los tres datos. Si no conoces el consulado, escribe NO_SE.";
-    return;
-  }
-  state.consulado=z;save();renderDocs();show("documents");
-}
-
-function applicableDoc(d){
-  return cond(d?.mostrar_si??d?.cuando??d?.condicion);
-}
-function renderDocs(){
-  const ds=DOCS.filter(applicableDoc);
-  const groups={};
-  ds.forEach(d=>(groups[d.seccion||"Documentos"]=groups[d.seccion||"Documentos"]||[]).push(d));
-  $("docsBox").innerHTML=Object.entries(groups).map(([g,a])=>`
-    <div class="docGroup"><h3>${esc(g)}</h3>${a.map(docHTML).join("")}</div>`).join("")||
-    "<p>No se encontraron documentos adicionales para esta situación.</p>";
-}
-function docHTML(d){
-  const id=d.id||d.codigo,old=state.documentos[id]?.estado||"";
-  const options=[
-    ["LO_TENGO","Lo tengo"],
-    ["NO_LO_TENGO","No lo tengo"],
-    ["NO_ESTOY_SEGURO","No estoy seguro"],
-    ["NO_APLICA","No aplica"]
-  ];
-  return `<div class="doc">
-    <h3>${esc(d.nombre||d.titulo||id)}</h3>
-    ${d.descripcion?`<p>${esc(d.descripcion)}</p>`:""}
-    ${d.nota?`<small>${esc(d.nota)}</small>`:""}
-    <div class="docOptions">${options.map(o=>`
-      <label class="option compact"><input type="radio" name="doc_${esc(id)}" value="${o[0]}" ${old===o[0]?"checked":""}><span>${o[1]}</span></label>`).join("")}</div>
-  </div>`;
-}
-function readDocs(){
-  DOCS.filter(applicableDoc).forEach(d=>{
-    const id=d.id||d.codigo;
-    const r=document.querySelector(`input[name="doc_${CSS.escape(id)}"]:checked`);
-    if(r)state.documentos[id]={estado:r.value,motivo:d.motivo||""};
-  });
-  return true;
-}
-function backFromDocs(){
-  goConsulate();
-}
-async function evaluateCase(){
-  readDocs();save();
-  $("docsError").textContent="";
-  busy(true);
-  try{
-    const payload=buildPayload();
-    const d=await api("/api/resultado-tramite",{
-      method:"POST",headers:auth(),body:JSON.stringify(payload)
-    });
-    state.result=d;save();renderResult(d);show("result");
-  }catch(e){
-    show("documents");$("docsError").textContent=e.message;
-  }
-}
-function buildPayload(){
-  return{
-    tramite_id:state.tramite_id,
-    modalidad_id:state.modalidad_id,
-    respuestas:state.respuestas,
-    documentos:state.documentos,
-    personales:state.personales,
-    consulado:state.consulado
-  };
-}
-
-function resultValue(d){
-  return d?.resultado||d?.estado_resultado||d?.estado||"REQUIERE_CONFIRMACION";
-}
-function renderList(title,a,cls=""){
-  a=arr(a).filter(Boolean);
-  if(!a.length)return"";
-  return `<div class="resultSection ${cls}"><h3>${esc(title)}</h3><ul>${a.map(x=>`<li>${esc(typeof x==="string"?x:(x.nombre||x.titulo||x.id||JSON.stringify(x)))}</li>`).join("")}</ul></div>`;
-}
-function renderResult(d){
-  const r=resultValue(d);
-  const names={
-    LISTO_PARA_CONFIRMAR:"Tu preparación está lista para revisar",
-    FALTAN_DOCUMENTOS:"Te faltan documentos",
-    HAY_INCONSISTENCIAS:"Hay información que debes corregir",
-    REQUIERE_CONFIRMACION:"Hay información que debes confirmar"
-  };
-  $("resultTitle").textContent=names[r]||"Resultado de tu preparación";
-  $("resultBox").innerHTML=`
-    <div class="status status-${r}"><b>${esc(r)}</b></div>
-    ${d.mensaje?`<p>${esc(d.mensaje)}</p>`:""}
-    ${d.resumen?`<div class="resultSection"><h3>Resumen</h3><p>${esc(d.resumen)}</p></div>`:""}
-    ${renderList("Lo que falta",d.faltan_documentos||d.documentos_faltantes,"bad")}
-    ${renderList("No estás seguro de",d.documentos_dudosos||d.dudosos,"warn")}
-    ${renderList("Debes confirmar",d.puntos_confirmar||d.confirmaciones,"warn")}
-    ${renderList("Inconsistencias",d.inconsistencias,"bad")}
-  `;
-  $("resultDocs").innerHTML=renderList("Documentos relacionados",d.documentos_aplicables||[]);
-  $("resultActions").innerHTML=`
-    <div class="actions">
-      <button class="primary" onclick="makePDF()">Crear mi guía PDF</button>
-      <button class="back" onclick="show('documents')">Revisar documentos</button>
-      <button class="back" onclick="newCase()">Nuevo trámite</button>
-    </div>
-    <div id="pdfMsg" class="msg"></div>`;
-}
-async function makePDF(){
-  const r=resultValue(state.result);
-  if(r==="HAY_INCONSISTENCIAS"){
-    msg("pdfMsg","Corrige primero las inconsistencias señaladas.");
-    return;
-  }
-  busy(true);
-  try{
-    const d=await api("/api/generar-guia-consular",{
-      method:"POST",headers:auth(),body:JSON.stringify(buildPayload())
-    });
-    show("result");
-    const url=d.url||d.download_url||(d.name?"/descargar/"+encodeURIComponent(d.name):"");
-    if(!url)throw new Error("No se recibió el PDF.");
-    $("resultActions").insertAdjacentHTML("afterbegin",`
-      <div class="downloadBox">
-        <h3>Tu guía está lista</h3>
-        <p>Guárdala y revísala antes de acudir al consulado.</p>
-        <a class="download" href="${esc(url)}" target="_blank">DESCARGAR GUÍA PDF</a>
-      </div>`);
-  }catch(e){
-    show("result");msg("pdfMsg",e.message);
-  }
-}
-function newCase(){
-  state={tramite_id:"",modalidad_id:"",respuestas:{},documentos:{},personales:{},consulado:{},qIndex:0,pIndex:0,result:null};
-  sessionStorage.removeItem("save_state");
-  renderTramites();show("start");
-}
-
-document.addEventListener("keydown",e=>{
-  if(e.key==="Enter"){
-    const active=document.querySelector(".screen:not(.hidden)");
-    if(active?.id==="question")nextQuestion();
-  }
-});
-
-boot();
-</script>
+<script src="/static/app.js"></script>
 </body>
 </html>
+```
