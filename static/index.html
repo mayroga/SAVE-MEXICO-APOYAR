@@ -2,311 +2,671 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#07111f">
 <title>SAVE MÉXICO AYUDAR</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#18232d;font-family:Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.loginbox,.box{background:#fff;border:1px solid #dfe5ea;border-radius:16px;padding:24px;box-shadow:0 8px 28px #0001}.loginbox{width:min(460px,100%)}h1,h2,h3{margin-top:0}h1{font-size:27px;text-align:center;color:#123b58}h2{font-size:22px}h3{font-size:17px}.sub,.muted{color:#66727c;line-height:1.5}.field{margin:13px 0}label{display:block;font-weight:700;margin-bottom:6px}input,select,textarea{width:100%;padding:12px;border:1px solid #ccd5dc;border-radius:9px;background:#fff;color:#18232d}textarea{resize:vertical}.bigbtn{width:100%;border:0;border-radius:10px;padding:14px 16px;margin-top:10px;font-weight:700}.primary{background:#123f5c;color:#fff}.secondary{background:#e9eef2;color:#173044}.green{background:#19734a;color:#fff}.red{background:#9d3030;color:#fff}.warn{background:#fff2d7;color:#7b5100;padding:11px;border-radius:9px;margin-top:12px;line-height:1.5}.success{background:#e5f6ed;color:#155c3b;padding:13px;border-radius:10px;line-height:1.5}.notice{font-size:12px;color:#69747c;line-height:1.5}#app{display:none;max-width:850px;margin:auto;padding:16px}.top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}.brand{font-size:20px;font-weight:800;color:#123b58}.smallbtn{border:1px solid #ccd5dc;background:#fff;border-radius:8px;padding:8px 11px}.screen{display:none}.screen.active{display:block}.step{font-size:13px;color:#66727c;margin-bottom:8px}.option{width:100%;text-align:left;background:#fff;border:1px solid #d5dde3;border-radius:11px;padding:15px;margin:7px 0}.option:hover{border-color:#123f5c}.card{background:#f7f9fa;border:1px solid #e1e6ea;border-radius:10px;padding:13px;margin:10px 0;line-height:1.55}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}@media(max-width:650px){.grid,.grid3{grid-template-columns:1fr}}.actions{display:flex;gap:10px;margin-top:15px}.actions>*{flex:1}.plan{border:1px solid #d7dfe5;border-radius:13px;padding:16px;background:#fff}.plan strong{font-size:25px;display:block;margin:7px 0}.plan b{color:#123f5c}.plan .bigbtn{margin-top:13px}#paywall{display:none}.photo{border:1px dashed #b7c3cc;border-radius:10px;padding:15px;background:#fafcfd}.preview{max-width:100%;max-height:220px;border-radius:9px;margin-top:8px}.filelist{font-size:14px;color:#58636c;margin-top:8px}.modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;padding:20px;align-items:center;justify-content:center}.sheet{background:#fff;width:min(620px,100%);max-height:90vh;overflow:auto;border-radius:15px;padding:20px;position:relative}.close{position:absolute;right:12px;top:8px;border:0;background:none;font-size:27px}hr{border:0;border-top:1px solid #e4e8eb;margin:20px 0}.check{display:flex;gap:8px;align-items:flex-start;margin:9px 0}.check input{width:auto;margin-top:4px}.reviewrow{border-bottom:1px solid #e7eaed;padding:9px 0}.reviewrow b{display:block;color:#52616d;font-size:13px;margin-bottom:3px}.tag{display:inline-block;background:#e9eef2;border-radius:20px;padding:5px 9px;margin:3px;font-size:13px}.dynlabel{margin-top:15px}.empty{padding:12px;background:#fff2d7;border-radius:9px;color:#72500a}.loading{text-align:center;padding:20px;color:#52616d}.aihead{font-weight:700;color:#123f5c;margin-bottom:5px}
+:root{--bg:#07111f;--card:#0d1b2a;--card2:#112438;--line:#21384e;--txt:#f5f7fa;--muted:#aebdcc;--blue:#38bdf8;--blue2:#0ea5e9;--green:#34d399;--red:#fb7185;--yellow:#fbbf24}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:Arial,Helvetica,sans-serif}
+body{min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+#app{width:100%;max-width:900px;margin:auto;padding:18px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.logo{font-weight:800;font-size:20px;letter-spacing:.4px}
+.logo span{color:var(--blue)}
+.lang{border:1px solid var(--line);background:var(--card);color:var(--txt);padding:8px 12px;border-radius:9px}
+.screen{display:none}
+.screen.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px;box-shadow:0 8px 30px #0003}
+h1,h2,h3{margin:0 0 12px;line-height:1.2}
+h1{font-size:30px}
+h2{font-size:23px}
+h3{font-size:18px}
+p{line-height:1.55}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.center{text-align:center}
+.notice{border-left:4px solid var(--blue);background:#0a1929;padding:14px;margin:15px 0;border-radius:8px;line-height:1.5}
+.warning{border-left-color:var(--yellow)}
+.danger{border-left-color:var(--red)}
+.success{border-left-color:var(--green)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{width:100%;text-align:left;border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:13px;padding:17px;min-height:75px;transition:.15s}
+.choice:hover{border-color:var(--blue);transform:translateY(-1px)}
+.choice strong{display:block;margin-bottom:5px}
+.choice small{color:var(--muted);line-height:1.4}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:0;border-radius:10px;padding:12px 18px;background:var(--blue2);color:white;font-weight:700}
+.btn:hover{filter:brightness(1.1)}
+.btn.secondary{background:#24384b}
+.btn.green{background:#059669}
+.btn.red{background:#be123c}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.field{margin:13px 0}
+label{display:block;font-weight:700;margin-bottom:7px}
+input,select,textarea{width:100%;background:#081521;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+textarea{min-height:100px;resize:vertical}
+.option-list{display:grid;gap:9px}
+.option{display:flex;align-items:flex-start;gap:9px;background:#091725;border:1px solid var(--line);border-radius:9px;padding:12px}
+.option input{width:auto;margin-top:3px}
+.progress{height:7px;background:#132638;border-radius:10px;overflow:hidden;margin:0 0 20px}
+.progress i{display:block;height:100%;width:0;background:var(--blue);transition:.2s}
+.step{font-size:13px;color:var(--muted);margin-bottom:8px}
+.doc{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#091725;border:1px solid var(--line);border-radius:10px;padding:13px;margin:8px 0}
+.doc-name{flex:1;line-height:1.4}
+.doc-status{display:flex;gap:5px}
+.doc-status button{border:1px solid var(--line);background:#15283a;color:var(--txt);border-radius:7px;padding:7px 9px;font-size:12px}
+.doc-status button.active.have{background:#047857}
+.doc-status button.active.missing{background:#be123c}
+.doc-status button.active.unsure{background:#a16207}
+.tag{display:inline-block;padding:5px 9px;border-radius:99px;background:#17324a;color:#bfe9ff;font-size:12px;margin:3px}
+.summary{background:#091725;border:1px solid var(--line);border-radius:10px;padding:14px;margin:10px 0}
+.summary b{display:block;margin-bottom:5px}
+.plan{border:1px solid var(--line);background:var(--card2);border-radius:13px;padding:17px}
+.plan strong{font-size:20px}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#12263a;border:1px solid var(--line);padding:12px 16px;border-radius:10px;display:none;z-index:99;max-width:90%;text-align:center}
+#loading{display:none;position:fixed;inset:0;background:#0009;z-index:90;align-items:center;justify-content:center}
+#loading div{background:var(--card);border:1px solid var(--line);padding:22px;border-radius:14px}
+.hidden{display:none!important}
+@media(max-width:650px){
+ #app{padding:12px}
+ .card{padding:17px}
+ h1{font-size:25px}
+ .grid{grid-template-columns:1fr}
+ .doc{display:block}
+ .doc-status{margin-top:9px}
+ .btn{width:100%}
+ .btns{display:grid}
+}
 </style>
 </head>
 <body>
-
-<div id="login">
-<div class="loginbox">
-<h1>SAVE MÉXICO AYUDAR</h1>
-<p class="sub">Asistencia privada para organizar información y preparar documentación relacionada con trámites de mexicanos.</p>
-
-<div id="paywall">
-<h2>Contratar el servicio</h2>
-<p class="sub">Elige la modalidad que necesitas. El pago se procesa mediante Stripe.</p>
-<div class="grid3">
-<div class="plan"><b>USO DIARIO</b><strong>$35.99</strong><div class="notice">Acceso por 24 horas.</div><button class="bigbtn primary" onclick="pagar('daily')">CONTRATAR</button></div>
-<div class="plan"><b>MENSUAL</b><strong>$69.99</strong><div class="notice">Suscripción mensual.</div><button class="bigbtn primary" onclick="pagar('monthly')">CONTRATAR</button></div>
-<div class="plan"><b>ANUAL</b><strong>$300</strong><div class="notice">Suscripción anual.</div><button class="bigbtn primary" onclick="pagar('annual')">CONTRATAR</button></div>
-</div>
-<hr>
-<p class="notice">Servicio privado e independiente. SAVE MÉXICO AYUDAR no es el Gobierno de México ni representa a un consulado.</p>
-<button class="smallbtn" onclick="mostrarAdmin()">Acceso administrativo</button>
-</div>
-
-<div id="adminBox" style="display:none">
-<h2>Acceso administrativo</h2>
-<div class="field"><label>Usuario</label><input id="user" autocomplete="username"></div>
-<div class="field"><label>Contraseña</label><input id="pass" type="password" autocomplete="current-password"></div>
-<button class="bigbtn primary" onclick="login()">ENTRAR</button>
-<button class="bigbtn secondary" onclick="volverPago()">VOLVER</button>
-<div id="loginMsg" class="warn" style="display:none"></div>
-</div>
-</div>
-</div>
+<div id="loading"><div id="loadingText">Procesando...</div></div>
+<div id="toast"></div>
 
 <div id="app">
-<div class="top"><div class="brand">SAVE MÉXICO AYUDAR</div><button class="smallbtn" onclick="logout()">SALIR</button></div>
+<header>
+<div class="logo">SAVE MÉXICO <span>AYUDAR</span></div>
+<button class="lang" id="langBtn" onclick="toggleLang()">EN</button>
+</header>
 
-<div id="s1" class="screen active box">
-<div class="step">PASO 1</div>
-<h2>¿Qué trámite estás preparando?</h2>
-<p class="sub">Selecciona el trámite. Después el Asesor Mexicano identificará qué información necesita ese trámite.</p>
-<button class="option" onclick="setTramite('Pasaporte')"><b>Pasaporte</b><br><span class="muted">Preparación de información y documentos.</span></button>
-<button class="option" onclick="setTramite('Matrícula Consular')"><b>Matrícula Consular</b></button>
-<button class="option" onclick="setTramite('INE')"><b>INE</b></button>
-<button class="option" onclick="setTramite('Registro Civil / Acta')"><b>Registro Civil / Acta</b></button>
-<button class="option" onclick="setTramite('Poder o documento notarial')"><b>Poder o documento notarial</b></button>
-<button class="option" onclick="setTramite('Otro')"><b>Otro trámite</b></button>
-</div>
+<div class="progress"><i id="progressBar"></i></div>
 
-<div id="s2" class="screen box">
-<div class="step">PASO 2</div>
-<h2>¿Qué modalidad o tipo de trámite necesitas?</h2>
-<p class="sub">Cada trámite puede tener requisitos y documentos diferentes. Escribe o selecciona la modalidad que corresponde a tu caso.</p>
-<div class="field"><label>Modalidad / tipo específico</label><select id="modalidadSelect" onchange="modalidadCambio()"><option value="">Selecciona una opción</option><option value="Primera vez">Primera vez</option><option value="Renovación">Renovación</option><option value="Reposición">Reposición</option><option value="Corrección o actualización">Corrección o actualización</option><option value="Otro">Otro</option></select></div>
-<div id="modalidadOtro" class="field" style="display:none"><label>Especifica</label><input id="modalidadOtroTxt" placeholder="Escribe el tipo de trámite"></div>
-<button class="bigbtn primary" onclick="consultarPerfil()">CONTINUAR</button>
-<button class="bigbtn secondary" onclick="go(1)">ATRÁS</button>
-<div id="perfilMsg" class="warn" style="display:none"></div>
+<section class="screen active" id="s0">
+<div class="card center">
+<h1>SAVE MÉXICO AYUDAR</h1>
+<p>Preparación clara de trámites mexicanos desde Estados Unidos.</p>
+<div class="notice">Te ayudamos a organizar tus datos, documentos y respuestas para preparar tu trámite. La decisión final siempre corresponde a la autoridad.</div>
+<div class="notice warning"><b>Importante</b><br>No sustituimos al Consulado de México ni al INE. Los requisitos pueden cambiar y algunos deben confirmarse directamente con la autoridad.</div>
+<div class="btns"><button class="btn" onclick="go(1)">Comenzar</button></div>
 </div>
+</section>
 
-<div id="s3" class="screen box">
-<div class="step">PASO 3</div>
-<h2>Información específica de tu trámite</h2>
-<p class="sub">El Asesor Mexicano preparó esta pantalla para el trámite que seleccionaste. No todos los trámites tienen las mismas preguntas.</p>
-<div id="perfilResumen" class="card"></div>
-<div id="dynamicFields"></div>
-<div id="specificQuestions"></div>
-<button class="bigbtn primary" onclick="go(4)">CONTINUAR</button>
-<button class="bigbtn secondary" onclick="go(2)">ATRÁS</button>
-</div>
-
-<div id="s4" class="screen box">
-<div class="step">PASO 4</div>
-<h2>Documentos y requisitos identificados</h2>
-<p class="sub">Esta información corresponde al trámite y modalidad seleccionados. Lo que no esté confirmado oficialmente aparecerá como pendiente de confirmación.</p>
-<div id="docsProfile"></div>
-<hr>
-<h3>¿Qué documentos ya tienes?</h3>
-<textarea id="docsHave" rows="5" placeholder="Escribe los documentos que ya tienes. Puedes separarlos por líneas o comas."></textarea>
-<h3>¿Qué documentos te faltan?</h3>
-<textarea id="docsMissing" rows="5" placeholder="Escribe los documentos que te faltan o que necesitas confirmar."></textarea>
-<div class="warn">No inventamos requisitos. Si tienes una duda sobre un requisito oficial, se marcará como <b>POR CONFIRMAR CON LA AUTORIDAD</b>.</div>
-<div class="actions"><button class="bigbtn secondary" onclick="go(3)">ATRÁS</button><button class="bigbtn primary" onclick="go(5)">CONTINUAR</button></div>
-</div>
-
-<div id="s5" class="screen box">
-<div class="step">PASO 5</div>
-<h2>Fotografías, formatos y documentos especiales</h2>
-<p class="sub">Revisa lo que el perfil del trámite identifica. No asumiremos tamaño, cantidad o características que no estén confirmadas.</p>
-<div id="photoRequirements"></div>
-<div id="formatRequirements"></div>
-<div id="specialRequirements"></div>
-<hr>
-<div class="photo">
-<label>Si ya tienes fotografías, puedes subirlas</label>
-<input id="photos" type="file" accept="image/*" multiple onchange="cargarFotos()">
-<div id="photoList" class="filelist"></div><div id="photoPreview"></div>
-</div>
-<div class="actions"><button class="bigbtn secondary" onclick="go(4)">ATRÁS</button><button class="bigbtn primary" onclick="go(6)">CONTINUAR</button></div>
-</div>
-
-<div id="s6" class="screen box">
-<div class="step">PASO 6</div>
-<h2>Datos de la persona</h2>
-<p class="sub">Estos datos son generales. Los datos particulares del trámite están en las preguntas anteriores.</p>
+<section class="screen" id="s1">
+<div class="card">
+<h2>Acceso</h2>
+<p class="muted">Selecciona una forma de entrar.</p>
 <div class="grid">
-<div class="field"><label>Primer nombre</label><input id="primer_nombre"></div>
-<div class="field"><label>Segundo nombre</label><input id="segundo_nombre"></div>
-<div class="field"><label>Primer apellido</label><input id="primer_apellido"></div>
-<div class="field"><label>Segundo apellido</label><input id="segundo_apellido"></div>
-<div class="field"><label>Fecha de nacimiento</label><input id="fecha_nacimiento" placeholder="DD/MM/AAAA"></div>
-<div class="field"><label>Lugar de nacimiento</label><input id="lugar_nacimiento" placeholder="Ciudad / Estado / México"></div>
-<div class="field"><label>Dirección en Estados Unidos</label><input id="direccion_usa"></div>
-<div class="field"><label>Teléfono</label><input id="telefono"></div>
-<div class="field"><label>Correo electrónico</label><input id="correo" type="email"></div>
-<div class="field"><label>Nacionalidad</label><input id="nacionalidad" value="Mexicana"></div>
-<div class="field"><label>Consulado</label><input id="consulado"></div>
-<div class="field"><label>Fecha / hora de cita</label><input id="cita"></div>
+<div class="plan">
+<strong>Acceso de pago</strong>
+<p class="small">Puedes contratar una guía individual o un acceso mensual/anual.</p>
+<div class="btns">
+<button class="btn" onclick="checkout('daily')">Individual · $35.99</button>
+<button class="btn secondary" onclick="checkout('monthly')">Mensual · $69.99</button>
+<button class="btn secondary" onclick="checkout('annual')">Anual · $300</button>
 </div>
-<div class="actions"><button class="bigbtn secondary" onclick="go(5)">ATRÁS</button><button class="bigbtn primary" onclick="go(7)">CONTINUAR</button></div>
 </div>
+<div class="plan">
+<strong>Acceso administrativo</strong>
+<p class="small">Acceso gratuito para el administrador autorizado.</p>
+<div class="field"><label>Usuario</label><input id="adminUser" autocomplete="username"></div>
+<div class="field"><label>Contraseña</label><input id="adminPass" type="password" autocomplete="current-password"></div>
+<button class="btn green" onclick="adminLogin()">Entrar como administrador</button>
+</div>
+</div>
+<div class="notice small">El acceso de pago se verifica mediante Stripe. No introduzcas aquí datos de tarjeta.</div>
+</div>
+</section>
 
-<div id="s7" class="screen box">
-<div class="step">PASO 7</div>
-<h2>Información adicional</h2>
-<p class="sub">Agrega cualquier dato que pueda ser importante para tu caso y que todavía no haya quedado registrado.</p>
-<div class="field"><label>Información adicional</label><textarea id="extra1" rows="5" placeholder="Escribe aquí..."></textarea></div>
-<div class="field"><label>Otra información</label><textarea id="extra2" rows="5" placeholder="Opcional"></textarea></div>
-<div class="actions"><button class="bigbtn secondary" onclick="go(6)">ATRÁS</button><button class="bigbtn primary" onclick="buildReview();go(8)">REVISAR</button></div>
+<section class="screen" id="s2">
+<div class="card">
+<div class="step">PASO 1 DE 7</div>
+<h2>¿Qué trámite necesitas?</h2>
+<p class="muted">Selecciona solamente uno.</p>
+<div id="tramitesBox" class="grid"></div>
+<div class="btns"><button class="btn secondary" onclick="go(1)">Atrás</button></div>
 </div>
+</section>
 
-<div id="s8" class="screen box">
-<div class="step">PASO 8</div>
-<h2>Revisa todo antes de preparar el PDF</h2>
-<p class="sub">El PDF será preparado de acuerdo con el perfil de este trámite y modalidad. No es un documento oficial del Gobierno de México.</p>
-<div id="review"></div>
-<label class="check"><input id="confirm" type="checkbox"> Confirmo que revisé los datos que proporcioné y que son correctos según mi conocimiento.</label>
-<div class="actions"><button class="bigbtn secondary" onclick="go(7)">ATRÁS</button><button class="bigbtn green" onclick="generar()">PREPARAR PDF</button></div>
+<section class="screen" id="s3">
+<div class="card">
+<div class="step">PASO 2 DE 7</div>
+<h2 id="modalidadTitle">¿Qué necesitas hacer?</h2>
+<p class="muted">Escoge la opción que corresponda a tu situación.</p>
+<div id="modalidadesBox" class="grid"></div>
+<div class="btns"><button class="btn secondary" onclick="go(2)">Atrás</button></div>
 </div>
+</section>
 
-<div id="s9" class="screen box">
-<div class="step">PASO 9</div>
-<h2>Documento preparado</h2>
-<div id="pdfResult"></div>
-<button class="bigbtn primary" onclick="abrirPDF()">ABRIR PDF</button>
-<button class="bigbtn secondary" onclick="openDoubt()">CAJÓN DE DUDAS</button>
-<button class="bigbtn secondary" onclick="resultado()">REGISTRAR RESULTADO</button>
-<button class="bigbtn secondary" onclick="nuevoTramite()">PREPARAR OTRO TRÁMITE</button>
+<section class="screen" id="s4">
+<div class="card">
+<div class="step">PASO 3 DE 7</div>
+<h2 id="preguntaTitle">Información del trámite</h2>
+<p id="preguntaHelp" class="muted">Responde una pregunta a la vez.</p>
+<div id="preguntaBox"></div>
+<div class="btns">
+<button class="btn secondary" onclick="preguntaBack()">Atrás</button>
+<button class="btn" id="preguntaNext" onclick="preguntaNext()">Continuar</button>
 </div>
 </div>
+</section>
 
-<div class="modal" id="doubtModal">
-<div class="sheet">
-<button class="close" onclick="closeDoubt()">×</button>
-<h2>Cajón de Dudas</h2>
-<p class="sub">El Asesor Mexicano responderá tomando en cuenta el trámite y modalidad que estás preparando.</p>
-<div class="card"><b id="doubtContext"></b></div>
-<textarea id="question" rows="5" placeholder="Escribe tu duda..."></textarea>
-<button class="bigbtn primary" onclick="ask()">PREGUNTAR</button>
-<div id="answer" class="card" style="display:none"></div>
+<section class="screen" id="s5">
+<div class="card">
+<div class="step">PASO 4 DE 7</div>
+<h2>Documentos</h2>
+<p class="muted">Marca cada documento según tu situación actual.</p>
+<div class="notice small">No marques un documento como obligatorio si la pantalla indica que depende de tu caso. Cuando tengas duda, utiliza “No estoy seguro”.</div>
+<div id="docsBox"></div>
+<div class="btns">
+<button class="btn secondary" onclick="go(4)">Atrás</button>
+<button class="btn" onclick="saveDocsAndContinue()">Continuar</button>
 </div>
+</div>
+</section>
+
+<section class="screen" id="s6">
+<div class="card">
+<div class="step">PASO 5 DE 7</div>
+<h2>Tus datos</h2>
+<p class="muted">Escribe únicamente la información que corresponda.</p>
+<div id="personalBox"></div>
+<div class="btns">
+<button class="btn secondary" onclick="go(5)">Atrás</button>
+<button class="btn" onclick="savePersonalAndContinue()">Continuar</button>
+</div>
+</div>
+</section>
+
+<section class="screen" id="s7">
+<div class="card">
+<div class="step">PASO 6 DE 7</div>
+<h2>Revisa tu información</h2>
+<p class="muted">Antes de generar la guía, revisa todo con calma.</p>
+<div id="reviewBox"></div>
+<div class="btns">
+<button class="btn secondary" onclick="go(6)">Atrás</button>
+<button class="btn green" onclick="generatePDF()">Generar guía PDF</button>
+</div>
+</div>
+</section>
+
+<section class="screen" id="s8">
+<div class="card center">
+<div class="step">PASO 7 DE 7</div>
+<h2>Tu guía está lista</h2>
+<p>La información fue organizada en un PDF de preparación.</p>
+<div class="notice success">Recuerda: esta guía no reemplaza las instrucciones finales del Consulado de México o del INE.</div>
+<div id="pdfInfo"></div>
+<div class="btns">
+<button class="btn green" id="downloadBtn">Descargar PDF</button>
+<button class="btn secondary" onclick="startOver()">Comenzar otro trámite</button>
+<button class="btn red" onclick="logout()">Cerrar sesión</button>
+</div>
+</div>
+</section>
 </div>
 
 <script>
-const $=id=>document.getElementById(id);
-let auth=sessionStorage.getItem("save_admin_auth")||"",tramiteActual="",modalidadActual="",pdfTexto="",archivo="",perfil=null,fotos=[],datos={};
+"use strict";
 
-function headers(json=false){const h={};if(auth)h.Authorization=auth;if(json)h["Content-Type"]="application/json";return h}
-function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0)}
-function go(n){show("s"+n)}
-function toast(x){alert(x)}
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function val(id){return $(id)?.value.trim()||""}
-function mostrarAdmin(){$("paywall").style.display="none";$("adminBox").style.display="block"}
-function volverPago(){$("adminBox").style.display="none";$("paywall").style.display="block"}
+const state={
+ lang:"es",
+ access:false,
+ admin:false,
+ tramite:"",
+ modalidad:"",
+ ficha:null,
+ preguntas:[],
+ preguntaIndex:0,
+ respuestas:{},
+ documentos:[],
+ docEstados:{},
+ personal:{},
+ pdf:""
+};
 
-async function login(){
- const u=$("user").value.trim(),p=$("pass").value;
- if(!u||!p){$("loginMsg").style.display="block";$("loginMsg").textContent="Escribe usuario y contraseña.";return}
- auth="Basic "+btoa(unescape(encodeURIComponent(u+":"+p)));
- try{const r=await fetch("/api/admin-login",{method:"POST",headers:headers()});if(!r.ok)throw Error("Usuario o contraseña incorrectos.");sessionStorage.setItem("save_admin_auth",auth);$("login").style.display="none";$("app").style.display="block"}catch(e){$("loginMsg").style.display="block";$("loginMsg").textContent=e.message}
-}
-async function restore(){
- try{if(auth){let r=await fetch("/api/check-access",{headers:headers()});if(r.ok&&(await r.json()).ok){$("login").style.display="none";$("app").style.display="block";return}}let r=await fetch("/api/check-access"),j=await r.json();if(j.ok){$("login").style.display="none";$("app").style.display="block";return}}catch(e){}
- $("login").style.display="flex";$("paywall").style.display="block";$("adminBox").style.display="none"
-}
-async function pagar(plan){
- try{const r=await fetch("/api/create-checkout-session",{method:"POST",headers:headers(true),body:JSON.stringify({plan})}),j=await r.json();if(!r.ok)throw Error(j.detail||"No se pudo iniciar el pago.");location.href=j.checkout_url}catch(e){toast(e.message)}
-}
-async function verificarPago(){
- const sid=new URLSearchParams(location.search).get("session_id");if(!sid)return false;
- try{const r=await fetch("/api/verify-payment?session_id="+encodeURIComponent(sid)),j=await r.json();if(!r.ok)throw Error(j.detail||"No se pudo confirmar el pago.");history.replaceState({},document.title,"/");$("login").style.display="none";$("app").style.display="block";return true}catch(e){toast(e.message);return false}
-}
+const fallbackModalidades={
+ pasaporte:{
+  primera_vez_adulto:"Primera vez - adulto",
+  renovacion:"Renovación / canje",
+  robo_extravio:"Robo o extravío",
+  menor:"Pasaporte para menor de edad",
+  emergencia:"Situación urgente / emergencia"
+ },
+ matricula_consular:{
+  primera_vez_adulto:"Primera vez - adulto",
+  renovacion:"Renovación",
+  robo_extravio:"Robo o extravío",
+  menor:"Matrícula Consular para menor de edad"
+ },
+ ine_extranjero:{
+  primera_vez:"Primera vez",
+  correccion:"Corrección o actualización de datos",
+  cambio_domicilio:"Cambio de domicilio",
+  reposicion:"Reposición",
+  vigencia:"Consulta de vigencia y situación de la credencial"
+ }
+};
 
-function setTramite(x){tramiteActual=x;perfil=null;modalidadActual="";$("modalidadSelect").value="";$("modalidadOtro").style.display="none";$("modalidadOtroTxt").value="";go(2)}
-function modalidadCambio(){$("modalidadOtro").style.display=$("modalidadSelect").value==="Otro"?"block":"none"}
-function obtenerModalidad(){return $("modalidadSelect").value==="Otro"?val("modalidadOtroTxt"):$("modalidadSelect").value}
-
-async function consultarPerfil(){
- modalidadActual=obtenerModalidad();
- if(!modalidadActual){toast("Selecciona o escribe la modalidad del trámite.");return}
- $("perfilMsg").style.display="none";
- $("perfilMsg").textContent="El Asesor Mexicano está preparando las preguntas y requisitos específicos de este trámite...";
- $("perfilMsg").style.display="block";
+function $(id){return document.getElementById(id)}
+function esc(v){
+ return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+function loading(v,text="Procesando..."){
+ $("loading").style.display=v?"flex":"none";
+ if(text)$("loadingText").textContent=text;
+}
+function toast(text){
+ $("toast").textContent=text;
+ $("toast").style.display="block";
+ clearTimeout(window.toastTimer);
+ window.toastTimer=setTimeout(()=>$("toast").style.display="none",3200);
+}
+async function api(url,opt={}){
+ const r=await fetch(url,opt);
+ let d={};
+ try{d=await r.json()}catch(e){}
+ if(!r.ok)throw new Error(d.detail||d.error||"No fue posible completar la operación.");
+ return d;
+}
+function go(n){
+ document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+ $("s"+n).classList.add("active");
+ $("progressBar").style.width=Math.min(100,(n/8)*100)+"%";
+ window.scrollTo({top:0,behavior:"smooth"});
+ if(n===2)loadTramites();
+ if(n===3)loadModalidades();
+ if(n===5)renderDocs();
+ if(n===6)renderPersonal();
+ if(n===7)renderReview();
+}
+function toggleLang(){
+ state.lang=state.lang==="es"?"en":"es";
+ $("langBtn").textContent=state.lang==="es"?"EN":"ES";
+ toast(state.lang==="es"?"Idioma español seleccionado":"English selected");
+}
+async function checkAccess(){
  try{
-  const r=await fetch("/api/perfil-tramite",{method:"POST",headers:headers(true),body:JSON.stringify({categoria_tramite:tramiteActual,modalidad:modalidadActual,contexto:pdfTexto||"",datos:{}})});
-  const j=await r.json();if(!r.ok)throw Error(j.detail||"No se pudo preparar el perfil del trámite.");
-  perfil=j.perfil||j;
-  renderPerfil();
-  go(3);
- }catch(e){$("perfilMsg").textContent=e.message}
+  const d=await api("/api/check-access");
+  state.access=!!d.access;
+  state.admin=!!d.admin;
+  if(state.access)go(2);
+ }catch(e){}
 }
-
-function arr(x){return Array.isArray(x)?x:[]}
-function textItem(x){
- if(typeof x==="string")return x;
- if(!x||typeof x!=="object")return "";
- return x.nombre||x.titulo||x.descripcion||x.texto||JSON.stringify(x)
-}
-function renderPerfil(){
- if(!perfil)return;
- const nombre=perfil.nombre_tramite||tramiteActual,mod=perfil.modalidad||modalidadActual;
- $("perfilResumen").innerHTML="<div class='aihead'>TRÁMITE IDENTIFICADO</div><b>"+esc(nombre)+"</b><br><span class='tag'>"+esc(mod)+"</span><p>"+esc(perfil.descripcion_simple||"El Asesor Mexicano organizará la información específica de este trámite.")+"</p>";
- const campos=arr(perfil.campos_necesarios);
- $("dynamicFields").innerHTML=campos.length?campos.map((x,i)=>{
-  if(typeof x==="string")x={nombre:x};
-  const id="campo_"+i,n=x.nombre||x.campo||x.titulo||("Dato "+(i+1)),tipo=x.tipo==="textarea"?"textarea":"input";
-  return `<div class="field dynlabel"><label>${esc(n)}</label>${tipo==="textarea"?`<textarea id="${id}" rows="4" placeholder="${esc(x.descripcion||"Escribe la información correspondiente")}"></textarea>`:`<input id="${id}" placeholder="${esc(x.descripcion||"Escribe la información correspondiente")}">`}</div>`
- }).join(""):"<div class='empty'>No se identificaron campos adicionales. Puedes continuar.</div>";
- const qs=arr(perfil.preguntas_especificas);
- $("specificQuestions").innerHTML=qs.length?"<hr><h3>Preguntas específicas</h3>"+qs.map((x,i)=>{x=typeof x==="string"?{pregunta:x}:x;return `<div class="field dynlabel"><label>${esc(x.pregunta||x.texto||x.titulo||("Pregunta "+(i+1)))}</label><textarea id="pregunta_"+i rows="3" placeholder="${esc(x.ayuda||"Escribe tu respuesta")}"></textarea></div>`}).join(""):"";
- renderRequirements();
-}
-function renderList(title,list){
- list=arr(list);if(!list.length)return "";
- return `<div class="card"><div class="aihead">${esc(title)}</div>${list.map(x=>"<div class='reviewrow'>"+esc(textItem(x))+"</div>").join("")}</div>`
-}
-function renderRequirements(){
- $("docsProfile").innerHTML=renderList("DOCUMENTOS IDENTIFICADOS",perfil.documentos)+renderList("CONFIRMACIONES OFICIALES",perfil.confirmaciones_oficiales)+renderList("ADVERTENCIAS",perfil.advertencias);
- $("photoRequirements").innerHTML=renderList("FOTOGRAFÍAS",perfil.fotografias);
- $("formatRequirements").innerHTML=renderList("FORMATOS",perfil.formatos);
- $("specialRequirements").innerHTML=renderList("SITUACIONES ESPECIALES",perfil.situaciones_especiales);
-}
-function collectSpecific(){
- const out={};
- arr(perfil?.campos_necesarios).forEach((x,i)=>{x=typeof x==="string"?{nombre:x}:x;const id="campo_"+i;if($(id))out[x.nombre||x.campo||("dato_"+i)]=val(id)});
- arr(perfil?.preguntas_especificas).forEach((x,i)=>{x=typeof x==="string"?{pregunta:x}:x;const id="pregunta_"+i;if($(id))out["Pregunta: "+(x.pregunta||x.texto||("Pregunta "+(i+1)))]=val(id)});
- return out
-}
-function cargarFotos(){
- const files=[...$("photos"].files];fotos=files;$("photoList").textContent=files.length?files.length+" fotografía(s) seleccionada(s).":"";
- $("photoPreview").innerHTML="";
- files.forEach(f=>{const im=document.createElement("img");im.className="preview";im.alt=f.name;const rd=new FileReader();rd.onload=e=>im.src=e.target.result;rd.readAsDataURL(f);$("photoPreview").appendChild(im);const p=document.createElement("div");p.className="filelist";p.textContent=f.name;$("photoPreview").appendChild(p)})
-}
-function extraerDatos(t){
- if(!t)return;
- const lines=t.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
- const find=rx=>{const x=lines.find(v=>rx.test(v));return x?x.split(":").slice(1).join(":").trim():""};
- const n=find(/Titular|Solicitante/i);
- if(n){const p=n.split(/\s+/);$("primer_nombre").value=p[0]||"";$("segundo_nombre").value=p.length>4?p.slice(1,-2).join(" "):"";$("primer_apellido").value=p.length>3?p[p.length-2]:"";$("segundo_apellido").value=p.length>3?p[p.length-1]:""}
- $("fecha_nacimiento").value=find(/Nacimiento/i);$("direccion_usa").value=find(/Domicilio USA|Domicilio en Estados Unidos/i);$("telefono").value=find(/Tel[eé]fono/i);
-}
-function guardarDatos(){
- datos={categoria_tramite:tramiteActual,modalidad:modalidadActual,primer_nombre:val("primer_nombre"),segundo_nombre:val("segundo_nombre"),primer_apellido:val("primer_apellido"),segundo_apellido:val("segundo_apellido"),fecha_nacimiento:val("fecha_nacimiento"),lugar_nacimiento:val("lugar_nacimiento"),direccion_usa:val("direccion_usa"),telefono:val("telefono"),correo:val("correo"),nacionalidad:val("nacionalidad")||"Mexicana",consulado:val("consulado"),cita:val("cita"),documentos_tenidos:val("docsHave"),documentos_faltantes:val("docsMissing"),fotografias:fotos.map(x=>x.name),datos_especificos:collectSpecific(),datos_extraidos:pdfTexto?[pdfTexto]:[],estado_posterior:"PENDIENTE",extra_1:val("extra1"),extra_2:val("extra2"),confirmado:$("confirm").checked}
-}
-function buildReview(){
- guardarDatos();
- const name=[datos.primer_nombre,datos.segundo_nombre,datos.primer_apellido,datos.segundo_apellido].filter(Boolean).join(" ");
- let rows=[["Trámite",datos.categoria_tramite],["Modalidad",datos.modalidad],["Nombre",name],["Nacimiento",[datos.fecha_nacimiento,datos.lugar_nacimiento].filter(Boolean).join(" — ")],["Domicilio USA",datos.direccion_usa],["Teléfono",datos.telefono],["Correo",datos.correo],["Nacionalidad",datos.nacionalidad],["Consulado",datos.consulado],["Cita",datos.cita],["Documentos que tiene",datos.documentos_tenidos||"No especificado"],["Documentos faltantes",datos.documentos_faltantes||"No especificado"],["Fotografías",datos.fotografias.length?datos.fotografias.join(", "):"No se subieron"],["Información adicional",datos.extra_1],["Otra información",datos.extra_2]];
- let specific=Object.entries(datos.datos_especificos||{}).filter(x=>x[1]);
- $("review").innerHTML=rows.map(x=>`<div class="reviewrow"><b>${esc(x[0])}</b>${esc(x[1]||"No especificado")}</div>`).join("")+(specific.length?"<h3 style='margin-top:18px'>DATOS ESPECÍFICOS DEL TRÁMITE</h3>"+specific.map(x=>`<div class="reviewrow"><b>${esc(x[0])}</b>${esc(x[1])}</div>`).join(""):"");
-}
-async function generar(){
- if(!$("confirm").checked){toast("Primero confirma que revisaste los datos.");return}
- guardarDatos();
+async function adminLogin(){
+ const username=$("adminUser").value.trim();
+ const password=$("adminPass").value;
+ if(!username||!password){toast("Escribe usuario y contraseña.");return}
+ loading(true,"Verificando acceso...");
  try{
-  const r=await fetch("/api/generar-guia-consular",{method:"POST",headers:headers(true),body:JSON.stringify(datos)}),j=await r.json();
-  if(!r.ok)throw Error(j.detail||"No se pudo preparar el PDF.");
-  archivo=j.archivo||("/descargar/"+j.nombre);
-  $("pdfResult").innerHTML=`<div class="success"><b>PDF preparado correctamente.</b><br>El contenido fue organizado para <b>${esc(tramiteActual)}</b>${modalidadActual?" — <b>"+esc(modalidadActual)+"</b>":""}. Revisa el documento antes de utilizarlo. Es una guía privada de preparación y no sustituye las instrucciones de la autoridad.</div>`;
-  go(9)
+  const d=await api("/api/admin-login",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({username,password})
+  });
+  state.access=true;
+  state.admin=true;
+  toast(d.message||"Acceso autorizado.");
+  go(2);
  }catch(e){toast(e.message)}
+ finally{loading(false)}
 }
-function abrirPDF(){if(!archivo){toast("Todavía no hay PDF preparado.");return}window.open(archivo,"_blank")}
-function openDoubt(){$("doubtContext").textContent=tramiteActual+(modalidadActual?" — "+modalidadActual:"");$("doubtModal").style.display="flex";$("answer").style.display="none"}
-function closeDoubt(){$("doubtModal").style.display="none"}
-async function ask(){
- const q=val("question");if(!q){toast("Escribe tu duda.");return}
- $("answer").style.display="block";$("answer").textContent="El Asesor Mexicano está revisando tu pregunta...";
- try{const r=await fetch("/api/pregunta",{method:"POST",headers:headers(true),body:JSON.stringify({pregunta:q,categoria_tramite:tramiteActual||"general",modalidad:modalidadActual||"",contexto:JSON.stringify({perfil:perfil,datos:datos,pdf:pdfTexto})})}),j=await r.json();$("answer").textContent=r.ok?(j.respuesta||"No recibimos una respuesta."):(j.detail||"No pudimos responder.")}catch(e){$("answer").textContent="No pudimos responder en este momento."}
+async function checkout(plan){
+ const map={
+  daily:"daily",
+  monthly:"monthly",
+  annual:"annual"
+ };
+ loading(true,"Preparando pago seguro...");
+ try{
+  const d=await api("/api/create-checkout-session",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({plan:map[plan]})
+  });
+  if(d.url){location.href=d.url;return}
+  if(d.checkout_url){location.href=d.checkout_url;return}
+  if(d.id){location.href="https://checkout.stripe.com/c/pay/"+d.id;return}
+  throw new Error("Stripe no devolvió una sesión de pago.");
+ }catch(e){toast(e.message);loading(false)}
 }
-async function resultado(){
- const x=prompt("Escribe el resultado de tu trámite:","PENDIENTE");if(x===null)return;
- try{const r=await fetch("/api/resultado-tramite",{method:"POST",headers:headers(true),body:JSON.stringify({categoria_tramite:tramiteActual,modalidad:modalidadActual,estado:x,resultado:x,comentario:""})}),j=await r.json();toast(r.ok?(j.mensaje||"Resultado guardado."):(j.detail||"No se pudo guardar."))}catch(e){toast("No se pudo guardar el resultado.")}
+async function verifyPayment(){
+ const params=new URLSearchParams(location.search);
+ const session=params.get("session_id")||params.get("checkout_session_id");
+ if(!session)return;
+ loading(true,"Verificando el pago...");
+ try{
+  const d=await api("/api/verify-payment?session_id="+encodeURIComponent(session));
+  if(d.access){
+   state.access=true;
+   history.replaceState({},document.title,location.pathname);
+   toast("Pago verificado. Acceso autorizado.");
+   go(2);
+  }else toast("El pago todavía no está confirmado.");
+ }catch(e){toast(e.message)}
+ finally{loading(false)}
 }
-function nuevoTramite(){location.reload()}
-async function logout(){try{await fetch("/api/logout",{method:"POST",headers:headers()})}catch(e){}auth="";sessionStorage.removeItem("save_admin_auth");location.href="/"}
-
-(async()=>{
- const paid=await verificarPago();
- if(!paid)restore();
-})();
+async function loadTramites(){
+ if(!state.access){go(1);return}
+ const box=$("tramitesBox");
+ box.innerHTML="<p class='muted'>Cargando...</p>";
+ try{
+  const d=await api("/api/tramites");
+  const list=d.tramites||d.data||d;
+  let arr=[];
+  if(Array.isArray(list))arr=list;
+  else if(list&&typeof list==="object")arr=Object.entries(list).map(([id,v])=>({id,nombre:v.nombre||id}));
+  box.innerHTML="";
+  arr.forEach(t=>{
+   const id=t.id||t.key||t.codigo;
+   const name=t.nombre||t.name||id;
+   if(!id)return;
+   const b=document.createElement("button");
+   b.className="choice";
+   b.innerHTML="<strong>"+esc(name)+"</strong><small>Preparar este trámite</small>";
+   b.onclick=()=>selectTramite(id,name);
+   box.appendChild(b);
+  });
+  if(!arr.length)throw new Error("No se encontraron trámites.");
+ }catch(e){
+  box.innerHTML="<div class='notice danger'>No se pudieron cargar los trámites.</div>";
+  toast(e.message);
+ }
+}
+async function selectTramite(id,name){
+ state.tramite=id;
+ state.modalidad="";
+ state.ficha=null;
+ state.respuestas={};
+ state.docEstados={};
+ state.personal={};
+ $("modalidadTitle").textContent=name||"Selecciona el tipo de trámite";
+ await loadModalidades();
+ go(3);
+}
+async function loadModalidades(){
+ const box=$("modalidadesBox");
+ box.innerHTML="<p class='muted'>Cargando opciones...</p>";
+ let data=null;
+ try{
+  const d=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite));
+  data=d;
+ }catch(e){}
+ let mods=data?.modalidades||data?.ficha?.modalidades||null;
+ if(!mods&&data?.data?.modalidades)mods=data.data.modalidades;
+ if(!mods)mods=fallbackModalidades[state.tramite]||{};
+ box.innerHTML="";
+ Object.entries(mods).forEach(([id,v])=>{
+  const name=typeof v==="string"?v:(v.nombre||id);
+  const desc=typeof v==="object"?(v.descripcion||""):"";
+  const b=document.createElement("button");
+  b.className="choice";
+  b.innerHTML="<strong>"+esc(name)+"</strong>"+(desc?"<small>"+esc(desc)+"</small>":"");
+  b.onclick=()=>selectModalidad(id);
+  box.appendChild(b);
+ });
+ if(!Object.keys(mods).length){
+  box.innerHTML="<div class='notice danger'>No hay modalidades configuradas para este trámite.</div>";
+ }
+}
+async function selectModalidad(id){
+ state.modalidad=id;
+ loading(true,"Cargando información...");
+ try{
+  const d=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite)+"&modalidad="+encodeURIComponent(id));
+  state.ficha=d.ficha||d.data||d;
+  state.preguntas=state.ficha.preguntas||[];
+  if(!Array.isArray(state.preguntas))state.preguntas=[];
+  state.preguntaIndex=0;
+  state.respuestas={};
+  state.docEstados={};
+  state.documentos=state.ficha.documentos||[];
+  go(4);
+  renderPregunta();
+ }catch(e){
+  toast(e.message);
+ }finally{loading(false)}
+}
+function renderPregunta(){
+ const q=state.preguntas[state.preguntaIndex];
+ const box=$("preguntaBox");
+ if(!q){
+  go(5);
+  return;
+ }
+ $("preguntaTitle").textContent=q.texto||"Pregunta";
+ $("preguntaHelp").textContent="Pregunta "+(state.preguntaIndex+1)+" de "+state.preguntas.length;
+ box.innerHTML="";
+ const type=q.tipo||"texto";
+ if(type==="si_no"){
+  box.innerHTML=`
+   <div class="option-list">
+    <label class="option"><input type="radio" name="q" value="Sí"> Sí</label>
+    <label class="option"><input type="radio" name="q" value="No"> No</label>
+   </div>`;
+ }else if(type==="opciones"){
+  box.innerHTML='<div class="option-list">'+(q.opciones||[]).map(x=>`
+   <label class="option"><input type="radio" name="q" value="${esc(x)}"> ${esc(x)}</label>`).join("")+"</div>";
+ }else{
+  const input=type==="numero"?"number":type==="fecha"?"date":type==="email"?"email":"text";
+  box.innerHTML='<div class="field"><input id="qInput" type="'+input+'" autocomplete="off"></div>';
+ }
+ $("preguntaNext").textContent=state.preguntaIndex===state.preguntas.length-1?"Continuar":"Siguiente";
+}
+function getPreguntaValue(){
+ const q=state.preguntas[state.preguntaIndex];
+ if(!q)return null;
+ if(q.tipo==="si_no"||q.tipo==="opciones"){
+  const r=document.querySelector("input[name='q']:checked");
+  return r?r.value:"";
+ }
+ return $("qInput")?.value.trim()||"";
+}
+function preguntaNext(){
+ const q=state.preguntas[state.preguntaIndex];
+ const v=getPreguntaValue();
+ if(q.obligatoria&&(!v&&v!==0)){toast("Responde esta pregunta antes de continuar.");return}
+ state.respuestas[q.id]=v;
+ if(state.preguntaIndex<state.preguntas.length-1){
+  state.preguntaIndex++;
+  renderPregunta();
+ }else{
+  go(5);
+ }
+}
+function preguntaBack(){
+ if(state.preguntaIndex>0){
+  state.preguntaIndex--;
+  renderPregunta();
+ }else go(3);
+}
+function renderDocs(){
+ const box=$("docsBox");
+ const docs=Array.isArray(state.documentos)?state.documentos:[];
+ if(!docs.length){
+  box.innerHTML="<div class='notice'>No hay una lista específica configurada para esta modalidad. Debes confirmar los documentos con la autoridad.</div>";
+  return;
+ }
+ box.innerHTML=docs.map((doc,i)=>{
+  const id="d"+i;
+  const s=state.docEstados[id]||"";
+  return `<div class="doc">
+   <div class="doc-name">${esc(doc)}</div>
+   <div class="doc-status">
+    <button class="${s==="have"?"active have":""}" onclick="setDoc('${id}','have')">Lo tengo</button>
+    <button class="${s==="missing"?"active missing":""}" onclick="setDoc('${id}','missing')">No lo tengo</button>
+    <button class="${s==="unsure"?"active unsure":""}" onclick="setDoc('${id}','unsure')">No estoy seguro</button>
+   </div>
+  </div>`;
+ }).join("");
+}
+function setDoc(id,status){
+ state.docEstados[id]=status;
+ renderDocs();
+}
+function saveDocsAndContinue(){
+ const docs=state.documentos||[];
+ const unanswered=docs.filter((_,i)=>!state.docEstados["d"+i]);
+ if(unanswered.length){
+  toast("Revisa todos los documentos antes de continuar.");
+  return;
+ }
+ go(6);
+}
+function renderPersonal(){
+ const fields=[
+  ["nombre","Nombre(s)","text",true],
+  ["apellido_paterno","Apellido paterno","text",true],
+  ["apellido_materno","Apellido materno","text",false],
+  ["fecha_nacimiento","Fecha de nacimiento","date",true],
+  ["lugar_nacimiento","Lugar de nacimiento","text",false],
+  ["telefono","Teléfono","text",false],
+  ["correo","Correo electrónico","email",false],
+  ["domicilio","Domicilio actual","text",false],
+  ["ciudad","Ciudad","text",false],
+  ["estado","Estado","text",false],
+  ["codigo_postal","Código postal","text",false]
+ ];
+ $("personalBox").innerHTML=fields.map(f=>`
+  <div class="field">
+   <label>${f[1]}${f[3]?" *":""}</label>
+   <input id="p_${f[0]}" type="${f[2]}" value="${esc(state.personal[f[0]]||"")}" ${f[3]?"required":""}>
+  </div>`).join("");
+}
+function savePersonalAndContinue(){
+ const required=["nombre","apellido_paterno","fecha_nacimiento"];
+ for(const x of required){
+  const el=$("p_"+x);
+  if(!el||!el.value.trim()){toast("Completa los datos obligatorios.");el?.focus();return}
+ }
+ document.querySelectorAll("#personalBox input").forEach(el=>{
+  state.personal[el.id.substring(2)]=el.value.trim();
+ });
+ go(7);
+}
+function renderReview(){
+ const modalName=getModalidadName();
+ let html="";
+ html+=`<div class="summary"><b>Trámite</b>${esc(getTramiteName())}</div>`;
+ html+=`<div class="summary"><b>Modalidad</b>${esc(modalName)}</div>`;
+ html+="<div class='summary'><b>Datos personales</b>";
+ Object.entries(state.personal).forEach(([k,v])=>{if(v)html+=`<div>${esc(labelPersonal(k))}: ${esc(v)}</div>`});
+ html+="</div>";
+ html+="<div class='summary'><b>Preguntas</b>";
+ Object.entries(state.respuestas).forEach(([k,v])=>html+=`<div>${esc(questionLabel(k))}: ${esc(v||"Sin respuesta")}</div>`);
+ html+="</div>";
+ html+="<div class='summary'><b>Documentos</b>";
+ (state.documentos||[]).forEach((d,i)=>{
+  const s=state.docEstados["d"+i];
+  const text=s==="have"?"Lo tengo":s==="missing"?"No lo tengo":"No estoy seguro";
+  html+=`<div>${esc(d)} — <span class="tag">${text}</span></div>`;
+ });
+ html+="</div>";
+ html+=`<div class="notice warning small"><b>Antes de generar el PDF</b><br>Revisa que los datos estén escritos correctamente. La guía organizará la información que proporcionaste; no garantiza que la autoridad acepte el trámite.</div>`;
+ $("reviewBox").innerHTML=html;
+}
+function labelPersonal(k){
+ const x={
+  nombre:"Nombre(s)",apellido_paterno:"Apellido paterno",apellido_materno:"Apellido materno",
+  fecha_nacimiento:"Fecha de nacimiento",lugar_nacimiento:"Lugar de nacimiento",telefono:"Teléfono",
+  correo:"Correo",domicilio:"Domicilio",ciudad:"Ciudad",estado:"Estado",codigo_postal:"Código postal"
+ };
+ return x[k]||k;
+}
+function questionLabel(id){
+ const q=state.preguntas.find(x=>x.id===id);
+ return q?.texto||id;
+}
+function getTramiteName(){
+ const map={
+  pasaporte:"Pasaporte mexicano",
+  matricula_consular:"Matrícula Consular de Alta Seguridad",
+  ine_extranjero:"Credencial para Votar desde el Extranjero"
+ };
+ return map[state.tramite]||state.tramite;
+}
+function getModalidadName(){
+ const f=state.ficha;
+ return f?.nombre||fallbackModalidades[state.tramite]?.[state.modalidad]||state.modalidad;
+}
+async function generatePDF(){
+ loading(true,"Generando tu guía PDF...");
+ try{
+  const payload={
+   tramite:state.tramite,
+   modalidad:state.modalidad,
+   datos_personales:state.personal,
+   datos_especificos:state.respuestas,
+   documentos:state.docEstados,
+   documentos_disponibles:(state.documentos||[]).filter((_,i)=>state.docEstados["d"+i]==="have"),
+   documentos_faltantes:(state.documentos||[]).filter((_,i)=>state.docEstados["d"+i]==="missing"),
+   documentos_dudosos:(state.documentos||[]).filter((_,i)=>state.docEstados["d"+i]==="unsure"),
+   idioma:state.lang
+  };
+  const d=await api("/api/generar-guia-consular",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify(payload)
+  });
+  state.pdf=d.filename||d.file||d.pdf||"";
+  if(!state.pdf)throw new Error("El servidor no devolvió el archivo PDF.");
+  $("pdfInfo").innerHTML=`
+   <div class="summary">
+    <b>Trámite</b>${esc(getTramiteName())}
+   </div>
+   <div class="summary">
+    <b>Modalidad</b>${esc(getModalidadName())}
+   </div>
+   <p class="muted small">Archivo preparado correctamente.</p>`;
+  $("downloadBtn").onclick=()=>downloadPDF(state.pdf);
+  go(8);
+ }catch(e){toast(e.message)}
+ finally{loading(false)}
+}
+function downloadPDF(name){
+ if(!name){toast("No hay PDF disponible.");return}
+ location.href="/descargar/"+encodeURIComponent(name);
+}
+async function logout(){
+ try{await api("/api/logout",{method:"POST"})}catch(e){}
+ state.access=false;
+ state.admin=false;
+ startOver();
+ go(1);
+}
+function startOver(){
+ state.tramite="";
+ state.modalidad="";
+ state.ficha=null;
+ state.preguntas=[];
+ state.preguntaIndex=0;
+ state.respuestas={};
+ state.documentos=[];
+ state.docEstados={};
+ state.personal={};
+ state.pdf="";
+ $("adminUser").value="";
+ $("adminPass").value="";
+}
+window.addEventListener("load",async()=>{
+ await verifyPayment();
+ await checkAccess();
+});
 </script>
 </body>
 </html>
