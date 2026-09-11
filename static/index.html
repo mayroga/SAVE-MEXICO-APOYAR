@@ -478,7 +478,7 @@ const id=f.id||f.codigo,nombre=txt(f.nombre||f.titulo||f.label)||id,required=f.o
 $("personalHelp").textContent="Dato "+(state.personalIndex+1)+" de "+state.personalFields.length;
 let type=String(f.tipo||f.type||"texto").toLowerCase();
 if(type==="fecha")type="date";else if(type==="email")type="email";else type="text";
-$("personalBox").innerHTML="<div class='field'><label>"+esc(nombre)+(required?" *":"")+"</label><input id='personalInput' type='"+type+"' value='"+esc(state.personal[id]||"')+"' autocomplete='off'></div>";
+$("personalBox").innerHTML="<div class='field'><label>"+esc(nombre)+(required?" *":"")+"</label><input id='personalInput' type='"+type+"' value='"+esc(state.personal[id]||"")+"' autocomplete='off'></div>";
 $("personalInput").focus();$("personalNextBtn").textContent=state.personalIndex===state.personalFields.length-1?"Continuar":"Siguiente"
 }
 
