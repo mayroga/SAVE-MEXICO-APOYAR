@@ -1,0 +1,134 @@
+```css
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    background:#f5f5f5;
+    color:#111;
+    font-family:Arial,sans-serif;
+}
+
+main{
+    width:100%;
+    max-width:700px;
+    margin:auto;
+}
+
+.pantalla{
+    display:none;
+    min-height:100vh;
+    padding:35px 22px;
+    text-align:center;
+    justify-content:center;
+    flex-direction:column;
+}
+
+.pantalla.activa{display:flex}
+
+.bandera{
+    font-size:60px;
+    margin-bottom:15px;
+}
+
+h1{
+    font-size:38px;
+    line-height:1.08;
+    margin:0 0 20px;
+}
+
+h2{
+    font-size:30px;
+    line-height:1.15;
+    margin:0 0 28px;
+}
+
+.subtitulo{
+    font-size:22px;
+    line-height:1.4;
+    margin:0 auto 40px;
+    max-width:560px;
+}
+
+.texto,.aviso{
+    background:white;
+    border-radius:16px;
+    padding:22px;
+    font-size:20px;
+    line-height:1.55;
+    text-align:left;
+    margin-bottom:25px;
+}
+
+.aviso{
+    border:3px solid #222;
+}
+
+.pequeno{
+    font-size:24px;
+    margin-top:15px;
+}
+
+button{
+    font-family:Arial,sans-serif;
+    cursor:pointer;
+}
+
+.principal{
+    width:100%;
+    border:0;
+    border-radius:16px;
+    padding:22px 15px;
+    background:#111;
+    color:white;
+    font-size:25px;
+    font-weight:bold;
+    margin-top:12px;
+}
+
+.principal:active,
+.opcion:active{
+    transform:scale(.98);
+}
+
+.opcion{
+    width:100%;
+    border:0;
+    border-radius:18px;
+    padding:28px 20px;
+    margin:10px 0;
+    color:white;
+    text-align:left;
+    font-size:20px;
+}
+
+.opcion strong{
+    display:block;
+    font-size:25px;
+    margin-bottom:10px;
+}
+
+.opcion span{
+    display:block;
+    line-height:1.4;
+}
+
+.azul{background:#1261a0}
+.verde{background:#16834b}
+
+.servidor{
+    font-size:14px;
+    color:#666;
+    margin-top:18px;
+}
+
+@media(max-width:500px){
+    .pantalla{padding:25px 16px}
+    h1{font-size:31px}
+    h2{font-size:27px}
+    .subtitulo{font-size:19px}
+    .texto,.aviso{font-size:18px;padding:18px}
+    .principal{font-size:22px;padding:20px 12px}
+    .opcion strong{font-size:22px}
+    .opcion{font-size:18px}
+}
+```
