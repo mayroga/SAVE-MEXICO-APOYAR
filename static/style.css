@@ -4,7 +4,7 @@ html,body{
  margin:0;
  min-height:100%;
  font-family:Arial,sans-serif;
- background:#f4f4f4;
+ background:#f3f4f6;
  color:#111;
 }
 
@@ -47,8 +47,18 @@ h2{
  width:100%;
  margin:0 0 24px;
  font-size:31px;
- line-height:1.15;
+ line-height:1.2;
  font-weight:900;
+}
+
+h3{
+ margin:26px 0 12px;
+ padding-bottom:8px;
+ border-bottom:3px solid #ddd;
+ font-size:22px;
+ line-height:1.2;
+ font-weight:900;
+ text-align:left;
 }
 
 .grande{
@@ -64,20 +74,22 @@ h2{
  border-radius:18px;
  padding:22px;
  margin:8px 0 18px;
- font-size:21px;
- line-height:1.5;
+ font-size:20px;
+ line-height:1.55;
  text-align:left;
 }
 
 .caja p{
- margin:0 0 15px;
+ margin:0 0 17px;
 }
 
 .caja p:last-child{
  margin-bottom:0;
 }
 
-.principal,.voz,.respuesta{
+.principal,
+.voz,
+.respuesta{
  width:100%;
  border:0;
  border-radius:18px;
@@ -107,8 +119,9 @@ h2{
  color:#111;
  border:3px solid #1769aa;
  padding:20px 15px;
- margin:6px 0;
- font-size:22px;
+ margin:7px 0;
+ font-size:21px;
+ line-height:1.25;
  text-align:left;
 }
 
@@ -117,16 +130,10 @@ h2{
  color:#fff;
 }
 
-.principal:active,.voz:active,.respuesta:active{
+.principal:active,
+.voz:active,
+.respuesta:active{
  transform:scale(.98);
-}
-
-.paso{
- width:100%;
- margin-bottom:14px;
- font-size:16px;
- font-weight:bold;
- color:#666;
 }
 
 #opciones{
@@ -145,7 +152,7 @@ textarea{
  color:#111;
  font-family:Arial,sans-serif;
  font-size:21px;
- line-height:1.4;
+ line-height:1.45;
  resize:vertical;
 }
 
@@ -158,6 +165,7 @@ textarea:focus{
  min-height:22px;
  margin:14px 0 0;
  font-size:16px;
+ line-height:1.4;
  color:#555;
 }
 
@@ -175,16 +183,75 @@ textarea:focus{
  font-weight:bold;
 }
 
-@media(max-width:500px){
- .pantalla{padding:23px 13px}
- .bandera{font-size:55px}
- h1{font-size:31px}
- h2{font-size:27px}
- .grande{font-size:20px}
- .caja{font-size:18px;padding:18px}
- .principal{font-size:22px}
- .voz{font-size:21px}
- .respuesta{font-size:20px;padding:18px 14px}
- textarea{font-size:19px}
+.fuente{
+ margin-top:28px!important;
+ padding-top:20px;
+ border-top:2px solid #ddd;
+ font-size:16px!important;
+ line-height:1.45!important;
 }
 
+.fuente a{
+ display:inline-block;
+ margin-top:8px;
+ color:#1769aa;
+ font-weight:900;
+ text-decoration:underline;
+}
+
+#resultadoTexto{
+ overflow-wrap:anywhere;
+}
+
+#resultadoTexto h3:first-child{
+ margin-top:0;
+}
+
+@media(max-width:500px){
+ .pantalla{
+  padding:23px 13px;
+ }
+
+ .bandera{
+  font-size:55px;
+ }
+
+ h1{
+  font-size:31px;
+ }
+
+ h2{
+  font-size:27px;
+ }
+
+ h3{
+  font-size:20px;
+ }
+
+ .grande{
+  font-size:20px;
+ }
+
+ .caja{
+  padding:18px;
+  font-size:18px;
+ }
+
+ .principal{
+  font-size:22px;
+ }
+
+ .voz{
+  font-size:21px;
+ }
+
+ .respuesta{
+  font-size:20px;
+  padding:18px 14px;
+ }
+
+ textarea{
+  font-size:19px;
+  min-height:120px;
+ }
+}
