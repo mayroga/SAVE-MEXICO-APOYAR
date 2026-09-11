@@ -3,18 +3,11 @@ let servicio="",caso="",preguntaId="",respuestas={},escuchando=false;
 
 function mostrar(id,v=true){const e=$(id);if(e)e.style.display=v?"block":"none"}
 function texto(v=""){return String(v??"").trim()}
-
 function hablar(msg){
  if(!msg||!("speechSynthesis"in window))return;
- try{
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(msg);
-  u.lang="es-MX";u.rate=.92;speechSynthesis.speak(u);
- }catch(e){}
+ try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(msg);u.lang="es-MX";u.rate=.92;speechSynthesis.speak(u)}catch(e){}
 }
-
 async function despertar(){try{await fetch("/api/estado",{cache:"no-store"})}catch(e){}}
-
 function limpiar(){
  const q=$("preguntaTexto"),o=$("opciones"),r=$("respuesta"),t=$("textoUsuario");
  if(q)q.textContent="";
@@ -22,46 +15,37 @@ function limpiar(){
  if(r)r.innerHTML="";
  if(t)t.value="";
 }
-
 function boton(label,fn,clase="opcion"){
  const b=document.createElement("button");
  b.type="button";b.className=clase;b.textContent=label;b.onclick=fn;
  return b;
 }
 
-/* FUNCIONES COMPATIBLES CON index.html */
-window.entrar=()=>{
+/* ENTRADA */
+function entrar(){
  mostrar("inicio",false);mostrar("servicios",true);
  mostrar("pregunta",false);mostrar("resultado",false);
-};
+}
+function iniciarCita(){iniciarServicioInterno("cita")}
+function iniciarDocumento(){iniciarServicioInterno("documento")}
+function cita(){iniciarServicioInterno("cita")}
+function documento(){iniciarServicioInterno("documento")}
+function servicioCita(){iniciarServicioInterno("cita")}
+function servicioDocumento(){iniciarServicioInterno("documento")}
 
-window.iniciarCita=()=>iniciarServicioInterno("cita");
-window.iniciarDocumento=()=>iniciarServicioInterno("documento");
-window.iniciarServicio=tipo=>iniciarServicioInterno(tipo);
-window.cita=()=>iniciarServicioInterno("cita");
-window.documento=()=>iniciarServicioInterno("documento");
-window.servicioCita=()=>iniciarServicioInterno("cita");
-window.servicioDocumento=()=>iniciarServicioInterno("documento");
-window.nuevo=()=>reiniciar();
-window.reiniciar=()=>reiniciar();
-window.iniciarVoz=()=>iniciarVoz();
-window.enviar=()=>enviarRespuesta();
-window.continuar=()=>enviarRespuesta();
-
-/* INICIO DE SERVICIO */
+/* INICIO */
 function iniciarServicioInterno(tipo){
  servicio=tipo;caso="";preguntaId="";respuestas={};
  limpiar();
  mostrar("inicio",false);mostrar("servicios",false);
  mostrar("resultado",false);mostrar("pregunta",true);
  mostrarTitulo("Un momento...");
-
  fetch("/api/inicio/"+encodeURIComponent(tipo),{cache:"no-store"})
  .then(r=>r.json()).then(procesar)
  .catch(()=>error("No pudimos iniciar. Intenta nuevamente."));
 }
 
-/* PROCESAR SERVIDOR */
+/* RESPUESTA DEL SERVIDOR */
 function procesar(d){
  if(!d)return error("No recibimos una respuesta.");
  if(d.respuestas)respuestas=d.respuestas;
@@ -95,6 +79,7 @@ function procesar(d){
  }
 
  if(d.estado==="no_identificado"){
+  mostrar("pregunta",true);mostrar("resultado",false);
   mostrarTitulo(d.mensaje||"No encontramos la opción.");
   mostrarEntrada();return;
  }
@@ -119,25 +104,22 @@ function mostrarOpciones(opciones,fn){
  });
 }
 
-/* SELECCIÓN DIRECTA */
+/* SELECCIÓN */
 function seleccionarCaso(id){
  if(!id)return;
  caso=id;preguntaId="";respuestas={_caso:id};
  const box=$("opciones");if(box)box.innerHTML="";
  mostrarTitulo("Vamos a preparar lo que necesitas...");
-
  fetch("/api/responder",{
   method:"POST",
   headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({
-   servicio,caso:id,texto:"",respuestas,pregunta_id:""
-  })
+  body:JSON.stringify({servicio,caso:id,texto:"",respuestas,pregunta_id:""})
  })
  .then(r=>r.json()).then(procesar)
  .catch(()=>error("No pudimos continuar."));
 }
 
-/* PREGUNTAS */
+/* PREGUNTA */
 function mostrarPregunta(d){
  mostrar("pregunta",true);mostrar("resultado",false);
  const q=$("preguntaTexto"),box=$("opciones");
@@ -161,8 +143,10 @@ function mostrarPregunta(d){
 function mostrarEntrada(){
  mostrar("textoEntrada",true);
  const t=$("textoUsuario");
- if(t){t.placeholder="Escribe aquí o usa tu voz";setTimeout(()=>t.focus(),50)}
-
+ if(t){
+  t.placeholder="Escribe aquí o usa tu voz";
+  setTimeout(()=>t.focus(),50);
+ }
  const box=$("opciones");
  if(box&&!box.querySelector(".continuar")){
   const b=boton("CONTINUAR",()=>enviarRespuesta(),"continuar");
@@ -170,10 +154,9 @@ function mostrarEntrada(){
  }
 }
 
-/* RESPUESTA */
+/* RESPONDER */
 async function enviarRespuesta(valor){
  valor=texto(valor||$("textoUsuario")?.value);
-
  if(!valor){
   hablar("Necesito tu respuesta para continuar.");
   if($("textoUsuario"))$("textoUsuario").focus();
@@ -190,9 +173,7 @@ async function enviarRespuesta(valor){
   const r=await fetch("/api/responder",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    servicio,caso,texto:valor,respuestas,pregunta_id:preguntaId
-   })
+   body:JSON.stringify({servicio,caso,texto:valor,respuestas,pregunta_id:preguntaId})
   });
   const d=await r.json();
   if(d.respuestas)respuestas=d.respuestas;
@@ -206,30 +187,36 @@ async function enviarRespuesta(valor){
 /* RESULTADO */
 function mostrarResultado(d){
  mostrar("pregunta",false);mostrar("resultado",true);mostrar("textoEntrada",false);
- const box=$("respuesta");if(!box)return;
+ const box=$("respuesta");
+ if(!box)return;
  box.innerHTML="";
  agregarResultado(box,"PREPARA",d.prepara);
  agregarResultado(box,"IMPORTANTE",d.confirma);
 
  if(d.fuente){
   const h=document.createElement("h3");
-  h.textContent="FUENTE OFICIAL";box.appendChild(h);
+  h.textContent="FUENTE OFICIAL";
+  box.appendChild(h);
   const a=document.createElement("a");
-  a.className="fuente";a.href=d.fuente;a.target="_blank";
-  a.rel="noopener noreferrer";a.textContent="Ver información oficial";
+  a.className="fuente";
+  a.href=d.fuente;
+  a.target="_blank";
+  a.rel="noopener noreferrer";
+  a.textContent="VER INFORMACIÓN OFICIAL";
   box.appendChild(a);
  }
 
- box.appendChild(boton("EMPEZAR DE NUEVO",reiniciar,"continuar"));
  hablar((d.prepara||"")+" "+(d.confirma||""));
 }
 
 function agregarResultado(box,titulo,contenido){
  if(!contenido)return;
  const h=document.createElement("h3");
- h.textContent=titulo;box.appendChild(h);
+ h.textContent=titulo;
+ box.appendChild(h);
  const p=document.createElement("p");
- p.textContent=contenido;box.appendChild(p);
+ p.textContent=contenido;
+ box.appendChild(p);
 }
 
 /* ERROR */
@@ -239,7 +226,8 @@ function error(msg){
  if(box){
   box.innerHTML="";
   const p=document.createElement("p");
-  p.textContent=msg;box.appendChild(p);
+  p.textContent=msg;
+  box.appendChild(p);
   box.appendChild(boton("INTENTAR DE NUEVO",reiniciar,"continuar"));
  }
  hablar(msg);
@@ -247,48 +235,80 @@ function error(msg){
 
 /* REINICIAR */
 function reiniciar(){
- servicio="";caso="";preguntaId="";respuestas={};escuchando=false;
+ servicio="";
+ caso="";
+ preguntaId="";
+ respuestas={};
+ escuchando=false;
  limpiar();
- mostrar("resultado",false);mostrar("pregunta",false);
- mostrar("textoEntrada",false);mostrar("inicio",true);mostrar("servicios",true);
- const q=$("preguntaTexto");if(q)q.textContent="¿Qué necesitas?";
+ mostrar("resultado",false);
+ mostrar("pregunta",false);
+ mostrar("textoEntrada",false);
+ mostrar("inicio",true);
+ mostrar("servicios",true);
+ const q=$("preguntaTexto");
+ if(q)q.textContent="¿Qué necesitas?";
 }
 
 /* VOZ */
 function iniciarVoz(){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR)return hablar("Tu navegador no tiene reconocimiento de voz.");
+ if(!SR){
+  hablar("Tu navegador no tiene reconocimiento de voz.");
+  return;
+ }
  if(escuchando)return;
 
  const r=new SR();
- r.lang="es-MX";r.interimResults=false;r.maxAlternatives=1;
+ r.lang="es-MX";
+ r.interimResults=false;
+ r.maxAlternatives=1;
  escuchando=true;
 
- const b=$("voz");if(b)b.textContent="ESCUCHANDO...";
+ const b=$("voz");
+ if(b)b.textContent="ESCUCHANDO...";
 
  r.onresult=e=>{
   const v=texto(e.results?.[0]?.[0]?.transcript);
-  const t=$("textoUsuario");if(t)t.value=v;
+  const t=$("textoUsuario");
+  if(t)t.value=v;
  };
 
  r.onerror=()=>{
-  escuchando=false;if(b)b.textContent="🎤 HABLAR";
+  escuchando=false;
+  if(b)b.textContent="🎤 HABLAR";
  };
 
  r.onend=()=>{
-  escuchando=false;if(b)b.textContent="🎤 HABLAR";
+  escuchando=false;
+  if(b)b.textContent="🎤 HABLAR";
  };
 
  try{r.start()}catch(e){}
 }
 
+/* COMPATIBILIDAD CON HTML */
+window.entrar=entrar;
+window.iniciarCita=iniciarCita;
+window.iniciarDocumento=iniciarDocumento;
+window.iniciarServicio=iniciarServicioInterno;
+window.cita=cita;
+window.documento=documento;
+window.servicioCita=servicioCita;
+window.servicioDocumento=servicioDocumento;
+window.nuevo=reiniciar;
+window.reiniciar=reiniciar;
+window.iniciarVoz=iniciarVoz;
+window.enviar=enviarRespuesta;
+window.continuar=enviarRespuesta;
+
 /* DOM */
 document.addEventListener("DOMContentLoaded",()=>{
  despertar();
 
- const e=$("entrar");if(e)e.onclick=window.entrar;
- const c=$("servicioCita");if(c)c.onclick=()=>iniciarServicioInterno("cita");
- const d=$("servicioDocumento");if(d)d.onclick=()=>iniciarServicioInterno("documento");
+ const e=$("entrar");if(e)e.onclick=entrar;
+ const c=$("servicioCita");if(c)c.onclick=iniciarCita;
+ const d=$("servicioDocumento");if(d)d.onclick=iniciarDocumento;
  const v=$("voz");if(v)v.onclick=iniciarVoz;
  const cont=$("continuar");if(cont)cont.onclick=enviarRespuesta;
  const n=$("nuevo");if(n)n.onclick=reiniciar;
@@ -296,7 +316,8 @@ document.addEventListener("DOMContentLoaded",()=>{
  const t=$("textoUsuario");
  if(t)t.addEventListener("keydown",e=>{
   if(e.key==="Enter"&&!e.shiftKey){
-   e.preventDefault();enviarRespuesta();
+   e.preventDefault();
+   enviarRespuesta();
   }
  });
 
