@@ -12,389 +12,643 @@ FUENTES={
 
 CASOS={
 "pasaporte_primera_vez":{
-"titulo":"Pasaporte mexicano por primera vez","servicio":"cita","fuente":FUENTES["pasaporte"],
-"preguntas":[
-("nombre","¿Cuál es tu nombre completo?","texto",1),("nacionalidad","¿Cómo acreditas tu nacionalidad mexicana?","texto",1),
-("identidad","¿Qué identificación oficial con fotografía tienes?","texto",1),("cita","¿Ya tienes cita para el trámite?","si_no",1),
-("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Documento ORIGINAL que acredite la nacionalidad mexicana","Identificación ORIGINAL con fotografía","Cita previa","Pago de la tarifa vigente"],
-"originales":["Documento ORIGINAL de nacionalidad","Identificación ORIGINAL con fotografía"],
-"personas":["La persona solicitante debe presentarse personalmente."],"cita":["Debes contar con cita previa."],
-"pago":"Confirma la tarifa y forma de pago vigente antes de acudir.",
-"importante":["La autoridad consular revisará la documentación presentada y puede solicitar información adicional."],
-"entrega":"La información oficial indica entrega el mismo día una vez cumplidos los requisitos; el tiempo puede variar."
+ "titulo":"Pasaporte mexicano por primera vez","servicio":"cita","fuente":FUENTES["pasaporte"],
+ "preguntas":[
+  {"id":"nacionalidad","texto":"¿Cómo demuestras que eres mexicano?","tipo":"texto","required":True},
+  {"id":"identificacion","texto":"¿Qué identificación mexicana o de otro país tienes?","tipo":"texto","required":True},
+  {"id":"cita","texto":"¿Ya tienes cita para el Consulado?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"presencia","texto":"¿Puedes presentarte personalmente en el Consulado?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["La persona que solicita el pasaporte debe presentarse personalmente."],
+ "requisitos":[
+  "Documento original que compruebe la nacionalidad mexicana.",
+  "Documento original de identidad con fotografía cuyos datos permitan acreditar la identidad.",
+  "Cita consular.",
+  "Pago de la tarifa vigente."
+ ],
+ "originales":["Documento original de nacionalidad mexicana.","Identificación original con fotografía."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente antes de acudir.",
+ "cita":["La solicitud requiere cita.","Puedes consultar el sistema oficial de citas: "+FUENTES["citas"]],
+ "importante":["La autoridad consular puede solicitar documentación adicional cuando corresponda."],
+ "acciones":["Reúne el documento original que acredita tu nacionalidad mexicana.","Reúne tu identificación original con fotografía.","Obtén o confirma tu cita.","Confirma la tarifa vigente.","Revisa tus datos antes de concluir el trámite."],
+ "entrega":"La información oficial de Miami indica entrega el mismo día cuando el trámite procede y no existen fallas del sistema; confirma las condiciones al acudir.",
+ "vigencia":"La vigencia depende de la edad y de la opción disponible al momento del trámite."
 },
 "pasaporte_renovacion":{
-"titulo":"Renovación de pasaporte mexicano","servicio":"cita","fuente":FUENTES["pasaporte"],
-"preguntas":[
-("nombre","¿Cuál es tu nombre completo?","texto",1),("pasaporte_actual","¿Tienes el pasaporte que vas a renovar?","si_no",1),
-("cita","¿Ya tienes cita?","si_no",1),("naturalizado","¿Eres mexicano por naturalización?","si_no",0),("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Presentación personal","Pasaporte que se desea renovar","Cita previa","Pago de la tarifa vigente"],
-"originales":["Pasaporte que se desea renovar"],"personas":["La persona solicitante debe presentarse personalmente."],
-"cita":["Debes contar con cita previa."],"pago":"Confirma la tarifa y forma de pago vigente.",
-"importante":["Si eres mexicano por naturalización, puede corresponder presentar la carta de naturalización original o copia certificada correspondiente.","Pasaportes antiguos o casos especiales pueden requerir documentación adicional.","Un pasaporte de un año no puede renovarse como renovación ordinaria."],
-"entrega":"La información oficial indica entrega el mismo día una vez cumplidos los requisitos."
+ "titulo":"Renovación de pasaporte mexicano","servicio":"cita","fuente":FUENTES["pasaporte"],
+ "preguntas":[
+  {"id":"pasaporte_actual","texto":"¿Tienes contigo el pasaporte que vas a renovar?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"naturalizado","texto":"¿Eres mexicano por naturalización?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"antiguo","texto":"¿Tu pasaporte es muy antiguo o fue expedido en circunstancias especiales?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"]}
+ ],
+ "personas":["La persona titular debe presentarse personalmente."],
+ "requisitos":["Pasaporte que se desea renovar.","Cita consular.","Pago de la tarifa vigente."],
+ "originales":["Pasaporte que se desea renovar."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente.",
+ "cita":["Se requiere cita."],
+ "importante":[
+  "Si eres mexicano por naturalización, presenta el original de la carta de naturalización o copia certificada expedida por SRE cuando corresponda.",
+  "Pasaportes antiguos o determinados pasaportes especiales pueden requerir documentación adicional.",
+  "Un pasaporte de un año no se renueva como una renovación ordinaria."
+ ],
+ "acciones":["Lleva el pasaporte que vas a renovar.","Si eres naturalizado, prepara tu documento de naturalización.","Confirma tu cita.","Confirma la tarifa vigente.","Revisa todos tus datos antes de concluir."],
+ "entrega":"La información oficial señala entrega el mismo día cuando el trámite procede y no existen fallas del sistema."
 },
 "pasaporte_perdido":{
-"titulo":"Pasaporte perdido, robado, destruido o mutilado","servicio":"cita","fuente":FUENTES["pasaporte"],
-"preguntas":[
-("nombre","¿Cuál es tu nombre completo?","texto",1),("reporte","¿Ya tienes el reporte de la autoridad correspondiente?","si_no",1),
-("cita","¿Ya tienes cita?","si_no",1),("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Reporte ante la autoridad competente","Documentación correspondiente al trámite de primera vez","Cita previa","Pago vigente"],
-"originales":["Reporte correspondiente","Documentos originales de nacionalidad e identidad que correspondan"],
-"personas":["La persona solicitante debe presentarse personalmente."],"cita":["Debes contar con cita previa."],
-"pago":"Confirma la tarifa vigente.","importante":["La pérdida, robo, destrucción o mutilación puede requerir documentación de primera vez.","La autoridad consular puede solicitar información adicional."]
+ "titulo":"Pasaporte perdido, robado o dañado","servicio":"cita","fuente":FUENTES["pasaporte"],
+ "preguntas":[
+  {"id":"situacion","texto":"¿Qué ocurrió con tu pasaporte?","tipo":"opciones","opciones":["Lo perdí","Me lo robaron","Está destruido o mutilado"]},
+  {"id":"reporte","texto":"¿Tienes el reporte de la autoridad correspondiente cuando aplica?","tipo":"opciones","opciones":["Sí","No","No aplica"]},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["La persona solicitante debe presentarse personalmente."],
+ "requisitos":["Reporte ante la autoridad competente cuando corresponda.","Documentación de primera expedición.","Cita consular.","Pago de la tarifa vigente."],
+ "originales":["Pruebas originales de nacionalidad e identidad que correspondan.","Reporte de la autoridad competente cuando corresponda."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente.",
+ "cita":["Se requiere cita."],
+ "importante":["La pérdida, robo, destrucción o mutilación puede hacer que el trámite se atienda como una primera expedición."],
+ "acciones":["Realiza el reporte ante la autoridad competente cuando corresponda.","Prepara los documentos de nacionalidad e identidad.","Obtén la cita.","Confirma la tarifa vigente."]
 },
 "pasaporte_menor":{
-"titulo":"Pasaporte mexicano para un menor","servicio":"cita","fuente":FUENTES["pasaporte"],
-"preguntas":[
-("menor_nombre","¿Cuál es el nombre completo del menor?","texto",1),("menor_nacionalidad","¿Cómo se acredita la nacionalidad mexicana del menor?","texto",1),
-("menor_identidad","¿Qué identificación tiene el menor?","texto",1),("padre1","¿Cuál es el nombre del padre, madre o tutor que acompañará al menor?","texto",1),
-("padre1_id","¿Qué identificación tiene esa persona?","texto",1),("padre2","¿Se presentará el otro padre, madre o tutor?","si_no",1),
-("op7","¿La autorización OP-7 ya está preparada o corresponde realizarla?","texto",1),("cita","¿Ya tienen cita?","si_no",1),
-("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Menor de 18 años y no casado","Presencia del menor","Documentación ORIGINAL de nacionalidad del menor","Identificación ORIGINAL del menor","Identificaciones de los padres o tutores","Consentimiento de quienes ejercen la patria potestad mediante el procedimiento correspondiente","Cita previa","Pago vigente"],
-"originales":["Documento ORIGINAL de nacionalidad del menor","Identificación ORIGINAL del menor","Identificaciones originales de padres o tutores"],
-"personas":["El menor debe presentarse.","Deben presentarse los padres o tutores que correspondan."],"cita":["Debe existir cita para el trámite."],
-"pago":"Confirma la tarifa vigente.","importante":["La separación o el divorcio por sí solos no eliminan la patria potestad.","Cuando un padre no puede acudir pueden existir procedimientos OP-7 mediante SRE o Consulado.","La autoridad consular prepara los formatos correspondientes y deben revisarse antes de firmar."]
+ "titulo":"Pasaporte mexicano para un menor","servicio":"cita","fuente":FUENTES["pasaporte"],
+ "preguntas":[
+  {"id":"edad","texto":"¿Qué edad tiene el menor?","tipo":"texto","required":True},
+  {"id":"padres","texto":"¿Pueden presentarse ambos padres o quienes ejercen la patria potestad?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"]},
+  {"id":"op7","texto":"Si uno de los padres no puede presentarse, ¿ya existe autorización OP-7 o una situación documentada?","tipo":"opciones","opciones":["Sí","No","No aplica","No estoy seguro"]},
+  {"id":"cita","texto":"¿Ya tienen cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["El menor debe presentarse.","Deben presentarse los padres o quienes ejerzan la patria potestad, según corresponda."],
+ "requisitos":[
+  "Documento original que compruebe la nacionalidad mexicana del menor.",
+  "Documento original de identidad del menor.",
+  "Identificaciones de los padres o tutores.",
+  "Consentimiento de quienes deban otorgarlo mediante el procedimiento consular correspondiente.",
+  "Cita consular.",
+  "Pago de la tarifa vigente."
+ ],
+ "originales":["Nacionalidad original del menor.","Identidad original del menor.","Identificaciones originales de los padres o tutores.","Documentos relacionados con la patria potestad cuando correspondan."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente según la edad y vigencia elegida.",
+ "cita":["Se requiere cita."],
+ "importante":[
+  "La separación o el divorcio por sí solos no eliminan la patria potestad.",
+  "Cuando un padre no puede acudir pueden existir procedimientos OP-7 u otras resoluciones/documentos según el caso.",
+  "El personal consular prepara los formatos OP-5/OP-7 cuando corresponda; deben revisarse antes de firmar."
+ ],
+ "acciones":["Prepara los documentos originales del menor.","Prepara las identificaciones de los padres o tutores.","Determina quién debe otorgar el consentimiento.","Si falta un padre, confirma el procedimiento OP-7 o el documento judicial aplicable.","Obtén la cita.","Revisa los datos antes de firmar."],
+ "entrega":"La información oficial de Miami indica entrega el mismo día cuando el trámite procede y no existen fallas del sistema."
 },
 "pasaporte_naturalizado":{
-"titulo":"Pasaporte para mexicano por naturalización","servicio":"cita","fuente":FUENTES["pasaporte"],
-"preguntas":[
-("nombre","¿Cuál es tu nombre completo?","texto",1),("naturalizacion","¿Tienes el original de tu carta de naturalización o copia certificada correspondiente?","si_no",1),
-("identidad","¿Qué identificación oficial tienes?","texto",1),("cita","¿Ya tienes cita?","si_no",1),("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Original de la carta de naturalización o copia certificada correspondiente","Identificación oficial","Cita previa","Pago vigente"],
-"originales":["Carta de naturalización original o copia certificada correspondiente","Identificación original"],
-"personas":["La persona solicitante debe presentarse personalmente."],"cita":["Debes contar con cita previa."],
-"pago":"Confirma la tarifa vigente.","importante":["La documentación puede variar en casos especiales."]
+ "titulo":"Pasaporte para mexicano por naturalización","servicio":"cita","fuente":FUENTES["pasaporte"],
+ "preguntas":[
+  {"id":"naturalizacion","texto":"¿Tienes el original de tu carta de naturalización o documento correspondiente?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"identificacion","texto":"¿Tienes una identificación con fotografía?","tipo":"texto","required":True},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["La persona solicitante debe presentarse personalmente."],
+ "requisitos":["Original de la carta de naturalización o documento de nacionalidad aplicable.","Identificación original con fotografía.","Cita consular.","Pago de la tarifa vigente."],
+ "originales":["Carta de naturalización original o documento aplicable.","Identificación original con fotografía."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente.",
+ "cita":["Se requiere cita."],
+ "importante":["Para renovaciones, la autoridad puede requerir el documento de naturalización original o copia certificada de SRE según corresponda."],
+ "acciones":["Prepara tu carta de naturalización original.","Prepara tu identificación con fotografía.","Obtén la cita.","Confirma la tarifa vigente."]
 },
 "pasaporte_conyuge":{
-"titulo":"Pasaporte y apellido del cónyuge","servicio":"cita","fuente":FUENTES["pasaporte"],
-"preguntas":[
-("nombre","¿Cuál es tu nombre completo?","texto",1),("matrimonio","¿Tienes el acta de matrimonio correspondiente?","si_no",1),
-("cita","¿Ya tienes cita?","si_no",1),("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Acta de matrimonio cuando corresponda","Documentación del pasaporte","Cita previa","Pago vigente"],
-"originales":["Acta de matrimonio correspondiente","Documentos originales requeridos para el pasaporte"],
-"personas":["La persona solicitante debe presentarse personalmente."],"cita":["Debes contar con cita previa."],
-"pago":"Confirma la tarifa vigente.","importante":["El apellido del cónyuge se incorpora en el apartado previsto para ello."]
+ "titulo":"Pasaporte y apellido del cónyuge","servicio":"cita","fuente":FUENTES["pasaporte"],
+ "preguntas":[
+  {"id":"matrimonio","texto":"¿Tienes el acta de matrimonio que demuestra el apellido de tu cónyuge?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["La persona solicitante debe presentarse personalmente."],
+ "requisitos":["Documentos normales del pasaporte.","Acta de matrimonio cuando corresponda para acreditar el apellido del cónyuge.","Cita consular.","Pago de la tarifa vigente."],
+ "originales":["Documentos de nacionalidad e identidad correspondientes.","Acta de matrimonio cuando corresponda."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente.",
+ "cita":["Se requiere cita."],
+ "importante":["El pasaporte conserva los nombres y apellidos de la persona y el apellido del cónyuge se incorpora en el apartado correspondiente cuando procede."],
+ "acciones":["Prepara el acta de matrimonio si deseas acreditar el apellido del cónyuge.","Prepara los documentos normales de nacionalidad e identidad.","Obtén la cita.","Confirma la tarifa vigente."]
 },
 "pasaporte_extemporanea":{
-"titulo":"Pasaporte y registro de nacimiento extemporáneo","servicio":"cita","fuente":FUENTES["pasaporte"],
-"preguntas":[
-("nombre","¿Cuál es tu nombre completo?","texto",1),("anio_nacimiento","¿En qué año naciste?","texto",1),
-("registro_tardio","¿Tu registro de nacimiento fue realizado después del plazo correspondiente?","si_no",1),
-("pruebas","¿Tienes documentación adicional que pueda acreditar tu identidad o nacimiento?","texto",0),("cita","¿Ya tienes cita?","si_no",1)],
-"requisitos":["Documento de nacimiento y documentación de identidad correspondiente","Documentación complementaria cuando corresponda","Cita previa"],
-"originales":["Documentos originales correspondientes al caso"],"personas":["La persona solicitante debe presentarse personalmente."],
-"cita":["Debes contar con cita previa."],"pago":"Confirma la tarifa vigente.",
-"importante":["En Miami existen periodos específicos para registros extemporáneos según el año de nacimiento.","Cuando se exceden esos periodos pueden requerirse pruebas complementarias.","La autoridad consular puede realizar verificaciones y esto puede retrasar el trámite."]
+ "titulo":"Pasaporte / nacimiento registrado fuera de plazo","servicio":"cita","fuente":FUENTES["pasaporte"],
+ "preguntas":[
+  {"id":"fecha_nacimiento","texto":"¿Cuál es tu fecha de nacimiento?","tipo":"texto","required":True},
+  {"id":"registro_tardio","texto":"¿Tu nacimiento fue registrado fuera del plazo correspondiente?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"]},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["La persona solicitante debe presentarse personalmente."],
+ "requisitos":["Documentación de nacionalidad e identidad correspondiente al caso.","Cita consular.","Pago de la tarifa vigente."],
+ "originales":["Documentos originales de nacionalidad e identidad que correspondan."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente.",
+ "cita":["Se requiere cita."],
+ "importante":[
+  "La documentación adicional puede depender de la fecha de nacimiento y de cuándo fue registrado el nacimiento.",
+  "Miami maneja periodos específicos para registros extemporáneos.",
+  "Cuando el registro supera el periodo aplicable, pueden solicitarse pruebas complementarias y verificaciones."
+ ],
+ "especiales":[
+  "Nacidos antes de 1931: hasta 50 años de retraso.",
+  "Nacidos de 1931 a 1940: hasta 30 años.",
+  "Nacidos de 1941 a 1950: hasta 10 años.",
+  "Nacidos de 1951 a 1976: hasta 5 años.",
+  "Nacidos desde 1977: hasta 1 año."
+ ],
+ "acciones":["Indica correctamente la fecha de nacimiento y la fecha de registro.","Confirma si el registro fue extemporáneo.","Si está fuera del periodo aplicable, confirma con el Consulado qué pruebas adicionales corresponden.","Obtén la cita antes de acudir."]
 },
 "matricula_primera_adulto":{
-"titulo":"Primera matrícula consular para adulto","servicio":"cita","fuente":FUENTES["matricula"],
-"preguntas":[
-("nombre","¿Cuál es tu nombre completo?","texto",1),("nacionalidad","¿Cómo acreditas tu nacionalidad mexicana?","texto",1),
-("identidad","¿Qué identificación oficial con fotografía tienes?","texto",1),("direccion","¿Qué documento tienes para comprobar tu domicilio actual?","texto",1),
-("cita","¿Ya tienes cita?","si_no",1),("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Documento ORIGINAL de nacionalidad mexicana","Identificación ORIGINAL con fotografía","Comprobante ORIGINAL de domicilio con dirección completa","Cita previa","Pago vigente"],
-"originales":["Documento ORIGINAL de nacionalidad","Identificación ORIGINAL con fotografía","Comprobante de domicilio"],
-"personas":["La persona solicitante debe presentarse personalmente."],"cita":["Debes contar con cita previa."],
-"pago":"Confirma la tarifa vigente.","importante":["El comprobante de domicilio debe corresponder al domicilio actual.","Si el comprobante no está a nombre del solicitante existen alternativas según la situación."]
+ "titulo":"Primera matrícula consular","servicio":"cita","fuente":FUENTES["matricula"],
+ "preguntas":[
+  {"id":"nacionalidad","texto":"¿Qué documento original tienes para demostrar que eres mexicano?","tipo":"texto","required":True},
+  {"id":"identificacion","texto":"¿Qué identificación original con fotografía tienes?","tipo":"texto","required":True},
+  {"id":"direccion","texto":"¿Tienes un comprobante de domicilio a tu nombre con tu dirección completa?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["La persona solicitante debe presentarse personalmente."],
+ "requisitos":["Documento original de nacionalidad mexicana.","Identificación original con fotografía.","Comprobante de domicilio a nombre del solicitante con dirección completa.","Cita consular.","Pago de la tarifa vigente."],
+ "originales":["Documento original de nacionalidad mexicana.","Identificación original con fotografía.","Comprobante de domicilio correspondiente."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente.",
+ "cita":["Se requiere cita."],
+ "importante":["Si el comprobante de domicilio no está a nombre del solicitante, existen alternativas según la relación con la persona cuyo nombre aparece en el comprobante."],
+ "acciones":["Prepara tu documento original de nacionalidad.","Prepara tu identificación con fotografía.","Prepara el comprobante de domicilio.","Si el comprobante no está a tu nombre, confirma la alternativa aplicable.","Obtén la cita.","Confirma la tarifa vigente."]
 },
 "matricula_renovacion":{
-"titulo":"Renovación de matrícula consular","servicio":"cita","fuente":FUENTES["matricula"],
-"preguntas":[
-("nombre","¿Cuál es tu nombre completo?","texto",1),("matricula_actual","¿Tienes tu matrícula consular actual?","si_no",1),
-("cambio_domicilio","¿Cambiaste de domicilio desde la última matrícula?","si_no",1),("direccion","¿Tienes comprobante del nuevo domicilio?","texto",0),
-("cita","¿Ya tienes cita?","si_no",1),("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Matrícula consular actual","Comprobante de domicilio si cambió la residencia","Cita previa","Pago vigente"],
-"originales":["Matrícula consular actual","Comprobante de domicilio si corresponde"],
-"personas":["La persona solicitante debe presentarse personalmente."],"cita":["Debes contar con cita previa."],
-"pago":"Confirma la tarifa vigente.","importante":["El comprobante de domicilio se requiere cuando cambió la residencia."]
+ "titulo":"Renovación de matrícula consular","servicio":"cita","fuente":FUENTES["matricula"],
+ "preguntas":[
+  {"id":"matricula_actual","texto":"¿Tienes tu matrícula consular actual?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"cambio_domicilio","texto":"¿Cambiaste de domicilio desde que obtuviste la matrícula?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["La persona titular debe presentarse personalmente."],
+ "requisitos":["Matrícula consular actual.","Comprobante de domicilio si cambió la residencia.","Cita consular.","Pago de la tarifa vigente."],
+ "originales":["Matrícula consular actual.","Comprobante de domicilio cuando corresponda."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente.",
+ "cita":["Se requiere cita."],
+ "importante":["Si no cambió la residencia, el comprobante de domicilio no se exige nuevamente según la información oficial."],
+ "acciones":["Lleva tu matrícula actual.","Si cambiaste de domicilio, lleva el comprobante correspondiente.","Obtén la cita.","Confirma la tarifa vigente."]
 },
 "matricula_perdida":{
-"titulo":"Matrícula consular perdida o robada","servicio":"cita","fuente":FUENTES["matricula"],
-"preguntas":[
-("nombre","¿Cuál es tu nombre completo?","texto",1),("perdida","¿La matrícula fue perdida o robada?","texto",1),
-("cita","¿Ya tienes cita?","si_no",1),("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Explicación de las circunstancias de pérdida o robo mediante el procedimiento del Consulado","Documentación de identidad y nacionalidad correspondiente","Cita previa","Pago vigente"],
-"originales":["Documentos originales de nacionalidad e identidad que correspondan"],
-"personas":["La persona solicitante debe presentarse personalmente."],"cita":["Debes contar con cita previa."],
-"pago":"Confirma la tarifa vigente.","importante":["El Consulado requiere completar el formulario correspondiente explicando las circunstancias."]
+ "titulo":"Matrícula consular perdida o robada","servicio":"cita","fuente":FUENTES["matricula"],
+ "preguntas":[
+  {"id":"situacion","texto":"¿Qué ocurrió con tu matrícula?","tipo":"opciones","opciones":["La perdí","Me la robaron","No la encuentro"]},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["La persona solicitante debe presentarse personalmente."],
+ "requisitos":["Explicación de las circunstancias mediante el formulario correspondiente en el Consulado.","Documentos de identidad y nacionalidad que correspondan.","Cita consular.","Pago de la tarifa vigente."],
+ "originales":["Documentos originales de nacionalidad e identidad correspondientes."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente.",
+ "cita":["Se requiere cita."],
+ "importante":["El Consulado indica que, en caso de pérdida o robo, debe llenarse el formulario correspondiente explicando las circunstancias."],
+ "acciones":["Prepara los documentos de nacionalidad e identidad.","Obtén la cita.","Explica las circunstancias de la pérdida o robo mediante el formulario consular.","Confirma la tarifa vigente."]
 },
 "matricula_menor":{
-"titulo":"Matrícula consular para un menor","servicio":"cita","fuente":FUENTES["matricula"],
-"preguntas":[
-("menor_nombre","¿Cuál es el nombre completo del menor?","texto",1),("menor_nacionalidad","¿Qué documento ORIGINAL tiene el menor para acreditar su nacionalidad mexicana?","texto",1),
-("menor_identidad","¿Qué identificación ORIGINAL tiene el menor?","texto",1),("padre1","¿Cuál es el nombre del padre, madre o tutor que acompañará al menor?","texto",1),
-("padre1_id","¿Qué identificación tiene esa persona?","texto",1),("padre2","¿Se presentará el otro padre, madre o tutor?","si_no",1),
-("autorizacion","¿Ya está cubierta la autorización de quienes ejercen la patria potestad o tutela?","texto",1),("cita","¿Ya tienen cita?","si_no",1),
-("pago","¿Ya confirmaste la tarifa vigente?","si_no",0)],
-"requisitos":["Menor de 18 años y no casado","Presencia del menor","Documento ORIGINAL de nacionalidad mexicana del menor","Identificación ORIGINAL del menor","Identificaciones correspondientes de los padres o tutores","Autorización de quienes ejercen la patria potestad o tutela","Cita previa","Pago vigente"],
-"originales":["Documento ORIGINAL de nacionalidad del menor","Identificación ORIGINAL del menor","Identificaciones originales de padres o tutores"],
-"personas":["El menor debe presentarse.","Deben presentarse los padres o tutores que correspondan."],"cita":["Debes contar con cita previa."],
-"pago":"Confirma la tarifa vigente.","vigencia":"La matrícula consular tiene una vigencia de cinco años.",
-"entrega":"La información oficial indica entrega el mismo día una vez cumplidos los requisitos; puede tomar alrededor de dos horas si no hay fallas del sistema.",
-"importante":["La separación o divorcio no elimina por sí solo la patria potestad.","Cuando corresponda, deben cumplirse los procedimientos de autorización establecidos por la autoridad consular.","Revisa cuidadosamente los datos antes de que se imprima el documento."]
-},
-"acta_nacimiento_mexicana":{
-"titulo":"Copia certificada del acta de nacimiento mexicana","servicio":"documento","fuente":FUENTES["acta"],
-"preguntas":[
-("nombre","¿Cuál es el nombre completo de la persona que aparece en el acta?","texto",1),("identidad","¿Qué identificación oficial tienes para acreditar que eres el titular del acta?","texto",1),
-("curp","¿Tienes CURP?","texto",0),("registro","¿Sabes en qué estado de México fue registrada la persona?","texto",0),
-("modalidad","¿Quieres obtenerla en el Consulado o prefieres consultar la opción en línea?","texto",1)],
-"requisitos":["Identificación oficial que acredite que eres el titular del acta","Solicitud correspondiente cuando se realiza en Oficina Consular","Pago correspondiente"],
-"opcionales":["CURP, si cuentas con ella"],
-"originales":["Identificación oficial correspondiente"],
-"personas":["Debe realizar el trámite la persona interesada/titular conforme a las condiciones aplicables."],
-"cita":["Confirma directamente si el servicio que deseas realizar en el Consulado requiere cita antes de acudir."],
-"copias":[],"pago":"La tarifa consular publicada para 2026 indica $20 USD por copia certificada de acta de nacimiento. Confirma el monto y forma de pago vigente antes de acudir.",
-"importante":["También existe la opción de obtener la copia certificada en línea mediante gob.mx/ActaNacimiento.","Si eliges la opción en línea, no necesitas trasladarte al Consulado para obtener esa copia.","Si realizas el trámite en una Oficina Consular, debes llenar la solicitud correspondiente.","La disponibilidad de los datos del acta puede afectar la posibilidad de impresión."],
-"en_linea":FUENTES["acta_online"]
+ "titulo":"Matrícula consular para un menor","servicio":"cita","fuente":FUENTES["matricula"],
+ "preguntas":[
+  {"id":"edad","texto":"¿Qué edad tiene el menor?","tipo":"texto","required":True},
+  {"id":"padres","texto":"¿Pueden presentarse ambos padres o quienes ejercen la patria potestad?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"]},
+  {"id":"cita","texto":"¿Ya tienen cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["Debe presentarse el menor.","Deben presentarse los padres o tutores según corresponda."],
+ "requisitos":["Documento original de nacionalidad mexicana del menor.","Documento original de identidad del menor.","Identificaciones de los padres o tutores.","Autorización parental correspondiente.","Cita consular.","Pago de la tarifa vigente."],
+ "originales":["Nacionalidad original del menor.","Identidad original del menor.","Identificaciones originales de padres o tutores.","Documentos de patria potestad cuando correspondan."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente.",
+ "cita":["Se requiere cita."],
+ "importante":["La separación o divorcio no elimina por sí solo la patria potestad. Confirma cualquier situación especial directamente con el Consulado."],
+ "vigencia":"La matrícula consular para menores tiene vigencia de cinco años según la información oficial de Miami.",
+ "entrega":"La información oficial señala entrega el mismo día cuando el trámite procede y no existen fallas del sistema.",
+ "acciones":["Prepara la nacionalidad e identidad del menor.","Prepara las identificaciones de los padres o tutores.","Confirma quién debe otorgar la autorización.","Obtén la cita.","Revisa todos los datos antes de imprimir."]
 },
 "registro_nacimiento_extranjero":{
-"titulo":"Registro de nacimiento de una persona nacida en el extranjero","servicio":"cita","fuente":FUENTES["registro_civil"],
-"preguntas":[
-("nombre","¿Cuál es el nombre completo de la persona que se registrará?","texto",1),("nacimiento","¿Tienes el acta o certificado de nacimiento extranjero?","si_no",1),
-("padres","¿Tienes los documentos de identidad y nacionalidad de los padres?","si_no",1),("matrimonio","¿Los padres tienen acta de matrimonio si corresponde?","texto",0),
-("cita","¿Ya tienes cita?","si_no",1)],
-"requisitos":["Acta o certificado de nacimiento extranjero","Documentos de identidad y nacionalidad de los padres","Documentación adicional que corresponda","Cita previa"],
-"originales":["Acta o certificado de nacimiento extranjero","Documentos originales de los padres"],
-"personas":["La persona que se registra debe presentarse cuando corresponda.","Deben presentarse las personas que determine el procedimiento del Registro Civil."],
-"cita":["El Registro Civil requiere cita previa según la información oficial."],"pago":"Confirma la tarifa vigente del servicio correspondiente.",
-"importante":["La autoridad consular puede solicitar documentación adicional.","Los requisitos pueden depender de la situación familiar y de los documentos presentados."]
+ "titulo":"Registro de nacimiento de una persona nacida en el extranjero","servicio":"cita","fuente":FUENTES["registro_civil"],
+ "preguntas":[
+  {"id":"nacido","texto":"¿La persona nació fuera de México?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"padre_madre_mexicano","texto":"¿Uno o ambos padres son mexicanos?","tipo":"opciones","opciones":["Sí","No","No estoy seguro"]},
+  {"id":"acta_extranjera","texto":"¿Tienes el acta de nacimiento extranjera original?","tipo":"opciones","opciones":["Sí","No"]},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["Debe presentarse la persona cuyo nacimiento se registra.","Deben presentarse los padres o las personas que correspondan según el caso."],
+ "requisitos":["Acta de nacimiento extranjera.","Prueba de nacionalidad mexicana del padre o madre mexicano cuando corresponda.","Identificaciones de las personas que deban comparecer.","Cita previa.","Documentación adicional que determine el Consulado según el caso."],
+ "originales":["Acta de nacimiento extranjera original.","Documentos originales que acrediten la nacionalidad mexicana.","Identificaciones originales."],
+ "copias":[],
+ "pago":"El registro de nacimiento en sí puede ser gratuito; las copias certificadas u otros servicios pueden tener tarifa. Confirma el costo aplicable.",
+ "cita":["Los actos del Registro Civil requieren cita previa."],
+ "importante":["La documentación exacta puede variar según la situación familiar y documental. Confirma cualquier caso especial con el Consulado antes de acudir."],
+ "acciones":["Reúne el acta de nacimiento extranjera.","Reúne la prueba de nacionalidad mexicana del padre o madre mexicano.","Reúne las identificaciones.","Obtén la cita.","Confirma si existe documentación adicional para tu caso."]
+},
+"acta_nacimiento_mexicana":{
+ "titulo":"Copia certificada del acta de nacimiento mexicana","servicio":"documento","fuente":FUENTES["acta"],
+ "preguntas":[
+  {"id":"identificacion","texto":"¿Tienes una identificación oficial que permita acreditar que eres el titular del acta?","tipo":"opciones","opciones":["Sí","No"],"required":True},
+  {"id":"solicitud","texto":"¿Puedes proporcionar los datos necesarios para solicitar el acta?","tipo":"opciones","opciones":["Sí","No"],"required":True},
+  {"id":"curp","texto":"¿Tienes CURP?","tipo":"texto","required":False},
+  {"id":"pago","texto":"¿Estás preparado para pagar la tarifa correspondiente?","tipo":"opciones","opciones":["Sí","No"],"required":True}
+ ],
+ "personas":["La persona interesada o quien corresponda debe realizar la solicitud."],
+ "requisitos":["Identificación oficial para acreditar la identidad del titular.","Solicitud con los datos necesarios para localizar el acta.","Pago de la tarifa aplicable."],
+ "originales":["Identificación oficial."],
+ "copias":[],
+ "pago":"La copia certificada de acta de nacimiento tiene una tarifa aplicable. Confirma la tarifa vigente antes de acudir.",
+ "cita":["Confirma con el Consulado si necesitas cita para la modalidad que vas a utilizar."],
+ "importante":[
+  "La CURP puede ayudar cuando está disponible, pero no se debe considerar un requisito obligatorio si no cuentas con ella.",
+  "También existe la opción oficial de consulta, descarga e impresión en línea."
+ ],
+ "acciones":["Ten a mano tu identificación oficial.","Prepara los datos del acta.","Si tienes CURP, tenla disponible.","Confirma la tarifa vigente.","También puedes consultar la opción oficial en línea: "+FUENTES["acta_online"]],
+ "entrega":"La modalidad presencial y la modalidad en línea tienen procedimientos distintos. Confirma cuál usarás.",
+ "especiales":["La autoridad consular puede emitir determinadas copias certificadas de actas mexicanas conforme a las condiciones indicadas por el Consulado."]
 },
 "poder_notarial":{
-"titulo":"Poder notarial","servicio":"cita","fuente":FUENTES["citas"],
-"preguntas":[
-("nombre","¿Cuál es el nombre completo de quien otorgará el poder?","texto",1),("tipo_poder","¿Qué necesitas autorizar mediante el poder?","texto",1),
-("beneficiario","¿Quién recibirá las facultades?","texto",1),("identidad","¿Tienes identificación oficial vigente?","texto",1),("cita","¿Ya tienes cita?","si_no",1)],
-"requisitos":["Identificación oficial","Información clara sobre el poder que se desea otorgar","Datos completos de la persona que recibirá las facultades","Cita cuando corresponda"],
-"originales":["Identificación oficial original","Documentos relacionados con el acto cuando correspondan"],
-"personas":["La persona que otorgará el poder debe cumplir con la comparecencia que corresponda."],
-"cita":["Confirma la cita y los requisitos específicos del poder."],"pago":"Confirma la tarifa vigente.",
-"importante":["El contenido y los documentos adicionales dependen del tipo de poder."]
+ "titulo":"Poder notarial","servicio":"cita","fuente":FUENTES["registro_civil"],
+ "preguntas":[
+  {"id":"tipo_poder","texto":"¿Qué necesitas hacer con el poder?","tipo":"texto","required":True},
+  {"id":"cita","texto":"¿Ya tienes cita?","tipo":"opciones","opciones":["Sí","No"]}
+ ],
+ "personas":["La persona otorgante debe comparecer personalmente cuando corresponda."],
+ "requisitos":["Información completa del poder que se desea otorgar.","Identificación oficial.","Cita consular.","Documentación adicional relacionada con el acto."],
+ "originales":["Identificación oficial.","Documentos relacionados con el acto cuando correspondan."],
+ "copias":[],
+ "pago":"Confirma la tarifa vigente según el tipo de instrumento.",
+ "cita":["Confirma la cita y el procedimiento directamente con el área de poderes notariales."],
+ "importante":["Los requisitos pueden variar según el tipo de poder y el acto jurídico. No conviene asumir requisitos sin confirmar el caso concreto."],
+ "acciones":["Define exactamente qué facultades quieres otorgar.","Prepara tu identificación.","Prepara los datos y documentos relacionados con el acto.","Confirma el procedimiento y la cita con el Consulado."]
 }
 }
 
 OPCIONES=[
-("pasaporte_primera_vez","Pasaporte mexicano por primera vez","cita"),("pasaporte_renovacion","Renovar pasaporte","cita"),
-("pasaporte_perdido","Pasaporte perdido, robado o dañado","cita"),("pasaporte_menor","Pasaporte para un menor","cita"),
-("pasaporte_naturalizado","Pasaporte para mexicano por naturalización","cita"),("pasaporte_conyuge","Pasaporte y apellido del cónyuge","cita"),
-("pasaporte_extemporanea","Pasaporte / nacimiento registrado fuera de plazo","cita"),("matricula_primera_adulto","Primera matrícula consular","cita"),
-("matricula_renovacion","Renovar matrícula consular","cita"),("matricula_perdida","Matrícula perdida o robada","cita"),
-("matricula_menor","Matrícula consular para un menor","cita"),("registro_nacimiento_extranjero","Registrar nacimiento de una persona nacida en el extranjero","cita"),
-("acta_nacimiento_mexicana","Copia certificada del acta de nacimiento mexicana","documento"),("poder_notarial","Poder notarial","cita")
+("pasaporte_primera_vez","Pasaporte mexicano por primera vez","cita"),
+("pasaporte_renovacion","Renovar pasaporte","cita"),
+("pasaporte_perdido","Pasaporte perdido, robado o dañado","cita"),
+("pasaporte_menor","Pasaporte para un menor","cita"),
+("pasaporte_naturalizado","Pasaporte para mexicano por naturalización","cita"),
+("pasaporte_conyuge","Pasaporte y apellido del cónyuge","cita"),
+("pasaporte_extemporanea","Pasaporte / nacimiento registrado fuera de plazo","cita"),
+("matricula_primera_adulto","Primera matrícula consular","cita"),
+("matricula_renovacion","Renovar matrícula consular","cita"),
+("matricula_perdida","Matrícula perdida o robada","cita"),
+("matricula_menor","Matrícula consular para un menor","cita"),
+("registro_nacimiento_extranjero","Registrar nacimiento de una persona nacida en el extranjero","cita"),
+("acta_nacimiento_mexicana","Copia certificada del acta de nacimiento mexicana","documento"),
+("poder_notarial","Poder notarial","cita")
 ]
 
 def normalizar(s):
- s=str(s or "").lower().strip()
- s=unicodedata.normalize("NFD",s)
- return "".join(c for c in s if unicodedata.category(c)!="Mn")
+    s=unicodedata.normalize("NFD",str(s or ""))
+    return "".join(c for c in s if unicodedata.category(c)!="Mn").lower().strip()
 
 def vacio(v):
- return v is None or not str(v).strip()
+    if v is None:return True
+    if isinstance(v,str):
+        return not v.strip() or normalizar(v) in {"pendiente","pendiente de completar","no se","no se"}
+    return False
 
 def si(v):
- return normalizar(v) in ("si","yes","s","claro","correcto","tengo","ya","afirmativo","sí")
+    return normalizar(v) in {"si","sí","yes","true","1","tengo","puedo","correcto"}
 
 def no(v):
- return normalizar(v) in ("no","n","ninguno","ninguna","todavia no","aun no","aún no")
+    return normalizar(v) in {"no","false","0","ninguno","ninguna"}
 
 def extraer_perfil(texto):
- t=str(texto or "").strip();n=normalizar(t);p={}
- patrones={
-  "nombre":[r"(?:me llamo|mi nombre es)\s+([^,.;\n]{2,100})"],
-  "telefono":[r"(?:telefono|tel|celular|cel)\s*(?:es|:)?\s*([+()\d][\d ()-]{6,})"],
-  "direccion":[r"(?:vivo en|mi direccion es|mi domicilio es|domicilio es)\s*:?\s*(.+?)(?=\s*,\s*(?:florida|texas|california|arizona|georgia|new york)\b|\s*,\s*\d{5}|$)"]
- }
- for k,rs in patrones.items():
-  for x in rs:
-   m=re.search(x,t,re.I)
-   if m:p[k]=m.group(1).strip(" ,.")
- if re.search(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}",t):
-  p["email"]=re.search(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}",t).group(0)
- m=re.search(r"\b\d{5}\b",t)
- if m:p["zip"]=m.group(0)
- estados={"alabama":"Alabama","arizona":"Arizona","california":"California","colorado":"Colorado","connecticut":"Connecticut","florida":"Florida","georgia":"Georgia","illinois":"Illinois","maryland":"Maryland","massachusetts":"Massachusetts","michigan":"Michigan","nevada":"Nevada","new jersey":"New Jersey","new york":"New York","north carolina":"North Carolina","pennsylvania":"Pennsylvania","south carolina":"South Carolina","texas":"Texas","virginia":"Virginia","washington":"Washington"}
- for k,v in estados.items():
-  if k in n:p["estado"]=v;break
- if re.search(r"\b(?:mexicano|mexicana)\b",n):p["nacionalidad"]="Mexicana"
- if re.search(r"\bnaturalizad[oa]\b",n):p["naturalizado"]=True;p["nacionalidad"]="Mexicana por naturalización"
- if re.search(r"\b(?:menor|hijo|hija|niño|niña|nino|nina)\b",n):p["menor"]=True
- return p
+    t=str(texto or "").strip()
+    n=normalizar(t)
+    p={}
+    m=re.search(r"\b(?:me llamo|mi nombre es|soy)\s+([A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:\s+[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+){1,4})",t,re.I)
+    if m:p["nombre"]=m.group(1).strip()
+    m=re.search(r"\b(?:telefono|tel[eé]fono|celular|cel)\s*(?:es|:)?\s*(\+?[\d\s().-]{7,})",t,re.I)
+    if m:p["telefono"]=m.group(1).strip()
+    m=re.search(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b",t,re.I)
+    if m:p["email"]=m.group(0).strip()
+    m=re.search(r"\b(?:zip|c[oó]digo postal)\s*(?:es|:)?\s*(\d{5}(?:-\d{4})?)",t,re.I)
+    if m:p["zip"]=m.group(1)
+    estados={
+      "florida":"Florida","fl":"Florida","texas":"Texas","tx":"Texas","california":"California","ca":"California",
+      "arizona":"Arizona","az":"Arizona","new mexico":"New Mexico","nuevo mexico":"New Mexico",
+      "new york":"New York","ny":"New York","georgia":"Georgia","ga":"Georgia"
+    }
+    for k,v in estados.items():
+        if re.search(r"\b"+re.escape(k)+r"\b",n):
+            p["estado"]=v;break
+    m=re.search(r"\b(?:vivo en|vivo|resido en|resido)\s+([^,.]+(?:,\s*[^,.]+)?)",t,re.I)
+    if m:
+        d=m.group(1).strip()
+        if len(d)>2:p["direccion"]=d
+    if re.search(r"\bmexicano\s+por\s+naturalizaci[oó]n\b|\bnaturalizado\b",n):
+        p["nacionalidad"]="Mexicano por naturalización"
+        p["naturalizado"]=True
+    elif re.search(r"\bmexicano\b|\bmexicana\b",n):
+        p["nacionalidad"]="Mexicano"
+    m=re.search(r"\b(?:fecha de nacimiento|naci[oó] el|nac[ií] el)\s*(?:es|:)?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})",t,re.I)
+    if m:p["fecha_nacimiento"]=m.group(1)
+    m=re.search(r"\b(?:edad|tengo)\s*(?:es|de|:)?\s*(\d{1,3})\s*(?:años|anos)?\b",t,re.I)
+    if m:p["edad"]=m.group(1)
+    return p
 
 def fusionar(a,b):
- r=dict(a or {})
- for k,v in (b or {}).items():
-  if not vacio(v):r[k]=v
- return r
+    r=dict(a or {})
+    for k,v in (b or {}).items():
+        if not vacio(v):r[k]=v
+    return r
 
 def guardar_respuesta(pid,v,p):
- if vacio(v):return p
- v=str(v).strip()
- campos={
-  "nombre":"nombre","nacionalidad":"nacionalidad","identidad":"identidad","direccion":"direccion",
-  "telefono":"telefono","tel":"telefono","celular":"telefono","email":"email","correo":"email",
-  "zip":"zip","codigo_postal":"zip","estado":"estado"
- }
- if pid in campos:
-  if pid in ("zip","codigo_postal"):
-   m=re.search(r"\b\d{5}\b",v);p["zip"]=m.group(0) if m else v
-  else:p[campos[pid]]=v
- return p
+    if not pid:return
+    if not vacio(v):p[pid]=v
 
 def enriquecer_respuesta(pid,v,r):
- r=dict(r or {})
- p=fusionar(r.get("_perfil",{}),extraer_perfil(v))
- p=guardar_respuesta(pid,v,p)
- r["_perfil"]=p
- if pid=="naturalizado" and si(v):p["naturalizado"]=True;p["nacionalidad"]="Mexicana por naturalización"
- if pid=="nacionalizacion" and si(v):p["naturalizado"]=True
- if pid=="modalidad":r["_modalidad"]=v
- if pid=="curp" and not no(v):p["curp"]=v
- if pid=="menor_nombre":p["menor_nombre"]=v
- if pid=="padre1":p["padre1"]=v
- if pid=="padre1_id":p["padre1_id"]=v
- return r
+    if pid=="nacionalidad" and not vacio(v):
+        r["nacionalidad"]=v
+    if pid in {"direccion","domicilio"} and not vacio(v):
+        r["direccion"]=v
+    if pid=="telefono" and not vacio(v):r["telefono"]=v
+    if pid=="email" and not vacio(v):r["email"]=v
+    if pid=="zip" and not vacio(v):r["zip"]=v
+    if pid=="estado" and not vacio(v):r["estado"]=v
+    if pid=="nombre" and not vacio(v):r["nombre"]=v
 
 def buscar_caso(texto,servicio=None):
- n=normalizar(texto)
- if not n:return None
- reglas=[
- ("matricula_menor",["matricula","menor"],["hijo","hija","nino","nina"]),("pasaporte_menor",["pasaporte","menor"],["hijo","hija","nino","nina"]),
- ("pasaporte_perdido",["pasaporte"],["perdido","perdi","robado","robo","danado","mutilado"]),("pasaporte_renovacion",["pasaporte"],["renovar","renovacion","vencer","vencido"]),
- ("pasaporte_naturalizado",["pasaporte"],["naturalizado","naturalizada","naturalizacion"]),("pasaporte_conyuge",["pasaporte"],["esposo","esposa","conyuge","apellido"]),
- ("pasaporte_extemporanea",["pasaporte","nacimiento"],["extemporaneo","tardio","fuera de plazo"]),("pasaporte_primera_vez",["pasaporte"],["primera vez","nuevo"]),
- ("matricula_perdida",["matricula"],["perdida","perdi","robada","robo"]),("matricula_renovacion",["matricula"],["renovar","renovacion","vencida"]),
- ("matricula_primera_adulto",["matricula"],["primera","nueva"]),("acta_nacimiento_mexicana",["acta","nacimiento"],["copia","certificada","acta mexicana"]),
- ("registro_nacimiento_extranjero",["nacimiento"],["extranjero","nacido","nacida","registrar"]),("poder_notarial",["poder"],["notarial","notario","otorgar"])
- ]
- mejor=None;pm=0
- for cid,grupos,extras in reglas:
-  s=sum(2 for x in grupos if x in n)+sum(1 for x in extras if x in n)
-  if servicio:s+=2 if CASOS[cid]["servicio"]==servicio else -3
-  if s>pm:pm=s;mejor=cid
- return mejor if pm>=2 else None
+    n=normalizar(texto)
+    candidatos=[]
+    for cid,titulo,s in OPCIONES:
+        if servicio and s!=servicio:continue
+        score=0
+        words=normalizar(titulo).split()
+        for w in words:
+            if len(w)>3 and w in n:score+=1
+        reglas={
+          "pasaporte_renovacion":["renovar","renovacion","renovación"],
+          "pasaporte_perdido":["perdi","perdido","robaron","robado","danado","dañado"],
+          "pasaporte_menor":["menor","hijo","hija","nino","niña","niño"],
+          "pasaporte_naturalizado":["naturalizado","naturalizacion","naturalización"],
+          "pasaporte_conyuge":["conyuge","cónyuge","esposo","esposa","apellido"],
+          "pasaporte_extemporanea":["extemporaneo","extemporánea","registro tardio","tardio"],
+          "matricula_primera_adulto":["primera matricula","primera matrícula"],
+          "matricula_renovacion":["renovar matricula","renovar matrícula"],
+          "matricula_perdida":["perdi matricula","perdi matrícula","matricula perdida","matrícula perdida"],
+          "matricula_menor":["matricula menor","matrícula menor"],
+          "registro_nacimiento_extranjero":["nacio fuera","nació fuera","nacido en estados unidos","doble nacionalidad","registrar nacimiento"],
+          "acta_nacimiento_mexicana":["acta de nacimiento","copia certificada","acta mexicana"],
+          "poder_notarial":["poder notarial","poder"]
+        }
+        for x in reglas.get(cid,[]):
+            if normalizar(x) in n:score+=4
+        if score:candidatos.append((score,cid))
+    if not candidatos:return None
+    candidatos.sort(reverse=True)
+    return candidatos[0][1]
 
 def catalogo(servicio=None):
- return [{"id":i,"nombre":n} for i,n,s in OPCIONES if not servicio or s==servicio]
+    return [
+      {"id":cid,"titulo":titulo}
+      for cid,titulo,s in OPCIONES if not servicio or s==servicio
+    ]
 
-def obtener_caso(caso):return CASOS.get(caso)
+def obtener_caso(caso):
+    return CASOS.get(caso)
+
+def _perfil_desde(respuestas):
+    p=dict(respuestas.get("_perfil") or {})
+    for k,v in respuestas.items():
+        if k.startswith("_"):continue
+        if k in {"nombre","nacionalidad","telefono","direccion","estado","zip","email","fecha_nacimiento","edad","naturalizado"}:
+            if not vacio(v):p[k]=v
+    return p
+
+def _guardar_perfil(respuestas,p):
+    respuestas["_perfil"]=p
+    for k,v in p.items():
+        if not vacio(v):respuestas[k]=v
 
 def iniciar(servicio,respuestas=None,_extra=None):
- r=dict(respuestas or {});r["_perfil"]=fusionar(r.get("_perfil",{}),extraer_perfil(_extra or ""))
- return {"tipo":"catalogo","estado":"seleccionar","servicio":servicio,"pregunta":"¿Qué trámite necesitas preparar?","opciones":catalogo(servicio),"respuestas":r,"perfil":r.get("_perfil",{})}
+    respuestas=dict(respuestas or {})
+    texto=str(_extra or "").strip()
+    if texto:
+        respuestas["_perfil"]=fusionar(_perfil_desde(respuestas),extraer_perfil(texto))
+    if respuestas.get("caso") and respuestas["caso"] in CASOS:
+        return continuar(respuestas["caso"],respuestas,"",texto)
+    return {
+      "servicio":servicio,
+      "seleccionar":True,
+      "titulo":"¿Qué necesitas?",
+      "pregunta":"Elige la opción que más se parece a tu situación.",
+      "opciones":catalogo(servicio),
+      "respuestas":respuestas
+    }
+
+def _respondida(v):
+    return not vacio(v)
 
 def pregunta_actual(caso,r):
- c=obtener_caso(caso)
- if not c:return None
- for pid,preg,tipo,ob in c.get("preguntas",[]):
-  if not vacio(r.get(pid)):continue
-  if pid=="naturalizado" and r.get("_perfil",{}).get("naturalizado") is True:continue
-  if pid=="padre2" and no(r.get(pid)):continue
-  if pid=="curp":continue
-  return {"pregunta_id":pid,"pregunta":preg,"tipo":tipo,"obligatoria":bool(ob)}
- return None
+    c=obtener_caso(caso)
+    if not c:return None
+    p=_perfil_desde(r)
+    for q in c.get("preguntas",[]):
+        pid=q["id"]
+        if pid=="curp":continue
+        if pid=="naturalizado" and p.get("naturalizado") is True:continue
+        if pid in p and _respondida(p.get(pid)):continue
+        if pid in r and _respondida(r.get(pid)):continue
+        return q
+    return None
 
 def opciones_pregunta(p):
- return [{"id":"Sí","nombre":"Sí"},{"id":"No","nombre":"No"},{"id":"No estoy seguro","nombre":"No estoy seguro"}] if p["tipo"]=="si_no" else []
+    if not p:return []
+    return p.get("opciones") or []
 
 def documento_estado(caso,r):
- c=obtener_caso(caso);tiene=[];falta=[];revisar=[]
- mapa={
-  "nacionalidad":["nacionalidad","menor_nacionalidad","naturalizacion"],"identificacion":["identidad","menor_identidad","padre1_id"],
-  "domicilio":["direccion"],"cita":["cita"],"pago":["pago"],"pasaporte":["pasaporte_actual"],"matricula":["matricula_actual"],
-  "reporte":["reporte"],"nacimiento":["nacimiento"],"padres":["padres"],"matrimonio":["matrimonio"],"solicitud":["modalidad"]
- }
- opc=set(normalizar(x) for x in c.get("opcionales",[]))
- for req in c.get("requisitos",[]):
-  nr=normalizar(req);keys=[]
-  for clave,ids in mapa.items():
-   if clave in nr:keys+=ids
-  found=False;bad=False
-  for pid in keys:
-   v=r.get(pid)
-   if not vacio(v):
-    if no(v) or normalizar(v)=="no estoy seguro":bad=True
-    else:found=True
-  if found:tiene.append(req)
-  elif bad:falta.append(req)
-  else:revisar.append(req)
- for x in c.get("opcionales",[]):revisar.append(x)
- if caso=="matricula_menor" and no(r.get("padre2")):falta.append("Debe resolverse la autorización del padre, madre o tutor que no se presenta.")
- if caso=="pasaporte_menor" and no(r.get("padre2")):falta.append("Debe resolverse el consentimiento o procedimiento aplicable del padre, madre o tutor que no se presenta.")
- return {"tiene":list(dict.fromkeys(tiene)),"falta":list(dict.fromkeys(falta)),"revisar":list(dict.fromkeys(revisar))}
+    c=obtener_caso(caso)
+    if not c:return {}
+    p=_perfil_desde(r)
+    tiene=[]
+    falta=[]
+    for q in c.get("preguntas",[]):
+        pid=q["id"]
+        if pid=="curp":continue
+        if _respondida(p.get(pid)) or _respondida(r.get(pid)):
+            v=p.get(pid,r.get(pid))
+            if normalizar(v) not in {"no","no tengo","no"}:
+                tiene.append(f"{q['texto']} — {v}")
+        elif q.get("required"):
+            falta.append(q["texto"])
+    for x in c.get("requisitos",[]):
+        encontrado=False
+        nx=normalizar(x)
+        for k,v in r.items():
+            if isinstance(v,str) and v and any(w in nx for w in normalizar(v).split() if len(w)>4):
+                encontrado=True;break
+        if not encontrado:falta.append(x)
+    return {"tiene":tiene,"falta":list(dict.fromkeys(falta))}
 
 def personas(caso,r):
- c=obtener_caso(caso)
- if caso in ("pasaporte_menor","matricula_menor"):
-  p=r.get("_perfil",{});a=r.get("menor_nombre") or p.get("menor_nombre");b=r.get("padre1")
-  out=["MENOR: "+a if a else "MENOR: PENDIENTE DE COMPLETAR","PADRE/MADRE/TUTOR: "+b if b else "PADRE/MADRE/TUTOR: PENDIENTE DE COMPLETAR"]
-  if si(r.get("padre2")):out.append("También debe presentarse el otro padre, madre o tutor, según corresponda.")
-  elif no(r.get("padre2")):out.append("Debe resolverse la autorización correspondiente del padre, madre o tutor que no se presenta.")
-  return out
- return c.get("personas",["PENDIENTE DE COMPLETAR"])
+    c=obtener_caso(caso)
+    return list(c.get("personas",[])) if c else []
 
 def acciones(caso,r,docs):
- c=obtener_caso(caso);a=[]
- if docs["falta"]:a.append("Completa o consigue los elementos que aparecen en LO QUE TE FALTA.")
- if caso=="acta_nacimiento_mexicana":
-  mod=normalizar(r.get("modalidad"))
-  if "linea" in mod or "internet" in mod or "online" in mod:a.append("Obtén la copia certificada mediante la opción oficial en línea.")
-  else:a.append("Si realizas el trámite en el Consulado, lleva tu identificación y completa la solicitud correspondiente.")
- else:
-  if c.get("cita"):a.append(c["cita"][0])
-  a.append("Lleva los documentos originales indicados y confirma la tarifa vigente antes de acudir.")
- if not a:a.append("Reúne los documentos indicados y confirma los puntos pendientes antes de acudir.")
- return list(dict.fromkeys(a))
+    c=obtener_caso(caso)
+    a=list(c.get("acciones",[])) if c else []
+    if docs.get("falta"):
+        a.insert(0,"Completa primero la información que aparece como pendiente.")
+    return list(dict.fromkeys(a))
 
 def resultado(caso,r):
- c=obtener_caso(caso);r=dict(r or {})
- r["_perfil"]=fusionar(r.get("_perfil",{}),extraer_perfil(" ".join(str(v) for v in r.values() if isinstance(v,str))))
- docs=documento_estado(caso,r)
- pendientes=[pid for pid,_,_,ob in c.get("preguntas",[]) if ob and vacio(r.get(pid)) and pid!="curp"]
- nivel="rojo" if pendientes or docs["falta"] else "amarillo" if docs["revisar"] else "verde"
- estado="PARECES LISTO" if nivel=="verde" else "NO VAYAS TODAVÍA" if nivel=="rojo" else "TE FALTA ALGO"
- imp=list(dict.fromkeys(c.get("importante",[])))
- if c.get("en_linea"):imp.append("OPCIÓN EN LÍNEA: "+c["en_linea"])
- perfil=r.get("_perfil",{})
- if caso in ("pasaporte_menor","matricula_menor"):imp.append("Revisa por separado la documentación del menor y la documentación de los padres o tutores.")
- return {
-  "tipo":"resultado","estado":"resuelto","nivel":nivel,"estado_texto":estado,"caso":caso,
-  "tramite":c["titulo"],"titulo":c["titulo"],"perfil":perfil,
-  "personas_obligatorias":personas(caso,r),"requisitos_obligatorios":c.get("requisitos",[]),
-  "opcionales":c.get("opcionales",[]),
-  "documentos":[*[{"nombre":x,"estado":"tiene"} for x in docs["tiene"]],*[{"nombre":x,"estado":"falta"} for x in docs["falta"]],*[{"nombre":x,"estado":"revisar"} for x in docs["revisar"]]],
-  "tiene":docs["tiene"],"falta":docs["falta"],"revisar":docs["revisar"],
-  "acciones":acciones(caso,r,docs),"cita":c.get("cita",[]),"originales":c.get("originales",[]),
-  "copias":c.get("copias",[]),"pago":c.get("pago","Confirma la tarifa vigente."),
-  "revision":"Revisa cuidadosamente nombres, fechas, datos personales y documentos antes de firmar o imprimir.",
-  "vigencia":c.get("vigencia"),"entrega":c.get("entrega"),"importante":imp,"especiales":imp,
-  "confirma":"La autoridad consular puede verificar los documentos y solicitar información adicional.",
-  "fuente":c.get("fuente",FUENTES["tarifas"]),"pendientes":pendientes,"checklist":docs,"respuestas":r
- }
+    c=obtener_caso(caso)
+    if not c:return {}
+    p=_perfil_desde(r)
+    docs=documento_estado(caso,r)
+    faltantes=[]
+    for x in docs.get("falta",[]): 
+        if x not in faltantes:faltantes.append(x)
+    pendientes=[]
+    for q in c.get("preguntas",[]):
+        pid=q["id"]
+        if pid=="curp":continue
+        if q.get("required") and vacio(p.get(pid,r.get(pid))):
+            pendientes.append(q["texto"])
+    for x in pendientes:
+        if x not in faltantes:faltantes.append(x)
+
+    revisiones=[]
+    for q in c.get("preguntas",[]):
+        pid=q["id"]
+        v=p.get(pid,r.get(pid))
+        if normalizar(v) in {"no","no estoy seguro","no aplica"}:
+            revisiones.append(f"Confirma: {q['texto']}")
+    if r.get("cita") and no(r.get("cita")):
+        revisiones.append("Necesitas obtener o confirmar la cita antes de acudir.")
+    if r.get("padres") and normalizar(r.get("padres"))!="si":
+        revisiones.append("Confirma quién debe presentarse y quién debe autorizar el trámite.")
+    if r.get("op7") and normalizar(r.get("op7")) not in {"si","no aplica"}:
+        revisiones.append("Confirma el procedimiento OP-7 o la resolución/documentación aplicable.")
+
+    nivel="verde"
+    estado="PARECES LISTO"
+    if faltantes:
+        nivel="rojo" if any("obligator" in normalizar(x) or "original" in normalizar(x) for x in faltantes) else "amarillo"
+        estado="ATENCIÓN / NO VAYAS TODAVÍA" if nivel=="rojo" else "TE FALTA ALGO"
+    elif revisiones:
+        nivel="amarillo"
+        estado="TE FALTA CONFIRMAR ALGO"
+
+    importantes=list(c.get("importante",[]))
+    if c.get("especiales"):
+        importantes+=c["especiales"]
+
+    perfil={
+      "nombre":p.get("nombre"),
+      "nacionalidad":p.get("nacionalidad"),
+      "telefono":p.get("telefono"),
+      "direccion":p.get("direccion"),
+      "estado":p.get("estado"),
+      "zip":p.get("zip"),
+      "email":p.get("email")
+    }
+
+    return {
+      "caso":caso,
+      "titulo":c["titulo"],
+      "tramite":c["titulo"],
+      "nivel":nivel,
+      "estado_texto":estado,
+      "perfil":perfil,
+      "personas_obligatorias":personas(caso,r),
+      "requisitos_obligatorios":list(c.get("requisitos",[])),
+      "opcionales":list(c.get("opcionales",[])),
+      "documentos":list(c.get("originales",[])),
+      "tiene":docs.get("tiene",[]),
+      "falta":faltantes,
+      "revisar":revisiones,
+      "acciones":acciones(caso,r,docs),
+      "cita":list(c.get("cita",[])),
+      "originales":list(c.get("originales",[])),
+      "copias":list(c.get("copias",[])),
+      "pago":c.get("pago","Confirma la tarifa vigente."),
+      "revision":"Revisa cuidadosamente nombre, apellidos, fechas, lugar de nacimiento y demás datos antes de firmar o imprimir.",
+      "vigencia":c.get("vigencia",""),
+      "entrega":c.get("entrega",""),
+      "importante":importantes,
+      "especiales":list(c.get("especiales",[])),
+      "confirma":revisiones,
+      "fuente":c.get("fuente",""),
+      "pendientes":pendientes,
+      "checklist":list(c.get("requisitos",[])),
+      "respuestas":r
+    }
 
 def continuar(caso,respuestas=None,pregunta_id="",texto=""):
- c=obtener_caso(caso)
- if not c:return {"estado":"error","mensaje":"Trámite no encontrado."}
- r=dict(respuestas or {});r["_caso"]=caso
- if pregunta_id and texto:r[pregunta_id]=texto
- r=enriquecer_respuesta(pregunta_id,texto,r)
- q=pregunta_actual(caso,r)
- if q:return {"tipo":"pregunta","estado":"pregunta","caso":caso,"titulo":c["titulo"],"pregunta_id":q["pregunta_id"],"pregunta":q["pregunta"],"tipo_pregunta":q["tipo"],"obligatoria":q["obligatoria"],"opciones":opciones_pregunta(q),"respuestas":r,"perfil":r.get("_perfil",{})}
- return resultado(caso,r)
+    r=dict(respuestas or {})
+    c=obtener_caso(caso)
+    if not c:raise ValueError("Trámite no válido.")
+
+    p=_perfil_desde(r)
+    if texto:
+        p=fusionar(p,extraer_perfil(texto))
+    if pregunta_id:
+        guardar_respuesta(pregunta_id,texto,p)
+        enriquecer_respuesta(pregunta_id,texto,r)
+        r[pregunta_id]=texto
+    _guardar_perfil(r,p)
+    r["caso"]=caso
+
+    q=pregunta_actual(caso,r)
+    if q:
+        opciones=opciones_pregunta(q)
+        return {
+          "final":False,
+          "caso":caso,
+          "titulo":c["titulo"],
+          "paso":f"PASO {len([x for x in c.get('preguntas',[]) if x.get('id') not in {'curp'} and not (x.get('id')=='naturalizado' and p.get('naturalizado'))])+1}",
+          "pregunta_id":q["id"],
+          "pregunta":q["texto"],
+          "tipo":q.get("tipo","texto"),
+          "opciones":opciones,
+          "required":bool(q.get("required")),
+          "permite_otro":q.get("permite_otro",True),
+          "respuestas":r,
+          "perfil":p
+        }
+
+    return {
+      "final":True,
+      "caso":caso,
+      "resultado":resultado(caso,r),
+      "respuestas":r
+    }
 
 def seleccionar_caso(caso,respuestas=None,texto_inicial=""):
- r=dict(respuestas or {});r["_caso"]=caso
- r["_perfil"]=fusionar(r.get("_perfil",{}),extraer_perfil(texto_inicial))
- if texto_inicial:
-  r=enriquecer_respuesta("",texto_inicial,r)
- return continuar(caso,r,"","")
+    if caso not in CASOS:raise ValueError("Trámite no válido.")
+    r=dict(respuestas or {})
+    r["caso"]=caso
+    p=fusionar(_perfil_desde(r),extraer_perfil(texto_inicial))
+    _guardar_perfil(r,p)
+    return continuar(caso,r,"",texto_inicial)
 
 def interpretar(servicio,texto,respuestas=None,pregunta_id=""):
- r=dict(respuestas or {});r["_perfil"]=fusionar(r.get("_perfil",{}),extraer_perfil(texto))
- if r.get("_caso") and pregunta_id:
-  return continuar(r["_caso"],r,pregunta_id,texto)
- caso=r.get("_caso") or buscar_caso(texto,servicio)
- if caso:return seleccionar_caso(caso,r,texto)
- return {"tipo":"catalogo","estado":"seleccionar","servicio":servicio,"pregunta":"¿Qué trámite necesitas preparar?","opciones":catalogo(servicio),"respuestas":r,"perfil":r.get("_perfil",{})}
+    texto=str(texto or "").strip()
+    r=dict(respuestas or {})
+    if not texto:raise ValueError("No se recibió información.")
+    p=fusionar(_perfil_desde(r),extraer_perfil(texto))
+    _guardar_perfil(r,p)
+
+    caso=r.get("caso")
+    if caso in CASOS:
+        return continuar(caso,r,pregunta_id,texto)
+
+    caso=buscar_caso(texto,servicio)
+    if caso:
+        return seleccionar_caso(caso,r,texto)
+
+    return {
+      "final":False,
+      "seleccionar":True,
+      "servicio":servicio,
+      "titulo":"¿Qué trámite necesitas?",
+      "pregunta":"No quiero hacerte preguntas innecesarias. Elige la opción que más se parece a tu situación.",
+      "opciones":catalogo(servicio),
+      "respuestas":r,
+      "perfil":p
+    }
