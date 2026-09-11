@@ -1,4 +1,3 @@
-````python
 import os,json,hashlib,secrets,re
 from pathlib import Path
 from datetime import datetime,timedelta,timezone
@@ -340,4 +339,3 @@ def resultado(req:ResultadoRequest,_=Depends(require_access)):
 @app.post("/api/logout")
 def logout():
     r=JSONResponse({"ok":True});r.delete_cookie("save_access_token");r.delete_cookie("save_admin_token");return r
-````
