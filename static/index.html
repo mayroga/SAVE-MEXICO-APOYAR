@@ -3,81 +3,91 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111f">
 <title>MEXICANO APOYA MEXICANO</title>
-<link rel="stylesheet" href="/static/style.css">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:#07111f;color:#f5f7fa}
+body{display:flex;justify-content:center}
+main{width:100%;max-width:760px;padding:18px 14px 40px}
+header{text-align:center;margin-bottom:18px}
+header h1{font-size:clamp(25px,6vw,42px);margin:8px 0 4px;line-height:1.05}
+header p{margin:0;color:#b9c4d0;font-size:15px}
+.card{background:#101b2b;border:1px solid #223249;border-radius:18px;padding:22px;margin-top:14px;box-shadow:0 8px 30px #0005}
+h2{font-size:clamp(21px,5vw,30px);margin:0 0 15px;line-height:1.15}
+h3{font-size:19px;margin:20px 0 8px}
+p{font-size:17px;line-height:1.55;margin:8px 0}
+button,input,textarea{font:inherit}
+button{width:100%;border:0;border-radius:14px;padding:17px 14px;margin:7px 0;cursor:pointer;font-weight:700;font-size:17px;background:#1e88e5;color:#fff}
+button:hover{filter:brightness(1.1)}
+.opcion{background:#16283d;border:1px solid #31506f;text-align:left;min-height:58px}
+.continuar{background:#159447}
+#entrar{font-size:21px;padding:20px;background:#1687e8}
+#servicios{display:none}
+#pregunta,#resultado{display:none}
+#preguntaTexto{font-size:clamp(22px,5vw,31px);font-weight:700;line-height:1.25;margin-bottom:18px}
+#opciones{display:flex;flex-direction:column}
+#textoEntrada{display:none;margin-top:12px}
+#textoUsuario{width:100%;min-height:110px;border-radius:14px;border:1px solid #38506a;background:#081321;color:#fff;padding:15px;font-size:17px;resize:vertical}
+#textoUsuario:focus{outline:2px solid #2196f3}
+.acciones{display:flex;gap:8px;flex-wrap:wrap}
+.acciones button{flex:1;min-width:140px}
+#voz{background:#394b61}
+#respuesta{margin-top:5px}
+#respuesta h3{border-bottom:1px solid #2b4058;padding-bottom:7px}
+#respuesta p{white-space:pre-line}
+.fuente{display:block;margin:12px 0;padding:15px;border-radius:12px;background:#182c43;color:#73c5ff;text-decoration:none;font-weight:700;text-align:center;word-break:break-word}
+.tituloCaso{background:#0b1625;border:1px solid #263c54;border-radius:12px;padding:13px;margin:0 0 10px;font-weight:700;font-size:18px}
+.nota{color:#aebaca;font-size:14px;line-height:1.5;margin-top:18px}
+.legal{font-size:13px;color:#8997a8;line-height:1.5;margin-top:18px;text-align:center}
+.oculto{display:none!important}
+@media(max-width:520px){
+ main{padding:10px 10px 30px}
+ .card{padding:17px 14px;border-radius:15px}
+ button{font-size:16px;padding:16px 12px}
+ p{font-size:16px}
+}
+</style>
 </head>
 <body>
 <main>
+<header>
+<h1>MEXICANO APOYA MEXICANO</h1>
+<p>Información sencilla para tus trámites consulares.</p>
+</header>
 
-<section id="inicio" class="pantalla activa">
-  <div class="bandera">🇲🇽</div>
-  <h1>MEXICANO<br>APOYA MEXICANO</h1>
-  <p class="grande">Ayuda sencilla para preparar tu trámite consular.</p>
-  <button class="principal" onclick="entrar()">ENTRAR</button>
-  <p id="servidor" class="estado">Preparando...</p>
+<section id="inicio" class="card">
+<h2>¿PARA QUÉ SIRVE?</h2>
+<p>Esta aplicación te ayuda a saber qué trámite o documento puede corresponder a tu situación y qué debes preparar antes de acudir al consulado.</p>
+<p>No sustituye al consulado. La autoridad consular es quien confirma los requisitos de tu caso.</p>
+<button id="entrar">ENTRAR</button>
+<div class="legal">Tu información se usa para ayudarte durante esta consulta. No afirmamos ser parte del Gobierno de México.</div>
 </section>
 
-<section id="info" class="pantalla">
-  <h2>¿PARA QUÉ SIRVE?</h2>
-  <div class="caja">
-    <p><strong>TÚ NOS DICES QUÉ NECESITAS.</strong></p>
-    <p>La aplicación te hace pocas preguntas.</p>
-    <p>Te ayuda a preparar tu caso de manera sencilla.</p>
-    <p>También puedes <strong>hablar</strong> en lugar de escribir.</p>
-  </div>
-  <button class="principal" onclick="mostrar('legal')">CONTINUAR</button>
+<section id="servicios" class="card">
+<h2>¿QUÉ NECESITAS?</h2>
+<p>Elige la opción que más se parece a tu situación.</p>
+<button class="opcion" id="servicioCita">TENGO UNA CITA</button>
+<button class="opcion" id="servicioDocumento">NO SÉ QUÉ DOCUMENTO NECESITO</button>
 </section>
 
-<section id="legal" class="pantalla">
-  <h2>ANTES DE CONTINUAR</h2>
-  <div class="caja">
-    <p><strong>ESTE NO ES EL CONSULADO DE MÉXICO.</strong></p>
-    <p>MEXICANO APOYA MEXICANO es un servicio privado de preparación.</p>
-    <p>La información final de tu trámite debe confirmarse con el Consulado correspondiente.</p>
-  </div>
-  <div class="caja">
-    <p><strong>PROTECCIÓN</strong></p>
-    <p>No escribas contraseñas, números de tarjetas ni información que no sea necesaria para tu trámite.</p>
-  </div>
-  <button class="principal" onclick="mostrar('servicios')">ACEPTO Y CONTINUAR</button>
+<section id="pregunta" class="card">
+<div id="preguntaTexto">¿Qué necesitas?</div>
+<div id="opciones"></div>
+
+<div id="textoEntrada">
+<textarea id="textoUsuario" placeholder="Escribe aquí o usa tu voz"></textarea>
+<div class="acciones">
+<button id="voz" type="button">🎤 HABLAR</button>
+<button id="continuar" type="button" class="continuar">CONTINUAR</button>
+</div>
+</div>
 </section>
 
-<section id="servicios" class="pantalla">
-  <h2>¿QUÉ NECESITAS?</h2>
-
-  <button class="opcion azul" onclick="iniciarServicio('cita')">
-    <strong>TENGO UNA CITA</strong>
-    <span>Quiero saber cómo preparar mi cita.</span>
-  </button>
-
-  <button class="opcion verde" onclick="iniciarServicio('documento')">
-    <strong>NO SÉ QUÉ DOCUMENTO NECESITO</strong>
-    <span>Tengo un problema y quiero saber qué debo preparar.</span>
-  </button>
-</section>
-
-<section id="pregunta" class="pantalla">
-  <div id="paso" class="paso"></div>
-  <h2 id="preguntaTexto">...</h2>
-
-  <div id="opciones"></div>
-
-  <button id="hablar" class="voz" onclick="escuchar()">🎙️ HABLAR</button>
-
-  <textarea id="respuestaTexto" placeholder="También puedes escribir aquí"></textarea>
-
-  <button class="principal" onclick="enviarRespuesta()">CONTINUAR</button>
-
-  <p id="estadoPregunta" class="estado"></p>
-</section>
-
-<section id="resultado" class="pantalla">
-  <div class="check">✓</div>
-  <h2 id="resultadoTitulo">TU RESULTADO</h2>
-  <div id="resultadoTexto" class="caja"></div>
-
-  <button class="voz" onclick="leerResultado()">🔊 ESCUCHAR</button>
-  <button class="principal" onclick="mostrar('servicios')">REGRESAR</button>
+<section id="resultado" class="card">
+<h2>✓ TU RESULTADO</h2>
+<div id="respuesta"></div>
+<button id="nuevo" type="button" class="continuar">EMPEZAR DE NUEVO</button>
 </section>
 
 </main>
