@@ -1,397 +1,312 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAVE MÉXICO AYUDAR - Asesoría Consular Privada</title>
-    <style>
-        :root {
-            --primary: #8b0000;
-            --primary-dark: #5c0000;
-            --accent: #d4af37;
-            --bg: #f9f9f9;
-            --card-bg: #ffffff;
-            --text: #2c3e50;
-            --text-light: #7f8c8d;
-            --border: #e0e0e0;
-            --success: #27ae60;
-            --warning: #f39c12;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 1.5rem 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        header h1 { font-size: 1.5rem; letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem; }
-        header h1 span { color: var(--accent); }
-        .user-panel { display: flex; gap: 1rem; align-items: center; font-size: 0.9rem; }
-        .btn { background-color: var(--accent); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.3s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .btn:hover { background-color: #b89728; }
-        .btn-outline { background: transparent; border: 1px solid white; color: white; }
-        .btn-outline:hover { background: rgba(255,255,255,0.1); }
-        .btn-danger { background-color: #c0392b; }
-        .btn-danger:hover { background-color: #a93226; }
-        main { flex: 1; max-width: 1000px; width: 100%; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 2rem; }
-        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 2rem; border-top: 4px solid var(--primary); }
-        .card h2 { margin-bottom: 1rem; color: var(--primary); font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-        .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
-        label { font-weight: 600; font-size: 0.9rem; color: var(--text); }
-        input, select, textarea { padding: 0.75rem; border: 1px solid var(--border); border-radius: 4px; font-size: 1rem; width: 100%; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(139,0,0,0.1); }
-        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
-        .price-card { border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; text-align: center; display: flex; flex-direction: column; gap: 1rem; background: #fff; transition: transform 0.3s, box-shadow 0.3s; }
-        .price-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); border-color: var(--primary); }
-        .price-card h3 { color: var(--primary); }
-        .price-card .price { font-size: 1.8rem; font-weight: bold; color: var(--text); }
-        .hidden { display: none !important; }
-        .alert { padding: 1rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.95rem; }
-        .alert-info { background: #e8f4fd; color: #2980b9; border-left: 4px solid #3498db; }
-        .alert-warning { background: #fef9e7; color: #d35400; border-left: 4px solid var(--warning); }
-        .alert-success { background: #eafaf1; color: #27ae60; border-left: 4px solid var(--success); }
-        .chat-box { border: 1px solid var(--border); border-radius: 4px; height: 300px; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem; background: #fafafa; margin-bottom: 1rem; }
-        .msg { padding: 0.7rem 1rem; border-radius: 6px; max-width: 80%; font-size: 0.95rem; }
-        .msg.user { background: var(--primary); color: white; align-self: flex-end; }
-        .msg.advisor { background: #e0e0e0; color: var(--text); align-self: flex-start; }
-        footer { background: #2c3e50; color: white; text-align: center; padding: 1.5rem; font-size: 0.85rem; margin-top: auto; }
-        footer p { opacity: 0.8; margin-bottom: 0.3rem; }
-        @media(max-width: 650px) { header { flex-direction: column; align-items: stretch; text-align: center; } .user-panel { justify-content: center; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAVE MÉXICO AYUDAR</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#18232d;font-family:Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.loginbox,.box{background:#fff;border:1px solid #dfe5ea;border-radius:16px;padding:24px;box-shadow:0 8px 28px #0001}.loginbox{width:min(460px,100%)}h1,h2,h3{margin-top:0}h1{font-size:27px;text-align:center;color:#123b58}h2{font-size:22px}h3{font-size:17px}.sub,.muted{color:#66727c;line-height:1.5}.field{margin:13px 0}label{display:block;font-weight:700;margin-bottom:6px}input,select,textarea{width:100%;padding:12px;border:1px solid #ccd5dc;border-radius:9px;background:#fff;color:#18232d}textarea{resize:vertical}.bigbtn{width:100%;border:0;border-radius:10px;padding:14px 16px;margin-top:10px;font-weight:700}.primary{background:#123f5c;color:#fff}.secondary{background:#e9eef2;color:#173044}.green{background:#19734a;color:#fff}.red{background:#9d3030;color:#fff}.warn{background:#fff2d7;color:#7b5100;padding:11px;border-radius:9px;margin-top:12px;line-height:1.5}.success{background:#e5f6ed;color:#155c3b;padding:13px;border-radius:10px;line-height:1.5}.notice{font-size:12px;color:#69747c;line-height:1.5}#app{display:none;max-width:850px;margin:auto;padding:16px}.top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}.brand{font-size:20px;font-weight:800;color:#123b58}.smallbtn{border:1px solid #ccd5dc;background:#fff;border-radius:8px;padding:8px 11px}.screen{display:none}.screen.active{display:block}.step{font-size:13px;color:#66727c;margin-bottom:8px}.option{width:100%;text-align:left;background:#fff;border:1px solid #d5dde3;border-radius:11px;padding:15px;margin:7px 0}.option:hover{border-color:#123f5c}.card{background:#f7f9fa;border:1px solid #e1e6ea;border-radius:10px;padding:13px;margin:10px 0;line-height:1.55}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}@media(max-width:650px){.grid,.grid3{grid-template-columns:1fr}}.actions{display:flex;gap:10px;margin-top:15px}.actions>*{flex:1}.plan{border:1px solid #d7dfe5;border-radius:13px;padding:16px;background:#fff}.plan strong{font-size:25px;display:block;margin:7px 0}.plan b{color:#123f5c}.plan .bigbtn{margin-top:13px}#paywall{display:none}.photo{border:1px dashed #b7c3cc;border-radius:10px;padding:15px;background:#fafcfd}.preview{max-width:100%;max-height:220px;border-radius:9px;margin-top:8px}.filelist{font-size:14px;color:#58636c;margin-top:8px}.modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;padding:20px;align-items:center;justify-content:center}.sheet{background:#fff;width:min(620px,100%);max-height:90vh;overflow:auto;border-radius:15px;padding:20px;position:relative}.close{position:absolute;right:12px;top:8px;border:0;background:none;font-size:27px}hr{border:0;border-top:1px solid #e4e8eb;margin:20px 0}.check{display:flex;gap:8px;align-items:flex-start;margin:9px 0}.check input{width:auto;margin-top:4px}.reviewrow{border-bottom:1px solid #e7eaed;padding:9px 0}.reviewrow b{display:block;color:#52616d;font-size:13px;margin-bottom:3px}.tag{display:inline-block;background:#e9eef2;border-radius:20px;padding:5px 9px;margin:3px;font-size:13px}.dynlabel{margin-top:15px}.empty{padding:12px;background:#fff2d7;border-radius:9px;color:#72500a}.loading{text-align:center;padding:20px;color:#52616d}.aihead{font-weight:700;color:#123f5c;margin-bottom:5px}
+</style>
 </head>
 <body>
-    <header>
-        <h1><span>🇲🇽</span> SAVE MÉXICO AYUDAR</h1>
-        <div class="user-panel" id="userPanel">
-            <span id="userInfo" class="hidden">Acceso Activo</span>
-            <button class="btn btn-outline" id="btnLogout" onclick="logout()" class="hidden">Cerrar Sesión</button>
-        </div>
-    </header>
 
-    <main>
-        <!-- SECCIÓN DE ACCESO / PAGO -->
-        <section id="secPay" class="card">
-            <h2>Acceso a Asesoría Consular Especializada</h2>
-            <div class="alert alert-info">
-                Seleccione el plan de acceso para utilizar el Asesor Mexicano interactivo, estructurar su trámite consular y generar su documento de preparación detallado.
-            </div>
-            <div class="pricing-grid">
-                <div class="price-card">
-                    <h3>Pase Diario</h3>
-                    <div class="price">$5 USD</div>
-                    <p>Acceso completo por 24 horas para trámites rápidos y consultas puntuales.</p>
-                    <button class="btn" onclick="pagar('daily')">Seleccionar Diario</button>
-                </div>
-                <div class="price-card" style="border-color: var(--accent);">
-                    <h3>Plan Mensual</h3>
-                    <div class="price">$25 USD</div>
-                    <p>Ideal para seguimiento continuo de trámites consulares y múltiples consultas.</p>
-                    <button class="btn" onclick="pagar('monthly')">Seleccionar Mensual</button>
-                </div>
-            </div>
-        </section>
+<div id="login">
+<div class="loginbox">
+<h1>SAVE MÉXICO AYUDAR</h1>
+<p class="sub">Asistencia privada para organizar información y preparar documentación relacionada con trámites de mexicanos.</p>
 
-        <!-- SECCIÓN PRINCIPAL DE TRÁMITE -->
-        <section id="secMain" class="card hidden">
-            <h2>Asesoría y Preparación de Trámite Consular</h2>
-            <div class="alert alert-success" id="alertAccess">¡Acceso verificado correctamente! Indique los datos de su trámite para comenzar.</div>
-            
-            <form id="tramiteForm" onsubmit="event.preventDefault(); construirPerfil();">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="categoria_tramite">Trámite Consular / Mexicano:</label>
-                        <input type="text" id="categoria_tramite" placeholder="Ej. Pasaporte mexicano, Matrícula consular, Registro de nacimiento..." required>
-                    </div>
-                    <div class="form-group">
-                        <label for="modalidad">Modalidad o Situación:</label>
-                        <input type="text" id="modalidad" placeholder="Ej. Primera vez, Renovación por mayor de edad, Urgencia...">
-                    </div>
-                </div>
+<div id="paywall">
+<h2>Contratar el servicio</h2>
+<p class="sub">Elige la modalidad que necesitas. El pago se procesa mediante Stripe.</p>
+<div class="grid3">
+<div class="plan"><b>USO DIARIO</b><strong>$35.99</strong><div class="notice">Acceso por 24 horas.</div><button class="bigbtn primary" onclick="pagar('daily')">CONTRATAR</button></div>
+<div class="plan"><b>MENSUAL</b><strong>$69.99</strong><div class="notice">Suscripción mensual.</div><button class="bigbtn primary" onclick="pagar('monthly')">CONTRATAR</button></div>
+<div class="plan"><b>ANUAL</b><strong>$300</strong><div class="notice">Suscripción anual.</div><button class="bigbtn primary" onclick="pagar('annual')">CONTRATAR</button></div>
+</div>
+<hr>
+<p class="notice">Servicio privado e independiente. SAVE MÉXICO AYUDAR no es el Gobierno de México ni representa a un consulado.</p>
+<button class="smallbtn" onclick="mostrarAdmin()">Acceso administrativo</button>
+</div>
 
-                <div class="form-group">
-                    <label for="contexto">Detalles o Situación Especial (Opcional):</label>
-                    <textarea id="contexto" rows="3" placeholder="Describa brevemente su situación o dudas particulares..."></textarea>
-                </div>
+<div id="adminBox" style="display:none">
+<h2>Acceso administrativo</h2>
+<div class="field"><label>Usuario</label><input id="user" autocomplete="username"></div>
+<div class="field"><label>Contraseña</label><input id="pass" type="password" autocomplete="current-password"></div>
+<button class="bigbtn primary" onclick="login()">ENTRAR</button>
+<button class="bigbtn secondary" onclick="volverPago()">VOLVER</button>
+<div id="loginMsg" class="warn" style="display:none"></div>
+</div>
+</div>
+</div>
 
-                <button type="submit" class="btn" style="width: 100%;">Generar Perfil y Requisitos Oficiales</button>
-            </form>
-        </section>
+<div id="app">
+<div class="top"><div class="brand">SAVE MÉXICO AYUDAR</div><button class="smallbtn" onclick="logout()">SALIR</button></div>
 
-        <!-- SECCIÓN DE PERFIL Y FORMULARIO DETALLADO -->
-        <section id="secPerfil" class="card hidden">
-            <h2>Requisitos, Documentos y Formulario de Preparación</h2>
-            <div id="perfilContenido" style="margin-bottom: 1.5rem;"></div>
+<div id="s1" class="screen active box">
+<div class="step">PASO 1</div>
+<h2>¿Qué trámite estás preparando?</h2>
+<p class="sub">Selecciona el trámite. Después el Asesor Mexicano identificará qué información necesita ese trámite.</p>
+<button class="option" onclick="setTramite('Pasaporte')"><b>Pasaporte</b><br><span class="muted">Preparación de información y documentos.</span></button>
+<button class="option" onclick="setTramite('Matrícula Consular')"><b>Matrícula Consular</b></button>
+<button class="option" onclick="setTramite('INE')"><b>INE</b></button>
+<button class="option" onclick="setTramite('Registro Civil / Acta')"><b>Registro Civil / Acta</b></button>
+<button class="option" onclick="setTramite('Poder o documento notarial')"><b>Poder o documento notarial</b></button>
+<button class="option" onclick="setTramite('Otro')"><b>Otro trámite</b></button>
+</div>
 
-            <hr style="border:0; border-top:1px solid var(--border); margin: 1.5rem 0;">
+<div id="s2" class="screen box">
+<div class="step">PASO 2</div>
+<h2>¿Qué modalidad o tipo de trámite necesitas?</h2>
+<p class="sub">Cada trámite puede tener requisitos y documentos diferentes. Escribe o selecciona la modalidad que corresponde a tu caso.</p>
+<div class="field"><label>Modalidad / tipo específico</label><select id="modalidadSelect" onchange="modalidadCambio()"><option value="">Selecciona una opción</option><option value="Primera vez">Primera vez</option><option value="Renovación">Renovación</option><option value="Reposición">Reposición</option><option value="Corrección o actualización">Corrección o actualización</option><option value="Otro">Otro</option></select></div>
+<div id="modalidadOtro" class="field" style="display:none"><label>Especifica</label><input id="modalidadOtroTxt" placeholder="Escribe el tipo de trámite"></div>
+<button class="bigbtn primary" onclick="consultarPerfil()">CONTINUAR</button>
+<button class="bigbtn secondary" onclick="go(1)">ATRÁS</button>
+<div id="perfilMsg" class="warn" style="display:none"></div>
+</div>
 
-            <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.1rem;">Datos Personales para la Guía PDF</h3>
-            <form id="datosForm" onsubmit="event.preventDefault(); generarGuiaPdf();">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Primer Nombre:</label>
-                        <input type="text" id="primer_nombre" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Segundo Nombre:</label>
-                        <input type="text" id="segundo_nombre">
-                    </div>
-                    <div class="form-group">
-                        <label>Primer Apellido:</label>
-                        <input type="text" id="primer_apellido" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Segundo Apellido:</label>
-                        <input type="text" id="segundo_apellido">
-                    </div>
-                    <div class="form-group">
-                        <label>Fecha de Nacimiento:</label>
-                        <input type="text" id="fecha_nacimiento" placeholder="DD/MM/AAAA">
-                    </div>
-                    <div class="form-group">
-                        <label>Lugar de Nacimiento (Estado/Municipio):</label>
-                        <input type="text" id="lugar_nacimiento">
-                    </div>
-                    <div class="form-group">
-                        <label>Teléfono de Contacto:</label>
-                        <input type="text" id="telefono">
-                    </div>
-                    <div class="form-group">
-                        <label>Correo Electrónico:</label>
-                        <input type="email" id="correo">
-                    </div>
-                    <div class="form-group">
-                        <label>Consulado al que acude:</label>
-                        <input type="text" id="consulado" placeholder="Ej. Consulado de México en Miami">
-                    </div>
-                    <div class="form-group">
-                        <label>Fecha y Hora de Cita (si la tiene):</label>
-                        <input type="text" id="cita">
-                    </div>
-                </div>
+<div id="s3" class="screen box">
+<div class="step">PASO 3</div>
+<h2>Información específica de tu trámite</h2>
+<p class="sub">El Asesor Mexicano preparó esta pantalla para el trámite que seleccionaste. No todos los trámites tienen las mismas preguntas.</p>
+<div id="perfilResumen" class="card"></div>
+<div id="dynamicFields"></div>
+<div id="specificQuestions"></div>
+<button class="bigbtn primary" onclick="go(4)">CONTINUAR</button>
+<button class="bigbtn secondary" onclick="go(2)">ATRÁS</button>
+</div>
 
-                <div class="form-group" style="margin-top: 1rem;">
-                    <label>Documentos con los que cuenta (separados por coma):</label>
-                    <input type="text" id="documentos_tenidos" placeholder="Ej. Acta de nacimiento original, INE vigente...">
-                </div>
+<div id="s4" class="screen box">
+<div class="step">PASO 4</div>
+<h2>Documentos y requisitos identificados</h2>
+<p class="sub">Esta información corresponde al trámite y modalidad seleccionados. Lo que no esté confirmado oficialmente aparecerá como pendiente de confirmación.</p>
+<div id="docsProfile"></div>
+<hr>
+<h3>¿Qué documentos ya tienes?</h3>
+<textarea id="docsHave" rows="5" placeholder="Escribe los documentos que ya tienes. Puedes separarlos por líneas o comas."></textarea>
+<h3>¿Qué documentos te faltan?</h3>
+<textarea id="docsMissing" rows="5" placeholder="Escribe los documentos que te faltan o que necesitas confirmar."></textarea>
+<div class="warn">No inventamos requisitos. Si tienes una duda sobre un requisito oficial, se marcará como <b>POR CONFIRMAR CON LA AUTORIDAD</b>.</div>
+<div class="actions"><button class="bigbtn secondary" onclick="go(3)">ATRÁS</button><button class="bigbtn primary" onclick="go(5)">CONTINUAR</button></div>
+</div>
 
-                <div class="form-group">
-                    <label>Documentos pendientes o faltantes:</label>
-                    <input type="text" id="documentos_faltantes" placeholder="Ej. Comprobante de domicilio reciente...">
-                </div>
+<div id="s5" class="screen box">
+<div class="step">PASO 5</div>
+<h2>Fotografías, formatos y documentos especiales</h2>
+<p class="sub">Revisa lo que el perfil del trámite identifica. No asumiremos tamaño, cantidad o características que no estén confirmadas.</p>
+<div id="photoRequirements"></div>
+<div id="formatRequirements"></div>
+<div id="specialRequirements"></div>
+<hr>
+<div class="photo">
+<label>Si ya tienes fotografías, puedes subirlas</label>
+<input id="photos" type="file" accept="image/*" multiple onchange="cargarFotos()">
+<div id="photoList" class="filelist"></div><div id="photoPreview"></div>
+</div>
+<div class="actions"><button class="bigbtn secondary" onclick="go(4)">ATRÁS</button><button class="bigbtn primary" onclick="go(6)">CONTINUAR</button></div>
+</div>
 
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="confirmado" style="width: auto;">
-                        Confirmo que he revisado la información proporcionada y deseo generar mi Guía Consular PDF privada.
-                    </label>
-                </div>
+<div id="s6" class="screen box">
+<div class="step">PASO 6</div>
+<h2>Datos de la persona</h2>
+<p class="sub">Estos datos son generales. Los datos particulares del trámite están en las preguntas anteriores.</p>
+<div class="grid">
+<div class="field"><label>Primer nombre</label><input id="primer_nombre"></div>
+<div class="field"><label>Segundo nombre</label><input id="segundo_nombre"></div>
+<div class="field"><label>Primer apellido</label><input id="primer_apellido"></div>
+<div class="field"><label>Segundo apellido</label><input id="segundo_apellido"></div>
+<div class="field"><label>Fecha de nacimiento</label><input id="fecha_nacimiento" placeholder="DD/MM/AAAA"></div>
+<div class="field"><label>Lugar de nacimiento</label><input id="lugar_nacimiento" placeholder="Ciudad / Estado / México"></div>
+<div class="field"><label>Dirección en Estados Unidos</label><input id="direccion_usa"></div>
+<div class="field"><label>Teléfono</label><input id="telefono"></div>
+<div class="field"><label>Correo electrónico</label><input id="correo" type="email"></div>
+<div class="field"><label>Nacionalidad</label><input id="nacionalidad" value="Mexicana"></div>
+<div class="field"><label>Consulado</label><input id="consulado"></div>
+<div class="field"><label>Fecha / hora de cita</label><input id="cita"></div>
+</div>
+<div class="actions"><button class="bigbtn secondary" onclick="go(5)">ATRÁS</button><button class="bigbtn primary" onclick="go(7)">CONTINUAR</button></div>
+</div>
 
-                <button type="submit" class="btn" style="width: 100%;">Generar Guía Consular PDF</button>
-            </form>
-        </section>
+<div id="s7" class="screen box">
+<div class="step">PASO 7</div>
+<h2>Información adicional</h2>
+<p class="sub">Agrega cualquier dato que pueda ser importante para tu caso y que todavía no haya quedado registrado.</p>
+<div class="field"><label>Información adicional</label><textarea id="extra1" rows="5" placeholder="Escribe aquí..."></textarea></div>
+<div class="field"><label>Otra información</label><textarea id="extra2" rows="5" placeholder="Opcional"></textarea></div>
+<div class="actions"><button class="bigbtn secondary" onclick="go(6)">ATRÁS</button><button class="bigbtn primary" onclick="buildReview();go(8)">REVISAR</button></div>
+</div>
 
-        <!-- SECCIÓN DE ASISTENTE INTERACTIVO (CHAT) -->
-        <section id="secChat" class="card hidden">
-            <h2>Asesor Mexicano Interactivo</h2>
-            <div class="chat-box" id="chatBox">
-                <div class="msg advisor">¡Hola! Soy su Asesor Mexicano en SAVE MÉXICO AYUDAR. Pregúnteme cualquier duda sobre requisitos, citas o procedimientos de su trámite.</div>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <input type="text" id="preguntaInput" placeholder="Escriba su pregunta aquí..." onkeypress="if(event.key==='Enter') enviarPregunta()">
-                <button class="btn" onclick="enviarPregunta()">Enviar</button>
-            </div>
-        </section>
-    </main>
+<div id="s8" class="screen box">
+<div class="step">PASO 8</div>
+<h2>Revisa todo antes de preparar el PDF</h2>
+<p class="sub">El PDF será preparado de acuerdo con el perfil de este trámite y modalidad. No es un documento oficial del Gobierno de México.</p>
+<div id="review"></div>
+<label class="check"><input id="confirm" type="checkbox"> Confirmo que revisé los datos que proporcioné y que son correctos según mi conocimiento.</label>
+<div class="actions"><button class="bigbtn secondary" onclick="go(7)">ATRÁS</button><button class="bigbtn green" onclick="generar()">PREPARAR PDF</button></div>
+</div>
 
-    <footer>
-        <p><strong>SAVE MÉXICO AYUDAR</strong> es un servicio privado e independiente de MAY ROGA LLC, Florida.</p>
-        <p>No es una agencia del Gobierno de México ni representa a ningún consulado oficial.</p>
-    </footer>
+<div id="s9" class="screen box">
+<div class="step">PASO 9</div>
+<h2>Documento preparado</h2>
+<div id="pdfResult"></div>
+<button class="bigbtn primary" onclick="abrirPDF()">ABRIR PDF</button>
+<button class="bigbtn secondary" onclick="openDoubt()">CAJÓN DE DUDAS</button>
+<button class="bigbtn secondary" onclick="resultado()">REGISTRAR RESULTADO</button>
+<button class="bigbtn secondary" onclick="nuevoTramite()">PREPARAR OTRO TRÁMITE</button>
+</div>
+</div>
 
-    <script>
-        let perfilActual = {};
+<div class="modal" id="doubtModal">
+<div class="sheet">
+<button class="close" onclick="closeDoubt()">×</button>
+<h2>Cajón de Dudas</h2>
+<p class="sub">El Asesor Mexicano responderá tomando en cuenta el trámite y modalidad que estás preparando.</p>
+<div class="card"><b id="doubtContext"></b></div>
+<textarea id="question" rows="5" placeholder="Escribe tu duda..."></textarea>
+<button class="bigbtn primary" onclick="ask()">PREGUNTAR</button>
+<div id="answer" class="card" style="display:none"></div>
+</div>
+</div>
 
-        function esc(str) {
-            return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        }
+<script>
+const $=id=>document.getElementById(id);
+let auth=sessionStorage.getItem("save_admin_auth")||"",tramiteActual="",modalidadActual="",pdfTexto="",archivo="",perfil=null,fotos=[],datos={};
 
-        async function verificarAcceso() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const sessionId = urlParams.get('session_id');
-            
-            if (sessionId) {
-                try {
-                    const res = await fetch(`/api/verify-payment?session_id=${sessionId}`);
-                    if (res.ok) {
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    }
-                } catch (e) {
-                    console.error("Error verificando pago:", e);
-                }
-            }
+function headers(json=false){const h={};if(auth)h.Authorization=auth;if(json)h["Content-Type"]="application/json";return h}
+function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0)}
+function go(n){show("s"+n)}
+function toast(x){alert(x)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function val(id){return $(id)?.value.trim()||""}
+function mostrarAdmin(){$("paywall").style.display="none";$("adminBox").style.display="block"}
+function volverPago(){$("adminBox").style.display="none";$("paywall").style.display="block"}
 
-            try {
-                const res = await fetch('/api/check-access');
-                const data = await res.json();
-                if (data.ok) {
-                    document.getElementById('secPay').classList.add('hidden');
-                    document.getElementById('secMain').classList.remove('hidden');
-                    document.getElementById('secChat').classList.remove('hidden');
-                    document.getElementById('userInfo').classList.remove('hidden');
-                    document.getElementById('btnLogout').classList.remove('hidden');
-                    document.getElementById('userInfo').innerText = `Plan Activo: ${(data.plan || 'Acceso').toUpperCase()}`;
-                } else {
-                    document.getElementById('secPay').classList.remove('hidden');
-                    document.getElementById('secMain').classList.add('hidden');
-                    document.getElementById('secPerfil').classList.add('hidden');
-                    document.getElementById('secChat').classList.add('hidden');
-                }
-            } catch (e) {
-                console.error("Error comprobando acceso:", e);
-            }
-        }
+async function login(){
+ const u=$("user").value.trim(),p=$("pass").value;
+ if(!u||!p){$("loginMsg").style.display="block";$("loginMsg").textContent="Escribe usuario y contraseña.";return}
+ auth="Basic "+btoa(unescape(encodeURIComponent(u+":"+p)));
+ try{const r=await fetch("/api/admin-login",{method:"POST",headers:headers()});if(!r.ok)throw Error("Usuario o contraseña incorrectos.");sessionStorage.setItem("save_admin_auth",auth);$("login").style.display="none";$("app").style.display="block"}catch(e){$("loginMsg").style.display="block";$("loginMsg").textContent=e.message}
+}
+async function restore(){
+ try{if(auth){let r=await fetch("/api/check-access",{headers:headers()});if(r.ok&&(await r.json()).ok){$("login").style.display="none";$("app").style.display="block";return}}let r=await fetch("/api/check-access"),j=await r.json();if(j.ok){$("login").style.display="none";$("app").style.display="block";return}}catch(e){}
+ $("login").style.display="flex";$("paywall").style.display="block";$("adminBox").style.display="none"
+}
+async function pagar(plan){
+ try{const r=await fetch("/api/create-checkout-session",{method:"POST",headers:headers(true),body:JSON.stringify({plan})}),j=await r.json();if(!r.ok)throw Error(j.detail||"No se pudo iniciar el pago.");location.href=j.checkout_url}catch(e){toast(e.message)}
+}
+async function verificarPago(){
+ const sid=new URLSearchParams(location.search).get("session_id");if(!sid)return false;
+ try{const r=await fetch("/api/verify-payment?session_id="+encodeURIComponent(sid)),j=await r.json();if(!r.ok)throw Error(j.detail||"No se pudo confirmar el pago.");history.replaceState({},document.title,"/");$("login").style.display="none";$("app").style.display="block";return true}catch(e){toast(e.message);return false}
+}
 
-        async function pagar(plan) {
-            try {
-                const res = await fetch('/api/create-checkout-session', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ plan })
-                });
-                const data = await res.json();
-                if (data.checkout_url) {
-                    window.location.href = data.checkout_url;
-                } else {
-                    alert('No se pudo iniciar la sesión de pago.');
-                }
-            } catch (e) {
-                alert('Error de conexión con Stripe.');
-            }
-        }
+function setTramite(x){tramiteActual=x;perfil=null;modalidadActual="";$("modalidadSelect").value="";$("modalidadOtro").style.display="none";$("modalidadOtroTxt").value="";go(2)}
+function modalidadCambio(){$("modalidadOtro").style.display=$("modalidadSelect").value==="Otro"?"block":"none"}
+function obtenerModalidad(){return $("modalidadSelect").value==="Otro"?val("modalidadOtroTxt"):$("modalidadSelect").value}
 
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            window.location.reload();
-        }
+async function consultarPerfil(){
+ modalidadActual=obtenerModalidad();
+ if(!modalidadActual){toast("Selecciona o escribe la modalidad del trámite.");return}
+ $("perfilMsg").style.display="none";
+ $("perfilMsg").textContent="El Asesor Mexicano está preparando las preguntas y requisitos específicos de este trámite...";
+ $("perfilMsg").style.display="block";
+ try{
+  const r=await fetch("/api/perfil-tramite",{method:"POST",headers:headers(true),body:JSON.stringify({categoria_tramite:tramiteActual,modalidad:modalidadActual,contexto:pdfTexto||"",datos:{}})});
+  const j=await r.json();if(!r.ok)throw Error(j.detail||"No se pudo preparar el perfil del trámite.");
+  perfil=j.perfil||j;
+  renderPerfil();
+  go(3);
+ }catch(e){$("perfilMsg").textContent=e.message}
+}
 
-        async function construirPerfil() {
-            const categoria_tramite = document.getElementById('categoria_tramite').value.trim();
-            const modalidad = document.getElementById('modalidad').value.trim();
-            const contexto = document.getElementById('contexto').value.trim();
+function arr(x){return Array.isArray(x)?x:[]}
+function textItem(x){
+ if(typeof x==="string")return x;
+ if(!x||typeof x!=="object")return "";
+ return x.nombre||x.titulo||x.descripcion||x.texto||JSON.stringify(x)
+}
+function renderPerfil(){
+ if(!perfil)return;
+ const nombre=perfil.nombre_tramite||tramiteActual,mod=perfil.modalidad||modalidadActual;
+ $("perfilResumen").innerHTML="<div class='aihead'>TRÁMITE IDENTIFICADO</div><b>"+esc(nombre)+"</b><br><span class='tag'>"+esc(mod)+"</span><p>"+esc(perfil.descripcion_simple||"El Asesor Mexicano organizará la información específica de este trámite.")+"</p>";
+ const campos=arr(perfil.campos_necesarios);
+ $("dynamicFields").innerHTML=campos.length?campos.map((x,i)=>{
+  if(typeof x==="string")x={nombre:x};
+  const id="campo_"+i,n=x.nombre||x.campo||x.titulo||("Dato "+(i+1)),tipo=x.tipo==="textarea"?"textarea":"input";
+  return `<div class="field dynlabel"><label>${esc(n)}</label>${tipo==="textarea"?`<textarea id="${id}" rows="4" placeholder="${esc(x.descripcion||"Escribe la información correspondiente")}"></textarea>`:`<input id="${id}" placeholder="${esc(x.descripcion||"Escribe la información correspondiente")}">`}</div>`
+ }).join(""):"<div class='empty'>No se identificaron campos adicionales. Puedes continuar.</div>";
+ const qs=arr(perfil.preguntas_especificas);
+ $("specificQuestions").innerHTML=qs.length?"<hr><h3>Preguntas específicas</h3>"+qs.map((x,i)=>{x=typeof x==="string"?{pregunta:x}:x;return `<div class="field dynlabel"><label>${esc(x.pregunta||x.texto||x.titulo||("Pregunta "+(i+1)))}</label><textarea id="pregunta_${i}" rows="3" placeholder="${esc(x.ayuda||"Escribe tu respuesta")}"></textarea></div>`}).join(""):"";
+ renderRequirements();
+}
+function renderList(title,list){
+ list=arr(list);if(!list.length)return "";
+ return `<div class="card"><div class="aihead">${esc(title)}</div>${list.map(x=>"<div class='reviewrow'>"+esc(textItem(x))+"</div>").join("")}</div>`
+}
+function renderRequirements(){
+ $("docsProfile").innerHTML=renderList("DOCUMENTOS IDENTIFICADOS",perfil.documentos)+renderList("CONFIRMACIONES OFICIALES",perfil.confirmaciones_oficiales)+renderList("ADVERTENCIAS",perfil.advertencias);
+ $("photoRequirements").innerHTML=renderList("FOTOGRAFÍAS",perfil.fotografias);
+ $("formatRequirements").innerHTML=renderList("FORMATOS",perfil.formatos);
+ $("specialRequirements").innerHTML=renderList("SITUACIONES ESPECIALES",perfil.situaciones_especiales);
+}
+function collectSpecific(){
+ const out={};
+ arr(perfil?.campos_necesarios).forEach((x,i)=>{x=typeof x==="string"?{nombre:x}:x;const id="campo_"+i;if($(id))out[x.nombre||x.campo||("dato_"+i)]=val(id)});
+ arr(perfil?.preguntas_especificas).forEach((x,i)=>{x=typeof x==="string"?{pregunta:x}:x;const id="pregunta_"+i;if($(id))out["Pregunta: "+(x.pregunta||x.texto||("Pregunta "+(i+1)))]=val(id)});
+ return out
+}
+function cargarFotos(){
+ const files=[...$("photos"].files];fotos=files;$("photoList").textContent=files.length?files.length+" fotografía(s) seleccionada(s).":"";
+ $("photoPreview").innerHTML="";
+ files.forEach(f=>{const im=document.createElement("img");im.className="preview";im.alt=f.name;const rd=new FileReader();rd.onload=e=>im.src=e.target.result;rd.readAsDataURL(f);$("photoPreview").appendChild(im);const p=document.createElement("div");p.className="filelist";p.textContent=f.name;$("photoPreview").appendChild(p)})
+}
+function extraerDatos(t){
+ if(!t)return;
+ const lines=t.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const find=rx=>{const x=lines.find(v=>rx.test(v));return x?x.split(":").slice(1).join(":").trim():""};
+ const n=find(/Titular|Solicitante/i);
+ if(n){const p=n.split(/\s+/);$("primer_nombre").value=p[0]||"";$("segundo_nombre").value=p.length>4?p.slice(1,-2).join(" "):"";$("primer_apellido").value=p.length>3?p[p.length-2]:"";$("segundo_apellido").value=p.length>3?p[p.length-1]:""}
+ $("fecha_nacimiento").value=find(/Nacimiento/i);$("direccion_usa").value=find(/Domicilio USA|Domicilio en Estados Unidos/i);$("telefono").value=find(/Tel[eé]fono/i);
+}
+function guardarDatos(){
+ datos={categoria_tramite:tramiteActual,modalidad:modalidadActual,primer_nombre:val("primer_nombre"),segundo_nombre:val("segundo_nombre"),primer_apellido:val("primer_apellido"),segundo_apellido:val("segundo_apellido"),fecha_nacimiento:val("fecha_nacimiento"),lugar_nacimiento:val("lugar_nacimiento"),direccion_usa:val("direccion_usa"),telefono:val("telefono"),correo:val("correo"),nacionalidad:val("nacionalidad")||"Mexicana",consulado:val("consulado"),cita:val("cita"),documentos_tenidos:val("docsHave"),documentos_faltantes:val("docsMissing"),fotografias:fotos.map(x=>x.name),datos_especificos:collectSpecific(),datos_extraidos:pdfTexto?[pdfTexto]:[],estado_posterior:"PENDIENTE",extra_1:val("extra1"),extra_2:val("extra2"),confirmado:$("confirm").checked}
+}
+function buildReview(){
+ guardarDatos();
+ const name=[datos.primer_nombre,datos.segundo_nombre,datos.primer_apellido,datos.segundo_apellido].filter(Boolean).join(" ");
+ let rows=[["Trámite",datos.categoria_tramite],["Modalidad",datos.modalidad],["Nombre",name],["Nacimiento",[datos.fecha_nacimiento,datos.lugar_nacimiento].filter(Boolean).join(" — ")],["Domicilio USA",datos.direccion_usa],["Teléfono",datos.telefono],["Correo",datos.correo],["Nacionalidad",datos.nacionalidad],["Consulado",datos.consulado],["Cita",datos.cita],["Documentos que tiene",datos.documentos_tenidos||"No especificado"],["Documentos faltantes",datos.documentos_faltantes||"No especificado"],["Fotografías",datos.fotografias.length?datos.fotografias.join(", "):"No se subieron"],["Información adicional",datos.extra_1],["Otra información",datos.extra_2]];
+ let specific=Object.entries(datos.datos_especificos||{}).filter(x=>x[1]);
+ $("review").innerHTML=rows.map(x=>`<div class="reviewrow"><b>${esc(x[0])}</b>${esc(x[1]||"No especificado")}</div>`).join("")+(specific.length?"<h3 style='margin-top:18px'>DATOS ESPECÍFICOS DEL TRÁMITE</h3>"+specific.map(x=>`<div class="reviewrow"><b>${esc(x[0])}</b>${esc(x[1])}</div>`).join(""):"");
+}
+async function generar(){
+ if(!$("confirm").checked){toast("Primero confirma que revisaste los datos.");return}
+ guardarDatos();
+ try{
+  const r=await fetch("/api/generar-guia-consular",{method:"POST",headers:headers(true),body:JSON.stringify(datos)}),j=await r.json();
+  if(!r.ok)throw Error(j.detail||"No se pudo preparar el PDF.");
+  archivo=j.archivo||("/descargar/"+j.nombre);
+  $("pdfResult").innerHTML=`<div class="success"><b>PDF preparado correctamente.</b><br>El contenido fue organizado para <b>${esc(tramiteActual)}</b>${modalidadActual?" — <b>"+esc(modalidadActual)+"</b>":""}. Revisa el documento antes de utilizarlo. Es una guía privada de preparación y no sustituye las instrucciones de la autoridad.</div>`;
+  go(9)
+ }catch(e){toast(e.message)}
+}
+function abrirPDF(){if(!archivo){toast("Todavía no hay PDF preparado.");return}window.open(archivo,"_blank")}
+function openDoubt(){$("doubtContext").textContent=tramiteActual+(modalidadActual?" — "+modalidadActual:"");$("doubtModal").style.display="flex";$("answer").style.display="none"}
+function closeDoubt(){$("doubtModal").style.display="none"}
+async function ask(){
+ const q=val("question");if(!q){toast("Escribe tu duda.");return}
+ $("answer").style.display="block";$("answer").textContent="El Asesor Mexicano está revisando tu pregunta...";
+ try{const r=await fetch("/api/pregunta",{method:"POST",headers:headers(true),body:JSON.stringify({pregunta:q,categoria_tramite:tramiteActual||"general",modalidad:modalidadActual||"",contexto:JSON.stringify({perfil:perfil,datos:datos,pdf:pdfTexto})})}),j=await r.json();$("answer").textContent=r.ok?(j.respuesta||"No recibimos una respuesta."):(j.detail||"No pudimos responder.")}catch(e){$("answer").textContent="No pudimos responder en este momento."}
+}
+async function resultado(){
+ const x=prompt("Escribe el resultado de tu trámite:","PENDIENTE");if(x===null)return;
+ try{const r=await fetch("/api/resultado-tramite",{method:"POST",headers:headers(true),body:JSON.stringify({categoria_tramite:tramiteActual,modalidad:modalidadActual,estado:x,resultado:x,comentario:""})}),j=await r.json();toast(r.ok?(j.mensaje||"Resultado guardado."):(j.detail||"No se pudo guardar."))}catch(e){toast("No se pudo guardar el resultado.")}
+}
+function nuevoTramite(){location.reload()}
+async function logout(){try{await fetch("/api/logout",{method:"POST",headers:headers()})}catch(e){}auth="";sessionStorage.removeItem("save_admin_auth");location.href="/"}
 
-            if (!categoria_tramite) {
-                alert('Por favor, indique el trámite.');
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/perfil-tramite', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ categoria_tramite, modalidad, contexto })
-                });
-                const data = await res.json();
-                if (data.ok) {
-                    perfilActual = data.perfil;
-                    renderPerfil(data.perfil);
-                    document.getElementById('secPerfil').classList.remove('hidden');
-                    document.getElementById('secPerfil').scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    alert('Error al construir el perfil del trámite.');
-                }
-            } catch (e) {
-                alert('Error de conexión con el Asesor Mexicano.');
-            }
-        }
-
-        function renderPerfil(p) {
-            let html = `<div class="alert alert-info"><strong>${esc(p.nombre_tramite)}</strong><br>${esc(p.descripcion_simple)}</div>`;
-            
-            if (p.documentos && p.documentos.length > 0) {
-                html += `<h4 style="margin: 1rem 0 0.5rem; color: var(--primary);">Documentos Requeridos:</h4><ul>`;
-                p.documentos.forEach(d => {
-                    html += `<li><strong>${esc(d.nombre)}</strong> (${esc(d.tipo)}) - ${esc(d.para_que)} [Estado: <em>${esc(d.estado)}</em>]</li>`;
-                });
-                html += `</ul>`;
-            }
-
-            if (p.advertencias && p.advertencias.length > 0) {
-                html += `<div class="alert alert-warning" style="margin-top: 1rem;"><strong>Avisos importantes:</strong><ul>`;
-                p.advertencias.forEach(a => html += `<li>${esc(a)}</li>`);
-                html += `</ul></div>`;
-            }
-
-            document.getElementById('perfilContenido').innerHTML = html;
-        }
-
-        async function generarGuiaPdf() {
-            const payload = {
-                categoria_tramite: document.getElementById('categoria_tramite').value.trim(),
-                modalidad: document.getElementById('modalidad').value.trim(),
-                primer_nombre: document.getElementById('primer_nombre').value.trim(),
-                segundo_nombre: document.getElementById('segundo_nombre').value.trim(),
-                primer_apellido: document.getElementById('primer_apellido').value.trim(),
-                segundo_apellido: document.getElementById('segundo_apellido').value.trim(),
-                fecha_nacimiento: document.getElementById('fecha_nacimiento').value.trim(),
-                lugar_nacimiento: document.getElementById('lugar_nacimiento').value.trim(),
-                telefono: document.getElementById('telefono').value.trim(),
-                correo: document.getElementById('correo').value.trim(),
-                consulado: document.getElementById('consulado').value.trim(),
-                cita: document.getElementById('cita').value.trim(),
-                documentos_tenidos: document.getElementById('documentos_tenidos').value.trim(),
-                documentos_faltantes: document.getElementById('documentos_faltantes').value.trim(),
-                confirmado: document.getElementById('confirmado').checked
-            };
-
-            if (!payload.confirmado) {
-                alert('Debe confirmar la revisión de la información antes de generar el PDF.');
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/generar-guia-consular', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (data.ok && data.archivo) {
-                    alert('¡Guía Consular PDF generada con éxito!');
-                    window.open(data.archivo, '_blank');
-                } else {
-                    alert('No se pudo generar el documento PDF.');
-                }
-            } catch (e) {
-                alert('Error al generar la guía PDF.');
-            }
-        }
-
-        async function enviarPregunta() {
-            const input = document.getElementById('preguntaInput');
-            const pregunta = input.value.trim();
-            if (!pregunta) return;
-
-            const chatBox = document.getElementById('chatBox');
-            chatBox.innerHTML += `<div class="msg user">${esc(pregunta)}</div>`;
-            input.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            const categoria_tramite = document.getElementById('categoria_tramite').value.trim();
-            const modalidad = document.getElementById('modalidad').value.trim();
-
-            try {
-                const res = await fetch('/api/pregunta', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ pregunta, categoria_tramite, modalidad })
-                });
-                const data = await res.json();
-                const respuesta = data.respuesta || 'No se obtuvo respuesta del asesor.';
-                chatBox.innerHTML += `<div class="msg advisor">${esc(respuesta)}</div>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch (e) {
-                chatBox.innerHTML += `<div class="msg advisor">Error de comunicación con el Asesor Mexicano.</div>`;
-            }
-        }
-
-        window.onload = verificarAcceso;
-    </script>
+(async()=>{
+ const paid=await verificarPago();
+ if(!paid)restore();
+})();
+</script>
 </body>
 </html>
