@@ -9,3 +9,4 @@ stripe
 reportlab
 requests
 google-genai
+python-multipart
