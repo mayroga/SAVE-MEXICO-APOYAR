@@ -1,11 +1,26 @@
 const $=id=>document.getElementById(id);
 let servicio="",caso="",preguntaId="",respuestas={},escuchando=false;
 
-const texto=(v="")=>String(v??"").trim();
-
 function mostrar(id,visible=true){
   const e=$(id);
   if(e)e.style.display=visible?"block":"none";
+}
+
+function texto(v=""){return String(v??"").trim();}
+
+function hablar(msg){
+  if(!msg||!("speechSynthesis" in window))return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(msg);
+    u.lang="es-MX";
+    u.rate=.92;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+async function despertar(){
+  try{await fetch("/api/estado",{cache:"no-store"});}catch(e){}
 }
 
 function limpiar(){
@@ -16,77 +31,119 @@ function limpiar(){
   if(t)t.value="";
 }
 
-function hablar(msg){
-  if(!msg||!("speechSynthesis" in window))return;
-  try{
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(msg);
-    u.lang=(document.documentElement.lang||"es-MX").toLowerCase().startsWith("en")?"en-US":"es-MX";
-    u.rate=.92;
-    speechSynthesis.speak(u);
-  }catch(e){}
-}
-
-async function despertar(){
-  try{await fetch("/api/estado",{cache:"no-store"});}catch(e){}
-}
-
-function pantallaBase(){
-  mostrar("inicio",false);
-  mostrar("servicios",true);
-  mostrar("resultado",false);
-  mostrar("pregunta",true);
-}
-
-function mostrarTitulo(t){
-  const e=$("preguntaTexto");
-  if(e)e.textContent=t||"¿Qué necesitas?";
-}
-
-function boton(texto,fn,clase="opcion"){
+function boton(label,fn,clase="opcion"){
   const b=document.createElement("button");
   b.type="button";
   b.className=clase;
-  b.textContent=texto;
+  b.textContent=label;
   b.onclick=fn;
   return b;
 }
 
-function mostrarOpciones(opciones,fn){
-  const box=$("opciones");
-  if(!box)return;
-  box.innerHTML="";
-  (opciones||[]).forEach(x=>{
-    const id=typeof x==="string"?x:x.id;
-    const label=typeof x==="string"?x:(x.texto||x.titulo||x.id);
-    box.appendChild(boton(label,()=>fn(id,label)));
-  });
-}
+/* =====================================================
+   FUNCIONES GLOBALES PARA LOS onclick DEL index.html
+   ===================================================== */
 
-async function iniciarServicio(tipo){
+window.entrar=function(){
+  mostrar("inicio",false);
+  mostrar("servicios",true);
+  mostrar("pregunta",false);
+  mostrar("resultado",false);
+};
+
+window.iniciarCita=function(){
+  iniciarServicio("cita");
+};
+
+window.iniciarDocumento=function(){
+  iniciarServicio("documento");
+};
+
+window.iniciarServicio=function(tipo){
+  iniciarServicio(tipo);
+};
+
+window.nuevo=function(){
+  reiniciar();
+};
+
+window.reiniciar=function(){
+  reiniciar();
+};
+
+window.iniciarVoz=function(){
+  iniciarVoz();
+};
+
+window.enviar=function(){
+  enviarRespuesta();
+};
+
+window.continuar=function(){
+  enviarRespuesta();
+};
+
+/* Compatibilidad con nombres que pueda tener el HTML */
+window.cita=function(){
+  iniciarServicio("cita");
+};
+
+window.documento=function(){
+  iniciarServicio("documento");
+};
+
+window.servicioCita=function(){
+  iniciarServicio("cita");
+};
+
+window.servicioDocumento=function(){
+  iniciarServicio("documento");
+};
+
+/* =====================================================
+   INICIO
+   ===================================================== */
+
+function iniciarServicio(tipo){
   servicio=tipo;
   caso="";
   preguntaId="";
   respuestas={};
-  limpiar();
-  pantallaBase();
 
-  try{
-    const r=await fetch("/api/inicio/"+encodeURIComponent(tipo),{cache:"no-store"});
-    const d=await r.json();
-    procesar(d);
-  }catch(e){
-    error("No pudimos iniciar. Intenta nuevamente.");
-  }
+  limpiar();
+  mostrar("inicio",false);
+  mostrar("servicios",false);
+  mostrar("resultado",false);
+  mostrar("pregunta",true);
+
+  const q=$("preguntaTexto");
+  if(q)q.textContent="Un momento...";
+
+  fetch("/api/inicio/"+encodeURIComponent(tipo),{cache:"no-store"})
+    .then(r=>r.json())
+    .then(procesar)
+    .catch(()=>error("No pudimos iniciar. Intenta nuevamente."));
 }
 
+/* =====================================================
+   PROCESAR RESPUESTA DEL SERVIDOR
+   ===================================================== */
+
 function procesar(d){
-  if(!d)return error("No recibimos una respuesta.");
+  if(!d){
+    error("No recibimos una respuesta.");
+    return;
+  }
+
+  if(d.respuestas)respuestas=d.respuestas;
+  if(d.caso)caso=d.caso;
+  if(d.pregunta_id)preguntaId=d.pregunta_id;
 
   if(d.estado==="necesita_descripcion"){
-    caso="";
-    preguntaId="";
     mostrarTitulo(d.pregunta||"¿Qué necesitas?");
+    mostrar("pregunta",true);
+    mostrar("resultado",false);
+
     if(d.opciones?.length){
       mostrarOpciones(d.opciones,(id)=>{
         if(id==="no_se"){
@@ -102,7 +159,9 @@ function procesar(d){
   }
 
   if(d.estado==="seleccionar"){
-    mostrarTitulo(d.pregunta||"¿Cuál necesitas?");
+    mostrar("pregunta",true);
+    mostrar("resultado",false);
+    mostrarTitulo(d.pregunta||"¿Cuál de estas opciones necesitas?");
     mostrarOpciones(d.opciones||[],id=>seleccionarCaso(id));
     return;
   }
@@ -135,6 +194,32 @@ function procesar(d){
   error("No entendimos la respuesta.");
 }
 
+/* =====================================================
+   MOSTRAR OPCIONES
+   ===================================================== */
+
+function mostrarTitulo(t){
+  const e=$("preguntaTexto");
+  if(e)e.textContent=t||"¿Qué necesitas?";
+}
+
+function mostrarOpciones(opciones,fn){
+  const box=$("opciones");
+  if(!box)return;
+
+  box.innerHTML="";
+
+  opciones.forEach(x=>{
+    const id=typeof x==="string"?x:x.id;
+    const label=typeof x==="string"?x:(x.texto||x.titulo||x.id);
+    box.appendChild(boton(label,()=>fn(id,label)));
+  });
+}
+
+/* =====================================================
+   SELECCIÓN DIRECTA
+   ===================================================== */
+
 function seleccionarCaso(id){
   if(!id)return;
 
@@ -142,7 +227,9 @@ function seleccionarCaso(id){
   preguntaId="";
   respuestas={_caso:id};
 
-  limpiar();
+  const box=$("opciones");
+  if(box)box.innerHTML="";
+
   mostrarTitulo("Vamos a preparar lo que necesitas...");
 
   fetch("/api/responder",{
@@ -161,7 +248,14 @@ function seleccionarCaso(id){
   .catch(()=>error("No pudimos continuar."));
 }
 
+/* =====================================================
+   PREGUNTA
+   ===================================================== */
+
 function mostrarPregunta(d){
+  mostrar("pregunta",true);
+  mostrar("resultado",false);
+
   const q=$("preguntaTexto");
   const box=$("opciones");
 
@@ -187,18 +281,27 @@ function mostrarPregunta(d){
   hablar(d.pregunta||"Responde esta pregunta");
 }
 
+/* =====================================================
+   ESCRIBIR / VOZ
+   ===================================================== */
+
 function mostrarEntrada(){
   mostrar("textoEntrada",true);
 
   const t=$("textoUsuario");
   if(t){
     t.placeholder="Escribe aquí o usa tu voz";
-    t.focus();
+    setTimeout(()=>t.focus(),50);
   }
 
   const box=$("opciones");
-  if(box && !box.children.length){
-    const b=boton("CONTINUAR",()=>enviarRespuesta(texto($("textoUsuario")?.value)),"continuar");
+  if(box&&!box.querySelector(".continuar")){
+    const b=boton(
+      "CONTINUAR",
+      ()=>enviarRespuesta(),
+      "continuar"
+    );
+    b.classList.add("continuar");
     box.appendChild(b);
   }
 }
@@ -244,9 +347,14 @@ async function enviarRespuesta(valor){
   }
 }
 
+/* =====================================================
+   RESULTADO
+   ===================================================== */
+
 function mostrarResultado(d){
   mostrar("pregunta",false);
   mostrar("resultado",true);
+  mostrar("textoEntrada",false);
 
   const box=$("respuesta");
   if(!box)return;
@@ -270,14 +378,11 @@ function mostrarResultado(d){
     box.appendChild(a);
   }
 
-  const nuevo=boton("EMPEZAR DE NUEVO",reiniciar,"continuar");
-  box.appendChild(nuevo);
-
-  hablar(
-    (d.prepara||"")+
-    " "+
-    (d.confirma||"")
+  box.appendChild(
+    boton("EMPEZAR DE NUEVO",reiniciar,"continuar")
   );
+
+  hablar((d.prepara||"")+" "+(d.confirma||""));
 }
 
 function agregarResultado(box,titulo,contenido){
@@ -292,26 +397,33 @@ function agregarResultado(box,titulo,contenido){
   box.appendChild(p);
 }
 
-function mostrarEntradaSiHaceFalta(){
-  const t=$("textoEntrada");
-  if(t)t.style.display="block";
-}
+/* =====================================================
+   ERROR
+   ===================================================== */
 
 function error(msg){
-  mostrar("resultado",true);
   mostrar("pregunta",false);
+  mostrar("resultado",true);
 
   const box=$("respuesta");
   if(box){
     box.innerHTML="";
+
     const p=document.createElement("p");
     p.textContent=msg;
     box.appendChild(p);
-    box.appendChild(boton("INTENTAR DE NUEVO",reiniciar,"continuar"));
+
+    box.appendChild(
+      boton("INTENTAR DE NUEVO",reiniciar,"continuar")
+    );
   }
 
   hablar(msg);
 }
+
+/* =====================================================
+   REINICIAR
+   ===================================================== */
 
 function reiniciar(){
   servicio="";
@@ -319,6 +431,7 @@ function reiniciar(){
   preguntaId="";
   respuestas={};
   escuchando=false;
+
   limpiar();
 
   mostrar("resultado",false);
@@ -327,9 +440,13 @@ function reiniciar(){
   mostrar("inicio",true);
   mostrar("servicios",true);
 
-  if($("preguntaTexto"))
-    $("preguntaTexto").textContent="¿Qué necesitas?";
+  const q=$("preguntaTexto");
+  if(q)q.textContent="¿Qué necesitas?";
 }
+
+/* =====================================================
+   RECONOCIMIENTO DE VOZ
+   ===================================================== */
 
 function iniciarVoz(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -352,7 +469,11 @@ function iniciarVoz(){
 
   r.onresult=e=>{
     const value=texto(e.results?.[0]?.[0]?.transcript);
-    if($("textoUsuario"))$("textoUsuario").value=value;
+    const t=$("textoUsuario");
+    if(t)t.value=value;
+
+    /* Si estaba describiendo qué necesita,
+       dejamos el texto listo para continuar. */
   };
 
   r.onerror=()=>{
@@ -368,33 +489,34 @@ function iniciarVoz(){
   try{r.start();}catch(e){}
 }
 
+/* =====================================================
+   INICIO DEL DOCUMENTO
+   ===================================================== */
+
 document.addEventListener("DOMContentLoaded",()=>{
   despertar();
 
-  const entrar=$("entrar");
-  if(entrar)entrar.onclick=()=>{
-    mostrar("inicio",false);
-    mostrar("servicios",true);
-  };
+  const e=$("entrar");
+  if(e)e.onclick=window.entrar;
 
-  const cita=$("servicioCita");
-  if(cita)cita.onclick=()=>iniciarServicio("cita");
+  const c=$("servicioCita");
+  if(c)c.onclick=()=>iniciarServicio("cita");
 
-  const documento=$("servicioDocumento");
-  if(documento)documento.onclick=()=>iniciarServicio("documento");
+  const d=$("servicioDocumento");
+  if(d)d.onclick=()=>iniciarServicio("documento");
 
-  const continuar=$("continuar");
-  if(continuar)continuar.onclick=()=>enviarRespuesta();
+  const v=$("voz");
+  if(v)v.onclick=iniciarVoz;
 
-  const voz=$("voz");
-  if(voz)voz.onclick=iniciarVoz;
+  const cont=$("continuar");
+  if(cont)cont.onclick=enviarRespuesta;
 
-  const nuevo=$("nuevo");
-  if(nuevo)nuevo.onclick=reiniciar;
+  const nuevoBtn=$("nuevo");
+  if(nuevoBtn)nuevoBtn.onclick=reiniciar;
 
-  const entrada=$("textoUsuario");
-  if(entrada){
-    entrada.addEventListener("keydown",e=>{
+  const t=$("textoUsuario");
+  if(t){
+    t.addEventListener("keydown",e=>{
       if(e.key==="Enter"&&!e.shiftKey){
         e.preventDefault();
         enviarRespuesta();
@@ -404,5 +526,4 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   mostrar("resultado",false);
   mostrar("pregunta",false);
-  mostrar("textoEntrada",false);
 });
