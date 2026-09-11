@@ -13,20 +13,18 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 import stripe
 
-# Importación de la librería oficial y actual para Gemini
 from google import genai
 
-app = FastAPI(title="SAVE MÉXICO AYUDAR - Asistencia Privada de Gestión Documental", version="3.3")
+app = FastAPI(title="SAVE MÉXICO AYUDAR - Asistencia Privada de Gestión Documental", version="4.0")
 
 security = HTTPBasic()
 
-# Credenciales y Configuración de Entorno desde Render
 DEV_USER = os.getenv("DEV_USER", "admin")
 DEV_PASS = os.getenv("DEV_PASS", "securepassword")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
+ENDPOINT_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
-# Inicialización correcta del cliente oficial google-genai
 client_genai = None
 if GEMINI_API_KEY:
     try:
@@ -47,6 +45,9 @@ class DatosTramiteConsular(BaseModel):
     lugar_nacimiento: str
     direccion_usa: str
     telefono: str
+    documentos_tenidos: str = ""
+    documentos_faltantes: str = ""
+    estado_posterior: str = "pendiente"
     extra_1: str = ""
     extra_2: str = ""
 
@@ -69,6 +70,9 @@ def limpiar_y_corregir(texto: str) -> str:
         return ""
     return re.sub(r'\s+', ' ', texto).strip().upper()
 
+def activar_servicio_usuario(email_o_cliente, session_id):
+    print(f"Servicio activado exitosamente en servidor para: {email_o_cliente} (Sesión ID: {session_id})")
+
 @app.post("/api/create-checkout-session")
 async def create_checkout_session(data: StripeCheckoutRequest):
     try:
@@ -80,12 +84,38 @@ async def create_checkout_session(data: StripeCheckoutRequest):
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=domain_url + '/?success=true',
+            success_url=domain_url + '/?success=true&session_id={CHECKOUT_SESSION_ID}',
             cancel_url=domain_url + '/?canceled=true',
         )
         return {"checkout_url": checkout_session.url}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/webhook/stripe")
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+    event = None
+
+    try:
+        if ENDPOINT_SECRET:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, ENDPOINT_SECRET
+            )
+        else:
+            event = stripe.Event.construct_from(await request.json(), stripe.api_key)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Payload de webhook inválido.")
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Firma de webhook no válida.")
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        customer_email = session.get("customer_email") or session.get("customer_details", {}).get("email") or "usuario_web@savemexico.com"
+        session_id = session.get("id")
+        activar_servicio_usuario(customer_email, session_id)
+
+    return {"status": "success"}
 
 @app.post("/api/generar-guia-consular")
 async def generar_guia_consular(datos: DatosTramiteConsular, username: str = Depends(verificar_credenciales)):
@@ -96,6 +126,8 @@ async def generar_guia_consular(datos: DatosTramiteConsular, username: str = Dep
     lugar = limpiar_y_corregir(datos.lugar_nacimiento)
     direccion = limpiar_y_corregir(datos.direccion_usa)
     telefono = limpiar_y_corregir(datos.telefono)
+    tenidos = limpiar_y_corregir(datos.documentos_tenidos)
+    faltantes = limpiar_y_corregir(datos.documentos_faltantes)
     ex1 = limpiar_y_corregir(datos.extra_1)
     ex2 = limpiar_y_corregir(datos.extra_2)
     
@@ -111,15 +143,15 @@ async def generar_guia_consular(datos: DatosTramiteConsular, username: str = Dep
     analisis_ia = ""
     if client_genai:
         try:
-            prompt_modelo = f"Genera una recomendación breve de una línea para un ciudadano preparándose para el trámite de {datos.categoria_tramite} en Estados Unidos."
+            prompt_modelo = f"Genera una orientación breve de una línea para un ciudadano preparándose para el trámite de {datos.categoria_tramite} en Estados Unidos."
             response = client_genai.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=prompt_modelo,
             )
             if response and response.text:
                 analisis_ia = response.text.strip()
-        except Exception as e:
-            analisis_ia = "Verifique sus documentos originales directamente en el portal oficial correspondiente."
+        except Exception:
+            analisis_ia = "Verifique sus documentos originales directamente en la fuente oficial correspondiente."
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -170,58 +202,58 @@ async def generar_guia_consular(datos: DatosTramiteConsular, username: str = Dep
             "nombre_base": "pasaporte",
             "titulo": "GUÍA DE PREPARACIÓN: TRÁMITE CONSULAR",
             "requisitos": [
-                "Documento de identidad oficial original.",
-                "Identificación oficial vigente con fotografía.",
-                "Comprobante de domicilio reciente en EE. UU. con código postal visible."
+                "Identificación oficial vigente.",
+                "Copia acta de nacimiento.",
+                "Comprobante de domicilio reciente en EE. UU."
             ],
-            "nota": f"RECOMENDACIÓN: {analisis_ia if analisis_ia else 'Verifique que su documentación coincida exactamente.'}"
+            "nota": f"ORIENTACIÓN: {analisis_ia if analisis_ia else 'Reúna sus documentos con calma paso por paso.'}"
         },
         "matricula": {
             "nombre_base": "matricula_consular",
             "titulo": "GUÍA DE PREPARACIÓN: MATRÍCULA Y REGISTRO",
             "requisitos": [
-                "Documento de identidad original.",
+                "Identificación oficial.",
                 "Comprobante de domicilio reciente en EE. UU.",
-                "Datos de contacto de emergencia debidamente registrados."
+                "Datos de contacto de emergencia."
             ],
-            "nota": "RECOMENDACIÓN: Compruebe que el comprobante de domicilio refleje su residencia actual."
+            "nota": "ORIENTACIÓN: Compruebe que el comprobante refleje su residencia actual."
         },
         "ine": {
             "nombre_base": "credencial_ine",
             "titulo": "GUÍA DE PREPARACIÓN: CREDENCIAL Y REGISTRO ELECTORAL",
             "requisitos": [
-                "Documento de identidad original.",
-                "Comprobante de domicilio reciente en EE. UU."
+                "Identificación oficial.",
+                "Comprobante de domicilio."
             ],
-            "nota": "RECOMENDACIÓN: Ingrese al portal oficial para verificar el estatus de su solicitud."
+            "nota": "ORIENTACIÓN: Revise el estatus de su registro en la plataforma oficial."
         },
         "registro": {
             "nombre_base": "registro_nacimiento",
             "titulo": "GUÍA DE PREPARACIÓN: REGISTRO Y CERTIFICACIÓN",
             "requisitos": [
-                "Certificado de nacimiento original (Formato Largo / Long Form).",
+                "Certificado de nacimiento original (Long Form).",
                 "Identificaciones oficiales vigentes."
             ],
-            "nota": "RECOMENDACIÓN: El certificado debe contar con firmas legibles."
+            "nota": "ORIENTACIÓN: Asegúrese de que las firmas sean legibles."
         },
         "actas": {
             "nombre_base": "copia_actas",
             "titulo": "GUÍA DE PREPARACIÓN: SOLICITUD DE ACTAS",
             "requisitos": [
-                "Datos precisos de la persona registrada (Nombre completo y fecha exacta).",
-                "Identificación oficial vigente del solicitante."
+                "Datos precisos de la persona registrada.",
+                "Identificación oficial vigente."
             ],
-            "nota": "RECOMENDACIÓN: Confirme que los datos proporcionados coincidan con el registro original."
+            "nota": "ORIENTACIÓN: Confirme que los datos coincidan con los originales."
         },
         "poderes": {
             "nombre_base": "poderes_notariales",
             "titulo": "GUÍA DE PREPARACIÓN: ACTOS NOTARIALES",
             "requisitos": [
-                "Identificación oficial vigente del otorgante.",
-                "Datos completos de la persona que recibirá la representación.",
-                "Descripción clara de las facultades."
+                "Identificación oficial vigente.",
+                "Datos completos de la persona representante.",
+                "Descripción clara del propósito."
             ],
-            "nota": "RECOMENDACIÓN: Redacte con claridad el propósito del trámite."
+            "nota": "ORIENTACIÓN: Redacte con claridad el alcance del trámite."
         }
     }
 
@@ -234,13 +266,16 @@ async def generar_guia_consular(datos: DatosTramiteConsular, username: str = Dep
         [Paragraph("<b>Titular / Solicitante:</b>", estilo_texto), Paragraph(f"{p1} {p2} {a1} {a2}", estilo_texto)],
         [Paragraph("<b>Nacimiento:</b>", estilo_texto), Paragraph(f"{fecha_formateada} ({lugar})", estilo_texto)],
         [Paragraph("<b>Domicilio USA:</b>", estilo_texto), Paragraph(f"{direccion}", estilo_texto)],
-        [Paragraph("<b>Teléfono:</b>", estilo_texto), Paragraph(f"{telefono}", estilo_texto)]
+        [Paragraph("<b>Teléfono:</b>", estilo_texto), Paragraph(f"{telefono}", estilo_texto)],
+        [Paragraph("<b>Lo que tienes:</b>", estilo_texto), Paragraph(f"{tenidos if tenidos else 'No especificado'}", estilo_texto)],
+        [Paragraph("<b>Lo que falta:</b>", estilo_texto), Paragraph(f"{faltantes if faltantes else 'Ninguno'}", estilo_texto)],
+        [Paragraph("<b>Estatus Posterior:</b>", estilo_texto), Paragraph(f"{datos.estado_posterior.upper()}", estilo_texto)]
     ]
 
     if ex1 or ex2:
         datos_tabla.append([Paragraph("<b>Referencia Extra:</b>", estilo_texto), Paragraph(f"{ex1} | {ex2}", estilo_texto)])
 
-    t = Table(datos_tabla, colWidths=[110, 420])
+    t = Table(datos_tabla, colWidths=[120, 410])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#f8f9fa")),
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#d6d8db")),
@@ -274,9 +309,9 @@ async def generar_guia_consular(datos: DatosTramiteConsular, username: str = Dep
     elementos.append(Spacer(1, 10))
 
     texto_legal = (
-        "SAVE MÉXICO AYUDAR | Asistencia Privada de Gestión Documental.<br/>"
-        "Operado por MAY ROGA LLC, Florida. El alcance legal se limita exclusivamente al comprador en USA.<br/>"
-        "Este documento es una guía privada de organización de expedientes y no constituye representación oficial."
+        "SAVE MÉXICO AYUDAR es un servicio privado e independiente de MAY ROGA LLC, Florida.<br/>"
+        "No es una agencia del Gobierno de México ni representa a ningún consulado mexicano.<br/>"
+        "Este documento generado es un apoyo de organización personal. Los requisitos y decisiones corresponden a la autoridad."
     )
     elementos.append(Paragraph(texto_legal, estilo_legal))
 
