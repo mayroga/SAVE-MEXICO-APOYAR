@@ -20,9 +20,11 @@ PRICE_IDS={"daily":os.getenv("STRIPE_PRICE_ID_DAILY") or os.getenv("STRIPE_PRICE
 
 BASE=Path(__file__).resolve().parent
 STATIC=BASE/"static";DATA=BASE/"data";OUT=BASE/"salidas"
-DATA.mkdir(exist_ok=True);OUT.mkdir(exist_ok=True)
+STATIC.mkdir(parents=True,exist_ok=True)
+DATA.mkdir(parents=True,exist_ok=True)
+OUT.mkdir(parents=True,exist_ok=True)
 ACCESS_FILE=DATA/"access.json"
-if not ACCESS_FILE.exists(): ACCESS_FILE.write_text("{}")
+if not ACCESS_FILE.exists():ACCESS_FILE.write_text("{}")
 
 app=FastAPI(title="SAVE MÉXICO AYUDAR",version="8.1")
 app.mount("/static",StaticFiles(directory=STATIC),name="static")
