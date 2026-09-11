@@ -1,277 +1,408 @@
-let servicio="",caso="",preguntaId="",respuestas={},ultimaRespuesta="";
-
 const $=id=>document.getElementById(id);
+let servicio="",caso="",preguntaId="",respuestas={},escuchando=false;
 
-function mostrar(id){
- document.querySelectorAll(".pantalla").forEach(x=>x.classList.remove("activa"));
- $(id)?.classList.add("activa");
- window.scrollTo(0,0);
+const texto=(v="")=>String(v??"").trim();
+
+function mostrar(id,visible=true){
+  const e=$(id);
+  if(e)e.style.display=visible?"block":"none";
 }
 
-function entrar(){mostrar("info")}
+function limpiar(){
+  const q=$("preguntaTexto"),o=$("opciones"),r=$("respuesta"),t=$("textoUsuario");
+  if(q)q.textContent="";
+  if(o)o.innerHTML="";
+  if(r)r.innerHTML="";
+  if(t)t.value="";
+}
+
+function hablar(msg){
+  if(!msg||!("speechSynthesis" in window))return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(msg);
+    u.lang=(document.documentElement.lang||"es-MX").toLowerCase().startsWith("en")?"en-US":"es-MX";
+    u.rate=.92;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
 
 async function despertar(){
- const e=$("servidor");
- try{
-  const r=await fetch("/api/estado",{cache:"no-store"});
-  e.textContent=r.ok?"Listo":"Preparando...";
- }catch{
-  e.textContent="Preparando...";
- }
+  try{await fetch("/api/estado",{cache:"no-store"});}catch(e){}
+}
+
+function pantallaBase(){
+  mostrar("inicio",false);
+  mostrar("servicios",true);
+  mostrar("resultado",false);
+  mostrar("pregunta",true);
+}
+
+function mostrarTitulo(t){
+  const e=$("preguntaTexto");
+  if(e)e.textContent=t||"¿Qué necesitas?";
+}
+
+function boton(texto,fn,clase="opcion"){
+  const b=document.createElement("button");
+  b.type="button";
+  b.className=clase;
+  b.textContent=texto;
+  b.onclick=fn;
+  return b;
+}
+
+function mostrarOpciones(opciones,fn){
+  const box=$("opciones");
+  if(!box)return;
+  box.innerHTML="";
+  (opciones||[]).forEach(x=>{
+    const id=typeof x==="string"?x:x.id;
+    const label=typeof x==="string"?x:(x.texto||x.titulo||x.id);
+    box.appendChild(boton(label,()=>fn(id,label)));
+  });
 }
 
 async function iniciarServicio(tipo){
- servicio=tipo;
- caso="";
- preguntaId="";
- respuestas={};
- ultimaRespuesta="";
- mostrar("pregunta");
- $("preguntaTexto").textContent="Un momento...";
- $("opciones").innerHTML="";
- $("respuestaTexto").value="";
- $("estadoPregunta").textContent="";
+  servicio=tipo;
+  caso="";
+  preguntaId="";
+  respuestas={};
+  limpiar();
+  pantallaBase();
 
- try{
-  const r=await fetch("/api/inicio/"+tipo,{cache:"no-store"});
-  const d=await r.json();
-  if(!r.ok||!d.ok)throw Error();
-  procesar(d);
- }catch{
-  mostrarError("No pudimos iniciar el servicio. Inténtalo nuevamente.");
- }
+  try{
+    const r=await fetch("/api/inicio/"+encodeURIComponent(tipo),{cache:"no-store"});
+    const d=await r.json();
+    procesar(d);
+  }catch(e){
+    error("No pudimos iniciar. Intenta nuevamente.");
+  }
 }
 
 function procesar(d){
- if(d.caso)caso=d.caso;
- if(d.pregunta_id)preguntaId=d.pregunta_id;
+  if(!d)return error("No recibimos una respuesta.");
 
- if(d.estado==="pregunta"||d.estado==="necesita_descripcion"){
-  mostrar("pregunta");
-  mostrarPregunta(d);
-  return;
- }
+  if(d.estado==="necesita_descripcion"){
+    caso="";
+    preguntaId="";
+    mostrarTitulo(d.pregunta||"¿Qué necesitas?");
+    if(d.opciones?.length){
+      mostrarOpciones(d.opciones,(id)=>{
+        if(id==="no_se"){
+          mostrarEntrada();
+        }else{
+          seleccionarCaso(id);
+        }
+      });
+    }else{
+      mostrarEntrada();
+    }
+    return;
+  }
 
- if(d.estado==="seleccionar"){
-  mostrar("pregunta");
-  mostrarSeleccion(d);
-  return;
- }
+  if(d.estado==="seleccionar"){
+    mostrarTitulo(d.pregunta||"¿Cuál necesitas?");
+    mostrarOpciones(d.opciones||[],id=>seleccionarCaso(id));
+    return;
+  }
 
- if(d.estado==="resuelto"){
-  mostrarResultado(d);
-  return;
- }
+  if(d.estado==="pregunta"){
+    caso=d.caso||caso;
+    preguntaId=d.pregunta_id||"";
+    mostrarPregunta(d);
+    return;
+  }
 
- if(d.estado==="no_identificado"){
-  mostrar("pregunta");
-  mostrarPregunta(d);
-  return;
- }
+  if(d.estado==="resuelto"){
+    caso=d.caso||caso;
+    preguntaId="";
+    mostrarResultado(d);
+    return;
+  }
 
- mostrarError(d.mensaje||"No pudimos entender tu caso.");
+  if(d.estado==="no_identificado"){
+    mostrarTitulo(d.mensaje||"No encontramos la opción.");
+    mostrarEntrada();
+    return;
+  }
+
+  if(d.estado==="error"){
+    error(d.mensaje||"Ocurrió un error.");
+    return;
+  }
+
+  error("No entendimos la respuesta.");
+}
+
+function seleccionarCaso(id){
+  if(!id)return;
+
+  caso=id;
+  preguntaId="";
+  respuestas={_caso:id};
+
+  limpiar();
+  mostrarTitulo("Vamos a preparar lo que necesitas...");
+
+  fetch("/api/responder",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      servicio,
+      caso:id,
+      texto:"",
+      respuestas,
+      pregunta_id:""
+    })
+  })
+  .then(r=>r.json())
+  .then(procesar)
+  .catch(()=>error("No pudimos continuar."));
 }
 
 function mostrarPregunta(d){
- $("preguntaTexto").textContent=d.pregunta||"Cuéntame qué necesitas resolver.";
- $("opciones").innerHTML="";
- $("respuestaTexto").value="";
- $("estadoPregunta").textContent="";
+  const q=$("preguntaTexto");
+  const box=$("opciones");
 
- if(d.pregunta_id)preguntaId=d.pregunta_id;
+  if(q)q.textContent=d.pregunta||"Responde esta pregunta";
+  if(box)box.innerHTML="";
 
- if(Array.isArray(d.opciones)&&d.opciones.length){
-  d.opciones.forEach(op=>{
-   const b=document.createElement("button");
-   b.className="respuesta";
-   b.textContent=op;
-   b.onclick=()=>{
-    document.querySelectorAll(".respuesta").forEach(x=>x.classList.remove("seleccionada"));
-    b.classList.add("seleccionada");
-    $("respuestaTexto").value=op;
-   };
-   $("opciones").appendChild(b);
-  });
- }
-}
-
-function mostrarSeleccion(d){
- $("preguntaTexto").textContent=d.pregunta||"Elige la opción que más se parece a tu caso.";
- $("opciones").innerHTML="";
- $("respuestaTexto").value="";
- $("estadoPregunta").textContent="";
-
- (d.opciones||[]).forEach((op,i)=>{
-  const b=document.createElement("button");
-  b.className="respuesta";
-  b.textContent=op;
-  b.onclick=()=>{
-   caso=(d.casos||[])[i]||"";
-   respuestas._confirmado=[caso];
-   document.querySelectorAll(".respuesta").forEach(x=>x.classList.remove("seleccionada"));
-   b.classList.add("seleccionada");
-   $("respuestaTexto").value=op;
-  };
-  $("opciones").appendChild(b);
- });
-}
-
-async function enviarRespuesta(){
- const campo=$("respuestaTexto");
- const texto=campo.value.trim();
- const estado=$("estadoPregunta");
-
- if(!texto){
-  estado.textContent="Dime tu respuesta o elige una opción.";
-  return;
- }
-
- estado.textContent="Un momento...";
-
- const datos={
-  servicio,
-  caso,
-  texto,
-  respuestas,
-  pregunta_id:preguntaId
- };
-
- try{
-  const r=await fetch("/api/responder",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify(datos)
-  });
-
-  const d=await r.json();
-
-  if(!r.ok||!d.ok){
-   estado.textContent=d.mensaje||"No pudimos continuar.";
-   return;
+  if(d.titulo){
+    const titulo=document.createElement("div");
+    titulo.className="tituloCaso";
+    titulo.textContent=d.titulo;
+    if(box)box.appendChild(titulo);
   }
 
-  respuestas=d.respuestas||respuestas;
+  if(d.opciones?.length){
+    mostrarOpciones(d.opciones,(id,label)=>{
+      enviarRespuesta(label||id);
+    });
+  }else{
+    mostrarEntrada();
+  }
 
-  if(d.caso)caso=d.caso;
-  if(d.pregunta_id)preguntaId=d.pregunta_id;
+  mostrar("textoEntrada",true);
+  hablar(d.pregunta||"Responde esta pregunta");
+}
 
-  procesar(d);
+function mostrarEntrada(){
+  mostrar("textoEntrada",true);
 
- }catch{
-  estado.textContent="No pudimos conectar con el servicio. Inténtalo nuevamente.";
- }
+  const t=$("textoUsuario");
+  if(t){
+    t.placeholder="Escribe aquí o usa tu voz";
+    t.focus();
+  }
+
+  const box=$("opciones");
+  if(box && !box.children.length){
+    const b=boton("CONTINUAR",()=>enviarRespuesta(texto($("textoUsuario")?.value)),"continuar");
+    box.appendChild(b);
+  }
+}
+
+async function enviarRespuesta(valor){
+  valor=texto(valor||$("textoUsuario")?.value);
+
+  if(!valor){
+    hablar("Necesito tu respuesta para continuar.");
+    if($("textoUsuario"))$("textoUsuario").focus();
+    return;
+  }
+
+  if(preguntaId)respuestas[preguntaId]=valor;
+  if(caso)respuestas._caso=caso;
+
+  const box=$("opciones");
+  if(box)box.innerHTML="";
+
+  mostrarTitulo("Un momento...");
+
+  try{
+    const r=await fetch("/api/responder",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        servicio,
+        caso,
+        texto:valor,
+        respuestas,
+        pregunta_id:preguntaId
+      })
+    });
+
+    const d=await r.json();
+
+    if(d.respuestas)respuestas=d.respuestas;
+    if(d.caso)caso=d.caso;
+
+    procesar(d);
+  }catch(e){
+    error("No pudimos continuar. Intenta nuevamente.");
+  }
 }
 
 function mostrarResultado(d){
- mostrar("resultado");
+  mostrar("pregunta",false);
+  mostrar("resultado",true);
 
- $("resultadoTitulo").textContent=d.titulo||"TU RESULTADO";
+  const box=$("respuesta");
+  if(!box)return;
 
- const caja=$("resultadoTexto");
- caja.innerHTML="";
- let partes=[];
+  box.innerHTML="";
 
- if(Array.isArray(d.prepara)&&d.prepara.length){
-  agregarBloque(caja,"QUÉ DEBES PREPARAR",d.prepara);
-  partes.push("Qué debes preparar. "+d.prepara.join(". "));
- }
+  agregarResultado(box,"PREPARA",d.prepara);
+  agregarResultado(box,"IMPORTANTE",d.confirma);
 
- if(Array.isArray(d.confirma)&&d.confirma.length){
-  agregarBloque(caja,"QUÉ DEBES CONFIRMAR",d.confirma);
-  partes.push("Qué debes confirmar. "+d.confirma.join(". "));
- }
+  if(d.fuente){
+    const h=document.createElement("h3");
+    h.textContent="FUENTE OFICIAL";
+    box.appendChild(h);
 
- if(d.fuente){
+    const a=document.createElement("a");
+    a.className="fuente";
+    a.href=d.fuente;
+    a.target="_blank";
+    a.rel="noopener noreferrer";
+    a.textContent="Ver información oficial";
+    box.appendChild(a);
+  }
+
+  const nuevo=boton("EMPEZAR DE NUEVO",reiniciar,"continuar");
+  box.appendChild(nuevo);
+
+  hablar(
+    (d.prepara||"")+
+    " "+
+    (d.confirma||"")
+  );
+}
+
+function agregarResultado(box,titulo,contenido){
+  if(!contenido)return;
+
+  const h=document.createElement("h3");
+  h.textContent=titulo;
+  box.appendChild(h);
+
   const p=document.createElement("p");
-  p.className="fuente";
-  p.innerHTML="<strong>FUENTE OFICIAL</strong><br><a href='"+escapeAttr(d.fuente)+"' target='_blank' rel='noopener'>Consultar información oficial</a>";
-  caja.appendChild(p);
-  partes.push("Fuente oficial. Consulta la información oficial.");
- }
-
- if(!partes.length){
-  caja.textContent=d.mensaje||"No tenemos información suficiente para darte un resultado.";
-  partes.push(d.mensaje||"No tenemos información suficiente para darte un resultado.");
- }
-
- ultimaRespuesta=partes.join(" ");
- leerResultado();
+  p.textContent=contenido;
+  box.appendChild(p);
 }
 
-function agregarBloque(caja,titulo,lista){
- const h=document.createElement("h3");
- h.textContent=titulo;
- caja.appendChild(h);
-
- lista.forEach((texto,i)=>{
-  const p=document.createElement("p");
-  p.textContent=(i+1)+". "+texto;
-  caja.appendChild(p);
- });
+function mostrarEntradaSiHaceFalta(){
+  const t=$("textoEntrada");
+  if(t)t.style.display="block";
 }
 
-function escuchar(){
- const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+function error(msg){
+  mostrar("resultado",true);
+  mostrar("pregunta",false);
 
- if(!Recognition){
-  $("estadoPregunta").textContent="Tu navegador no permite usar el micrófono. Puedes escribir.";
-  return;
- }
+  const box=$("respuesta");
+  if(box){
+    box.innerHTML="";
+    const p=document.createElement("p");
+    p.textContent=msg;
+    box.appendChild(p);
+    box.appendChild(boton("INTENTAR DE NUEVO",reiniciar,"continuar"));
+  }
 
- const r=new Recognition();
- r.lang="es-MX";
- r.continuous=false;
- r.interimResults=false;
- r.maxAlternatives=1;
-
- $("estadoPregunta").textContent="🎙️ TE ESTOY ESCUCHANDO...";
-
- r.onresult=e=>{
-  const texto=e.results[0][0].transcript.trim();
-  $("respuestaTexto").value=texto;
-  $("estadoPregunta").textContent="Te escuché. Pulsa CONTINUAR.";
- };
-
- r.onerror=()=>{
-  $("estadoPregunta").textContent="No pude escucharte. Inténtalo nuevamente.";
- };
-
- r.onend=()=>{
-  if(!$("respuestaTexto").value)
-   $("estadoPregunta").textContent="Puedes hablar nuevamente.";
- };
-
- try{r.start()}catch{
-  $("estadoPregunta").textContent="No pude activar el micrófono.";
- }
+  hablar(msg);
 }
 
-function leerResultado(){
- if(!ultimaRespuesta||!("speechSynthesis" in window))return;
+function reiniciar(){
+  servicio="";
+  caso="";
+  preguntaId="";
+  respuestas={};
+  escuchando=false;
+  limpiar();
 
- speechSynthesis.cancel();
+  mostrar("resultado",false);
+  mostrar("pregunta",false);
+  mostrar("textoEntrada",false);
+  mostrar("inicio",true);
+  mostrar("servicios",true);
 
- const voz=new SpeechSynthesisUtterance(ultimaRespuesta);
- voz.lang="es-MX";
- voz.rate=.9;
- voz.pitch=1;
-
- speechSynthesis.speak(voz);
+  if($("preguntaTexto"))
+    $("preguntaTexto").textContent="¿Qué necesitas?";
 }
 
-function mostrarError(texto){
- mostrar("resultado");
- $("resultadoTitulo").textContent="AVISO";
- $("resultadoTexto").textContent=texto;
- ultimaRespuesta=texto;
+function iniciarVoz(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+  if(!SR){
+    hablar("Tu navegador no tiene reconocimiento de voz.");
+    return;
+  }
+
+  if(escuchando)return;
+
+  const r=new SR();
+  r.lang="es-MX";
+  r.interimResults=false;
+  r.maxAlternatives=1;
+  escuchando=true;
+
+  const b=$("voz");
+  if(b)b.textContent="ESCUCHANDO...";
+
+  r.onresult=e=>{
+    const value=texto(e.results?.[0]?.[0]?.transcript);
+    if($("textoUsuario"))$("textoUsuario").value=value;
+  };
+
+  r.onerror=()=>{
+    escuchando=false;
+    if(b)b.textContent="🎤 HABLAR";
+  };
+
+  r.onend=()=>{
+    escuchando=false;
+    if(b)b.textContent="🎤 HABLAR";
+  };
+
+  try{r.start();}catch(e){}
 }
 
-function escapeAttr(texto){
- return String(texto)
-  .replace(/&/g,"&amp;")
-  .replace(/"/g,"&quot;")
-  .replace(/</g,"&lt;")
-  .replace(/>/g,"&gt;");
-}
+document.addEventListener("DOMContentLoaded",()=>{
+  despertar();
 
-despertar();
+  const entrar=$("entrar");
+  if(entrar)entrar.onclick=()=>{
+    mostrar("inicio",false);
+    mostrar("servicios",true);
+  };
+
+  const cita=$("servicioCita");
+  if(cita)cita.onclick=()=>iniciarServicio("cita");
+
+  const documento=$("servicioDocumento");
+  if(documento)documento.onclick=()=>iniciarServicio("documento");
+
+  const continuar=$("continuar");
+  if(continuar)continuar.onclick=()=>enviarRespuesta();
+
+  const voz=$("voz");
+  if(voz)voz.onclick=iniciarVoz;
+
+  const nuevo=$("nuevo");
+  if(nuevo)nuevo.onclick=reiniciar;
+
+  const entrada=$("textoUsuario");
+  if(entrada){
+    entrada.addEventListener("keydown",e=>{
+      if(e.key==="Enter"&&!e.shiftKey){
+        e.preventDefault();
+        enviarRespuesta();
+      }
+    });
+  }
+
+  mostrar("resultado",false);
+  mostrar("pregunta",false);
+  mostrar("textoEntrada",false);
+});
