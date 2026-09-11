@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
-<meta name="description" content="MEXICANO APOYA MEXICANO - guía sencilla para trámites consulares.">
+<meta name="description" content="MEXICANO APOYA MEXICANO - guía sencilla para preparar trámites consulares.">
 <title>MEXICANO APOYA MEXICANO</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -16,20 +16,20 @@
 </header>
 
 <section id="inicio" class="card">
-<h2>¿PARA QUÉ SIRVE?</h2>
+<h2>ANTES DE IR AL CONSULADO</h2>
 <div class="caja">
-<p>Te ayudamos a entender qué necesitas preparar antes de acudir al consulado.</p>
-<p>La aplicación te hace preguntas sencillas y al final puede preparar una <strong>Hoja de Ruta en PDF</strong> con lo que tienes, lo que te falta y lo que debes revisar.</p>
+<p>Te hacemos preguntas sencillas para ayudarte a saber qué debes preparar.</p>
+<p>Al terminar puedes obtener una <strong>Hoja de Ruta en PDF</strong> con tu información, lo que tienes, lo que te falta y lo que debes revisar.</p>
 </div>
 <button id="entrar" class="principal" type="button">ENTRAR</button>
-<p class="legal">Esta aplicación es independiente. No somos el Gobierno de México ni hablamos en nombre de ningún consulado.</p>
+<p class="legal">Esta aplicación es independiente. No es el Gobierno de México ni representa a ningún Consulado.</p>
 </section>
 
 <section id="servicios" class="card">
 <h2>¿QUÉ NECESITAS?</h2>
-<p class="grande">Elige la opción que más se parece a tu situación.</p>
-<button id="servicioCita" class="opcion" type="button">TENGO UNA CITA</button>
-<button id="servicioDocumento" class="opcion" type="button">NO SÉ QUÉ DOCUMENTO NECESITO</button>
+<p class="grande">Elige lo que más se parece a tu situación.</p>
+<button id="servicioCita" class="opcion" type="button">TENGO QUE HACER UN TRÁMITE</button>
+<button id="servicioDocumento" class="opcion" type="button">NECESITO UN DOCUMENTO</button>
 </section>
 
 <section id="pregunta" class="card">
@@ -62,9 +62,9 @@
 <div id="infoOficial" class="modal oculto">
 <div class="modalCaja">
 <h2>INFORMACIÓN OFICIAL</h2>
-<p>La información oficial debe consultarse directamente en la fuente correspondiente a tu trámite.</p>
+<p>Consulta directamente la fuente oficial relacionada con tu trámite.</p>
 <a id="fuenteOficial" href="#" target="_blank" rel="noopener noreferrer">ABRIR FUENTE OFICIAL</a>
-<button id="cerrarOficial" type="button">CERRAR</button>
+<button id="cerrarOficial" class="salir" type="button">CERRAR</button>
 </div>
 </div>
 
@@ -81,86 +81,5 @@
 </main>
 
 <script src="/static/app.js"></script>
-<script>
-(function(){
- const $=id=>document.getElementById(id);
- let ultimaFuente="";
-
- function mostrar(id,ver){
-  const e=$(id);
-  if(e)e.classList.toggle("oculto",!ver);
- }
-
- function descargarPDF(){
-  const caso=window.casoActual||"";
-  const respuestas=window.respuestasActuales||{};
-  if(!caso){
-   alert("Primero completa la consulta.");
-   return;
-  }
-  const b=$("pdf");
-  if(b){b.disabled=true;b.textContent="PREPARANDO PDF...";}
-  fetch("/api/pdf",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({caso:caso,respuestas:respuestas})
-  }).then(async r=>{
-   if(!r.ok)throw new Error("pdf");
-   const blob=await r.blob();
-   const url=URL.createObjectURL(blob);
-   const a=document.createElement("a");
-   a.href=url;
-   a.download="Hoja_Ruta_Mexicano_Apoya_Mexicano.pdf";
-   document.body.appendChild(a);
-   a.click();
-   a.remove();
-   setTimeout(()=>URL.revokeObjectURL(url),1000);
-  }).catch(()=>{
-   alert("No pudimos generar el PDF. Intenta nuevamente.");
-  }).finally(()=>{
-   if(b){b.disabled=false;b.textContent="DESCARGAR HOJA DE RUTA PDF";}
-  });
- }
-
- function abrirFuente(){
-  if(!ultimaFuente)return;
-  $("fuenteOficial").href=ultimaFuente;
-  mostrar("infoOficial",true);
- }
-
- function salir(){
-  mostrar("salida",true);
- }
-
- function confirmarSalida(){
-  mostrar("salida",false);
-  if(typeof window.reiniciar==="function")window.reiniciar();
-  window.scrollTo({top:0,behavior:"smooth"});
- }
-
- function cancelarSalida(){
-  mostrar("salida",false);
- }
-
- $("pdf").onclick=descargarPDF;
- $("oficial").onclick=abrirFuente;
- $("cerrarOficial").onclick=()=>mostrar("infoOficial",false);
- $("salir").onclick=salir;
- $("confirmarSalida").onclick=confirmarSalida;
- $("cancelarSalida").onclick=cancelarSalida;
-
- const anterior=window.mostrarResultado;
- window.mostrarResultado=function(d){
-  ultimaFuente=d?.fuente||"";
-  window.casoActual=d?.caso||"";
-  window.respuestasActuales=d?.respuestas||{};
-  if(typeof anterior==="function")anterior(d);
-  const a=$("oficial");
-  if(a)a.style.display=ultimaFuente?"block":"none";
- };
-
- window.descargarPDF=descargarPDF;
-})();
-</script>
 </body>
 </html>
