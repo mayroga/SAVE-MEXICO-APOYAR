@@ -10,3 +10,4 @@ reportlab
 requests
 google-genai
 python-multipart
+PyPDF2
