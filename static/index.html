@@ -7,18 +7,19 @@
 <style>
 :root{--bg:#080b12;--card:#111722;--card2:#171e2b;--line:#283242;--text:#f5f7fa;--muted:#9da8b8;--accent:#38bdf8;--ok:#22c55e;--warn:#f59e0b;--danger:#ef4444}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}body{min-height:100vh}
-button,input,textarea{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;padding:18px}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.logo{font-size:20px;font-weight:800;letter-spacing:.3px}.logo small{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:3px}
-.lang{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:9px 13px}.screen{display:none}.screen.active{display:block}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:14px}h1,h2,h3{margin:0 0 10px;line-height:1.25}h1{font-size:28px}h2{font-size:22px}p{line-height:1.55}.muted{color:var(--muted)}.small{font-size:13px}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;padding:18px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.logo{font-size:20px;font-weight:800}.logo small{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:3px}
+.screen{display:none}.screen.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:14px}
+h1,h2,h3{margin:0 0 10px;line-height:1.25}h1{font-size:28px}h2{font-size:22px}p{line-height:1.55}.muted{color:var(--muted)}.small{font-size:13px}
 .notice{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:13px;line-height:1.5;margin:12px 0}.notice.warning{border-color:#6b4c12}.notice.danger{border-color:#6b2020}.notice.ok{border-color:#176631}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.primary,.secondary,.dangerBtn{border:0;border-radius:11px;padding:12px 17px;font-weight:700}.primary{background:var(--accent);color:#03131b}.secondary{background:var(--card2);color:var(--text);border:1px solid var(--line)}.dangerBtn{background:var(--danger);color:white}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.primary,.secondary,.dangerBtn{border:0;border-radius:11px;padding:12px 17px;font-weight:700}.primary{background:var(--accent);color:#03131b}.secondary{background:var(--card2);color:var(--text);border:1px solid var(--line)}.dangerBtn{background:var(--danger);color:#fff}
 .choice{width:100%;display:block;text-align:left;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:13px;padding:16px;margin:9px 0}.choice:hover{border-color:var(--accent)}.choice strong{display:block;font-size:16px}.choice small{display:block;color:var(--muted);margin-top:5px;line-height:1.4}
 .option-list{display:grid;gap:10px}.option{display:block;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.4}.option input{margin-right:8px}
-.field{margin:12px 0}.field label{display:block;margin-bottom:7px;font-weight:700}.field input,.field textarea{width:100%;background:#0b1018;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px;outline:none}.field input:focus,.field textarea:focus{border-color:var(--accent)}.field textarea{min-height:120px;resize:vertical}
+.field{margin:12px 0}.field label{display:block;margin-bottom:7px;font-weight:700}.field input,.field textarea,.field select{width:100%;background:#0b1018;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px;outline:none}.field textarea{min-height:120px;resize:vertical}
 .hidden{display:none!important}.progress{height:5px;background:#1b2330;border-radius:20px;overflow:hidden;margin-bottom:18px}.progress>div{height:100%;background:var(--accent);width:0;transition:width .2s}
-.step{color:var(--accent);font-size:12px;font-weight:700;margin-bottom:7px;text-transform:uppercase}.doc{border:1px solid var(--line);background:var(--card2);border-radius:13px;padding:14px;margin:10px 0}.doc-name b{display:block}.doc-status{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}.doc-status button{border:1px solid var(--line);background:#0b1018;color:var(--text);border-radius:8px;padding:9px 5px;font-size:12px}.doc-status button.active.have{border-color:var(--ok);background:#10331c}.doc-status button.active.missing{border-color:var(--danger);background:#351619}.doc-status button.active.unsure{border-color:var(--warn);background:#34280e}.doc-status button.active.na{border-color:#789;background:#202936}
+.step{color:var(--accent);font-size:12px;font-weight:700;margin-bottom:7px;text-transform:uppercase}.doc{border:1px solid var(--line);background:var(--card2);border-radius:13px;padding:15px;margin:12px 0}.doc-name b{display:block;font-size:15px}.doc-meta{color:var(--muted);font-size:12px;margin-top:5px;line-height:1.4}.doc-status{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}.doc-status button{border:1px solid var(--line);background:#0b1018;color:var(--text);border-radius:8px;padding:9px 5px;font-size:12px}.doc-status button.active.have{border-color:var(--ok);background:#10331c}.doc-status button.active.missing{border-color:var(--danger);background:#351619}.doc-status button.active.unsure{border-color:var(--warn);background:#34280e}.doc-status button.active.na{border-color:#789;background:#202936}
 .summary{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;line-height:1.6}.summary>b{display:block;color:var(--accent);margin-bottom:7px}.tag{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:3px 7px;font-size:12px}
+.result{font-size:17px;font-weight:800;padding:15px;border-radius:12px;border:1px solid var(--line);margin:12px 0}.result.ok{border-color:var(--ok)}.result.warn{border-color:var(--warn)}.result.bad{border-color:var(--danger)}
 .loading{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:20}.loadingBox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center}.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#171e2b;border:1px solid var(--line);color:var(--text);padding:12px 16px;border-radius:10px;display:none;z-index:30;max-width:90%;text-align:center}
 @media(max-width:560px){.app{padding:12px}.card{padding:17px}h1{font-size:24px}.doc-status{grid-template-columns:repeat(2,1fr)}.actions button{width:100%}}
@@ -26,63 +27,89 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 </head>
 <body>
 <div class="app">
-<header>
-<div class="logo">SAVE MÉXICO AYUDAR<small>Preparación documental privada</small></div>
-<button id="langBtn" class="lang" onclick="toggleLang()">EN</button>
-</header>
+<header><div class="logo">SAVE MÉXICO AYUDAR<small>Preparación documental privada</small></div></header>
 <div class="progress"><div id="progressBar"></div></div>
 
 <section id="s0" class="screen active"><div class="card">
-<h1>SAVE MÉXICO AYUDAR</h1><p id="introText"></p><div id="introNotice" class="notice"></div><div id="legalNotice" class="notice warning"></div>
-<div class="actions"><button id="startBtn" class="primary" onclick="go(1)"></button></div>
+<h1>SAVE MÉXICO AYUDAR</h1>
+<p>Preparación privada de trámites mexicanos desde Estados Unidos.</p>
+<div class="notice">La aplicación organiza tu información, tus respuestas y los documentos que correspondan a tu situación.</div>
+<div class="notice warning"><b>Importante</b><br>Esta aplicación es un servicio privado. No es el Gobierno de México, la SRE, un Consulado ni el INE. Los requisitos pueden cambiar y cualquier punto especial debe confirmarse con la autoridad correspondiente.</div>
+<div class="actions"><button class="primary" onclick="go(1)">COMENZAR</button></div>
 </div></section>
 
 <section id="s1" class="screen"><div class="card">
-<h2 id="accessTitle"></h2><p id="accessHelp" class="muted"></p>
-<button class="choice" onclick="checkout('daily')"><strong id="individualTitle"></strong><small id="individualText"></small></button>
-<button class="choice" onclick="checkout('monthly')"><strong id="monthlyTitle"></strong><small id="monthlyText"></small></button>
-<button class="choice" onclick="checkout('annual')"><strong id="annualTitle"></strong><small id="annualText"></small></button>
-<div class="notice"><b id="adminTitle"></b><p id="adminText" class="small"></p>
-<div class="field"><label id="userLabel" for="adminUser"></label><input id="adminUser" autocomplete="username"></div>
-<div class="field"><label id="passLabel" for="adminPass"></label><input id="adminPass" type="password" autocomplete="current-password"></div>
-<button id="adminBtn" class="secondary" onclick="adminLogin()"></button></div>
-<div id="stripeNotice" class="notice small"></div>
-<div class="actions"><button id="backAccessBtn" class="secondary" onclick="go(0)"></button></div>
+<h2>Acceso</h2><p class="muted">Elige cómo deseas utilizar el servicio.</p>
+<button class="choice" onclick="checkout('daily')"><strong>Acceso individual</strong><small>Preparación de un trámite.</small></button>
+<button class="choice" onclick="checkout('monthly')"><strong>Acceso mensual</strong><small>Uso durante el periodo contratado.</small></button>
+<button class="choice" onclick="checkout('annual')"><strong>Acceso anual</strong><small>Uso durante el periodo anual contratado.</small></button>
+<div class="notice">
+<b>Acceso administrativo</b>
+<p class="small">Acceso gratuito para el administrador autorizado.</p>
+<div class="field"><label>Usuario</label><input id="adminUser" autocomplete="username"></div>
+<div class="field"><label>Contraseña</label><input id="adminPass" type="password" autocomplete="current-password"></div>
+<button class="secondary" onclick="adminLogin()">Entrar como administrador</button>
+</div>
+<div class="notice small">El pago se procesa mediante Stripe. Los datos de tu tarjeta se introducen directamente en Stripe.</div>
+<div class="actions"><button class="secondary" onclick="go(0)">Atrás</button></div>
 </div></section>
 
 <section id="s2" class="screen"><div class="card">
-<div id="step1" class="step"></div><h2 id="tramiteTitle"></h2><p id="tramiteHelp" class="muted"></p><div id="tramitesBox"></div>
-<div class="actions"><button id="backTramiteBtn" class="secondary" onclick="go(1)"></button></div>
+<div class="step">PASO 1 DE 7</div>
+<h2>¿Qué trámite necesitas?</h2>
+<p class="muted">Selecciona únicamente el trámite que deseas preparar.</p>
+<div id="tramitesBox"></div>
+<div class="actions"><button class="secondary" onclick="go(1)">Atrás</button></div>
 </div></section>
 
 <section id="s3" class="screen"><div class="card">
-<div id="step2" class="step"></div><h2 id="modalidadTitle"></h2><p id="modalidadHelp" class="muted"></p><div id="modalidadesBox"></div>
-<div class="actions"><button id="backModalidadBtn" class="secondary" onclick="go(2)"></button></div>
+<div class="step">PASO 2 DE 7</div>
+<h2>¿Qué necesitas hacer?</h2>
+<p class="muted">Elige la opción que corresponda exactamente a tu situación.</p>
+<div id="modalidadesBox"></div>
+<div class="actions"><button class="secondary" onclick="go(2)">Atrás</button></div>
 </div></section>
 
 <section id="s4" class="screen"><div class="card">
-<div id="step3" class="step"></div><h2 id="preguntaTitle"></h2><p id="preguntaHelp" class="muted"></p><div id="preguntaBox"></div>
-<div class="actions"><button id="questionBackBtn" class="secondary" onclick="preguntaBack()"></button><button id="preguntaNext" class="primary" onclick="preguntaNext()"></button></div>
+<div id="questionStep" class="step"></div>
+<h2 id="preguntaTitle"></h2>
+<p id="preguntaHelp" class="muted"></p>
+<div id="preguntaBox"></div>
+<div class="actions"><button class="secondary" onclick="preguntaBack()">Atrás</button><button id="preguntaNext" class="primary" onclick="preguntaNext()">Siguiente</button></div>
 </div></section>
 
 <section id="s5" class="screen"><div class="card">
-<div id="step4" class="step"></div><h2 id="documentsTitle"></h2><p id="documentsHelp" class="muted"></p><div id="documentsNotice" class="notice"></div><div id="docsBox"></div>
-<div class="actions"><button id="backQuestionsBtn" class="secondary" onclick="go(4)"></button><button id="documentsNextBtn" class="primary" onclick="saveDocsAndContinue()"></button></div>
+<div class="step">PASO 4 DE 7</div>
+<h2>Tus documentos</h2>
+<p class="muted">Aquí solo aparecen los documentos que corresponden a tu caso.</p>
+<div class="notice">Indica el estado real de cada documento. Si tienes dudas, utiliza <b>NO ESTOY SEGURO</b>.</div>
+<div id="docsBox"></div>
+<div class="actions"><button class="secondary" onclick="go(4)">Atrás</button><button class="primary" onclick="saveDocsAndContinue()">Continuar</button></div>
 </div></section>
 
 <section id="s6" class="screen"><div class="card">
-<div id="step5" class="step"></div><h2 id="personalTitle"></h2><p id="personalHelp" class="muted"></p><div id="personalBox"></div>
-<div class="actions"><button id="backDocumentsBtn" class="secondary" onclick="go(5)"></button><button id="personalNextBtn" class="primary" onclick="personalNext()"></button></div>
+<div id="personalStep" class="step">PASO 5 DE 7</div>
+<h2>Datos personales</h2>
+<p id="personalHelp" class="muted"></p>
+<div id="personalBox"></div>
+<div class="actions"><button class="secondary" onclick="personalBack()">Atrás</button><button class="primary" id="personalNextBtn" onclick="personalNext()">Siguiente</button></div>
 </div></section>
 
 <section id="s7" class="screen"><div class="card">
-<div id="step6" class="step"></div><h2 id="reviewTitle"></h2><p id="reviewHelp" class="muted"></p><div id="reviewBox"></div>
-<div class="actions"><button id="backPersonalBtn" class="secondary" onclick="go(6)"></button><button id="pdfBtn" class="primary" onclick="generatePDF()"></button></div>
+<div class="step">PASO 6 DE 7</div>
+<h2>Revisa tu información</h2>
+<p class="muted">Revisa cuidadosamente antes de generar tu guía.</p>
+<div id="reviewBox"></div>
+<div class="actions"><button class="secondary" onclick="go(6)">Atrás</button><button class="primary" onclick="generatePDF()">Generar guía PDF</button></div>
 </div></section>
 
 <section id="s8" class="screen"><div class="card">
-<div id="step7" class="step"></div><h2 id="readyTitle"></h2><p id="readyText"></p><div id="pdfInfo"></div><div id="readyNotice" class="notice warning"></div>
-<div class="actions"><button id="downloadBtn" class="primary"></button><button id="newBtn" class="secondary" onclick="startOver();go(2)"></button><button id="logoutBtn" class="secondary" onclick="logout()"></button></div>
+<div class="step">PASO 7 DE 7</div>
+<h2>Tu guía está lista</h2>
+<p>La información fue organizada en un PDF de preparación.</p>
+<div id="pdfInfo"></div>
+<div class="notice warning">Esta guía organiza la información proporcionada, pero no sustituye las instrucciones ni la decisión final de la autoridad.</div>
+<div class="actions"><button id="downloadBtn" class="primary">Descargar PDF</button><button class="secondary" onclick="startOver();go(2)">Preparar otro trámite</button><button class="secondary" onclick="logout()">Salir</button></div>
 </div></section>
 </div>
 
@@ -92,166 +119,163 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 <script>
 "use strict";
 
-const TEXT={
-es:{
-intro:"Preparación de trámites mexicanos desde Estados Unidos.",
-introNotice:"Organizamos tus respuestas, documentos e información para preparar tu trámite. La decisión final siempre corresponde a la autoridad.",
-legalTitle:"Importante",
-legal:"SAVE MÉXICO AYUDAR es una herramienta privada. No es el Gobierno de México, la SRE, un Consulado ni el INE. Los requisitos pueden cambiar y algunos deben confirmarse directamente con la autoridad.",
-start:"COMENZAR",access:"Acceso",accessHelp:"Selecciona una forma de entrar.",
-individual:"Acceso individual",individualText:"Preparación de un trámite.",
-monthly:"Acceso mensual",monthlyText:"Uso del servicio durante el periodo contratado.",
-annual:"Acceso anual",annualText:"Uso durante el periodo anual contratado.",
-admin:"Acceso administrativo",adminText:"Acceso gratuito para el administrador autorizado.",
-user:"Usuario",pass:"Contraseña",adminBtn:"Entrar como administrador",
-stripe:"El pago se procesa mediante Stripe. No escribas aquí los datos de tu tarjeta.",
-tramite:"¿Qué trámite necesitas?",tramiteHelp:"Selecciona únicamente el trámite que deseas preparar.",
-modality:"¿Qué necesitas hacer?",modalityHelp:"Elige la opción que corresponda exactamente a tu situación.",
-documents:"Tus documentos",documentsHelp:"Revisa únicamente los documentos que correspondan a tu caso.",
-documentsNotice:"Indica qué situación tiene cada documento. Si no estás seguro, selecciona “No estoy seguro”.",
-personal:"Tus datos",personalHelp:"Ahora te pediremos tus datos uno por uno. Solo se solicitarán los necesarios para preparar tu caso.",
-review:"Revisa tu información",reviewHelp:"Antes de generar la guía, revisa cuidadosamente todo.",
-ready:"Tu guía está lista",readyText:"La información fue organizada en un PDF de preparación.",
-readyNotice:"Esta guía organiza la información proporcionada, pero no sustituye las instrucciones ni la decisión final de la autoridad.",
-back:"Atrás",continue:"Continuar",next:"Siguiente",generate:"Generar guía PDF",download:"Descargar PDF",new:"Preparar otro trámite",logout:"Salir",
-have:"Lo tengo",missing:"No lo tengo",unsure:"No estoy seguro",notApplicable:"No aplica",
-required:"Esta pregunta es obligatoria.",docsRequired:"Indica el estado de cada documento antes de continuar.",personalRequired:"Completa este dato antes de continuar.",
-processing:"Procesando...",checking:"Comprobando acceso...",payment:"Preparando pago seguro...",paymentCheck:"Verificando pago...",loadingData:"Cargando información...",loadingQuestions:"Cargando pregunta...",
-noDocs:"No hay documentos específicos configurados para esta opción. Confirma los documentos con la autoridad.",
-noOptions:"No hay opciones configuradas para este trámite.",noQuestions:"No hay preguntas configuradas para esta opción.",
-noPdf:"El servidor no devolvió el archivo PDF.",noFile:"No hay un PDF disponible.",authorized:"Acceso administrativo autorizado.",paid:"Pago verificado. Acceso autorizado.",unpaid:"El pago todavía no ha sido confirmado.",invalid:"No se pudo completar la operación.",
-personalData:"Datos personales",answers:"Respuestas del trámite",docs:"Documentos",status:"Resultado de revisión",
-reviewBefore:"Antes de generar el PDF, asegúrate de que la información sea correcta.",authority:"La guía organiza la información proporcionada, pero no garantiza que la autoridad acepte el trámite.",
-prepared:"Archivo preparado correctamente.",answer:"Pregunta",noAnswer:"Sin respuesta",yes:"Sí",no:"No",other:"Otro",specify:"Especifica",choose:"Selecciona una opción.",otherPlaceholder:"Escribe aquí",
-step:"PASO",of:"DE",previous:"Pregunta anterior",unknown:"No especificado",confirmation:"REQUIERE CONFIRMACIÓN",inconsistency:"HAY INCONSISTENCIAS",missingResult:"FALTAN DOCUMENTOS",readyResult:"LISTO PARA CONFIRMAR"
-},
-en:{
-intro:"Document preparation for Mexican procedures from the United States.",
-introNotice:"We organize your answers, documents and information to prepare your procedure. The final decision always belongs to the authority.",
-legalTitle:"Important",
-legal:"SAVE MÉXICO AYUDAR is a private tool. It is not the Government of Mexico, SRE, a Consulate or INE. Requirements may change and some must be confirmed directly with the authority.",
-start:"START",access:"Access",accessHelp:"Select a way to enter.",
-individual:"Individual access",individualText:"Preparation of one procedure.",monthly:"Monthly access",monthlyText:"Use during the contracted period.",annual:"Annual access",annualText:"Use during the contracted annual period.",
-admin:"Administrative access",adminText:"Free access for the authorized administrator.",user:"Username",pass:"Password",adminBtn:"Enter as administrator",
-stripe:"Payment is processed through Stripe. Do not enter card information here.",
-tramite:"What procedure do you need?",tramiteHelp:"Select only the procedure you want to prepare.",modality:"What do you need to do?",modalityHelp:"Choose the option that exactly matches your situation.",
-documents:"Your documents",documentsHelp:"Review only the documents that apply to your case.",documentsNotice:"Indicate the current situation for each document. If you are unsure, select “Not sure”.",
-personal:"Your information",personalHelp:"We will ask for your information one item at a time. Only information needed for your case will be requested.",
-review:"Review your information",reviewHelp:"Before generating the guide, carefully review everything.",ready:"Your guide is ready",readyText:"Your information has been organized into a preparation PDF.",
-readyNotice:"This guide organizes the information provided, but does not replace the instructions or final decision of the authority.",
-back:"Back",continue:"Continue",next:"Next",generate:"Generate PDF guide",download:"Download PDF",new:"Prepare another procedure",logout:"Log out",
-have:"I have it",missing:"I do not have it",unsure:"Not sure",notApplicable:"Does not apply",
-required:"This question is required.",docsRequired:"Indicate the status of every document before continuing.",personalRequired:"Complete this information before continuing.",
-processing:"Processing...",checking:"Checking access...",payment:"Preparing secure payment...",paymentCheck:"Verifying payment...",loadingData:"Loading information...",loadingQuestions:"Loading question...",
-noDocs:"No specific documents are configured for this option. Confirm the documents with the authority.",noOptions:"No options are configured for this procedure.",noQuestions:"No questions are configured for this option.",
-noPdf:"The server did not return the PDF file.",noFile:"No PDF is available.",authorized:"Administrative access authorized.",paid:"Payment verified. Access authorized.",unpaid:"Payment has not been confirmed yet.",invalid:"The operation could not be completed.",
-personalData:"Personal information",answers:"Procedure answers",docs:"Documents",status:"Review result",
-reviewBefore:"Before generating the PDF, make sure the information is correct.",authority:"The guide organizes the information provided but does not guarantee acceptance by the authority.",
-prepared:"File prepared successfully.",answer:"Question",noAnswer:"No answer",yes:"Yes",no:"No",other:"Other",specify:"Specify",choose:"Select an option.",otherPlaceholder:"Type here",
-step:"STEP",of:"OF",previous:"Previous question",unknown:"Not specified",confirmation:"REQUIRES CONFIRMATION",inconsistency:"INCONSISTENCIES FOUND",missingResult:"DOCUMENTS MISSING",readyResult:"READY TO CONFIRM"
-}};
-
 const state={
-lang:"es",access:false,admin:false,tramite:"",modalidad:"",ficha:null,tramites:[],modalidades:[],
-preguntas:[],preguntaIndex:0,respuestas:{},documentos:[],docEstados:{},personal:{},personalIndex:0,pdf:""
+access:false,admin:false,tramite:"",modalidad:"",ficha:null,tramites:[],modalidades:[],
+preguntas:[],preguntaIndex:0,respuestas:{},documentos:[],docEstados:{},personal:{},personalFields:[],personalIndex:0,pdf:""
 };
 
-const PERSONAL_FIELDS=[
-["nombres","Nombre(s)","text",true],
-["apellido_paterno","Apellido paterno","text",true],
-["apellido_materno","Apellido materno","text",false],
-["fecha_nacimiento","Fecha de nacimiento","date",true],
-["lugar_nacimiento","Lugar de nacimiento","text",true],
-["entidad_nacimiento","Entidad de nacimiento","text",true],
-["sexo","Sexo","text",true],
-["nacionalidad","Nacionalidad","text",true],
-["estado_residencia_usa","Estado donde vive en EE.UU.","text",true],
-["ciudad_residencia_usa","Ciudad donde vive en EE.UU.","text",true],
-["domicilio_usa","Domicilio actual en EE.UU.","text",true],
-["codigo_postal","Código postal","text",true],
-["telefono","Teléfono","text",true],
-["email","Correo electrónico","email",false]
-];
-
-function $(id){return document.getElementById(id)}
-function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
-function t(k){return TEXT[state.lang]?.[k]||TEXT.es[k]||k}
-function localizedValue(v){return typeof v==="string"?v:v&&typeof v==="object"?(v[state.lang]||v.es||v.en||""):""}
-function loading(v,text){$("loading").style.display=v?"flex":"none";if(text)$("loadingText").textContent=text}
-function toast(text){$("toast").textContent=text;$("toast").style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>$("toast").style.display="none",3200)}
-async function api(url,opt={}){const r=await fetch(url,opt);let d={};try{d=await r.json()}catch(e){}if(!r.ok)throw new Error(d.detail||d.error||t("invalid"));return d}
-
-function setText(id,key){const e=$(id);if(e)e.textContent=t(key)}
-function updateLanguage(){
-document.documentElement.lang=state.lang;$("langBtn").textContent=state.lang==="es"?"EN":"ES";
-["introText","introNotice","startBtn","accessTitle","accessHelp","individualTitle","individualText","monthlyTitle","monthlyText","annualTitle","annualText","adminTitle","adminText","userLabel","passLabel","adminBtn","stripeNotice","tramiteTitle","tramiteHelp","modalidadTitle","modalidadHelp","documentsTitle","documentsHelp","documentsNotice","personalTitle","personalHelp","reviewTitle","reviewHelp","readyTitle","readyText","readyNotice","backAccessBtn","backTramiteBtn","questionBackBtn","backQuestionsBtn","backDocumentsBtn","backPersonalBtn","documentsNextBtn","pdfBtn","downloadBtn","newBtn","logoutBtn","backModalidadBtn"].forEach(id=>setText(id,id));
-$("legalNotice").innerHTML="<b>"+esc(t("legalTitle"))+"</b><br>"+esc(t("legal"));
-$("personalNextBtn").textContent=t("next");updateSteps();
-}
-function updateSteps(){for(let i=1;i<=7;i++)if($("step"+i))$("step"+i).textContent=t("step")+" "+i+" "+t("of")+" 7"}
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const txt=v=>typeof v==="string"?v:v&&typeof v==="object"?(v.es||v.en||""):"";
+const loading=(v,s="Procesando...")=>{$("loading").style.display=v?"flex":"none";$("loadingText").textContent=s};
+function toast(s){$("toast").textContent=s;$("toast").style.display="block";clearTimeout(window.tt);window.tt=setTimeout(()=>$("toast").style.display="none",3200)}
+async function api(url,opt={}){const r=await fetch(url,opt);let d={};try{d=await r.json()}catch{}if(!r.ok)throw Error(d.detail||d.error||"No se pudo completar la operación.");return d}
 
 function go(n){
-document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));const s=$("s"+n);if(!s)return;s.classList.add("active");
-$("progressBar").style.width=Math.min(100,Math.max(0,(n-1)/7*100))+"%";window.scrollTo({top:0,behavior:"smooth"});
-if(n===2)loadTramites();if(n===3)loadModalidades();if(n===4)renderPregunta();if(n===5)renderDocs();if(n===6)renderPersonal();if(n===7)renderReview();
-}
-function toggleLang(){
-state.lang=state.lang==="es"?"en":"es";updateLanguage();const id=document.querySelector(".screen.active")?.id;
-if(id==="s2")loadTramites();if(id==="s3")loadModalidades();if(id==="s4")renderPregunta();if(id==="s5")renderDocs();if(id==="s6")renderPersonal();if(id==="s7")renderReview();
-toast(state.lang==="es"?"Español seleccionado":"English selected");
+document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+$("s"+n)?.classList.add("active");
+$("progressBar").style.width=(n<=1?0:Math.min(100,((n-1)/7)*100))+"%";
+scrollTo({top:0,behavior:"smooth"});
+if(n===2)loadTramites();
+if(n===3)loadModalidades();
+if(n===4)renderPregunta();
+if(n===5)renderDocs();
+if(n===6)renderPersonal();
+if(n===7)renderReview();
 }
 
-async function checkAccess(){
-try{const d=await api("/api/check-access");state.access=!!d.access;state.admin=!!d.admin;if(state.access)go(2)}catch(e){}
-}
 async function adminLogin(){
-const username=$("adminUser").value.trim(),password=$("adminPass").value;if(!username||!password){toast(state.lang==="es"?"Escribe usuario y contraseña.":"Enter username and password.");return}
-loading(true,t("checking"));try{const d=await api("/api/admin-login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})});state.access=true;state.admin=true;toast(d.message||t("authorized"));go(2)}catch(e){toast(e.message)}finally{loading(false)}
-}
-async function checkout(plan){
-loading(true,t("payment"));try{const d=await api("/api/create-checkout-session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({plan})});if(d.url||d.checkout_url){location.href=d.url||d.checkout_url;return}throw new Error("Stripe no devolvió una sesión de pago.")}catch(e){toast(e.message);loading(false)}
-}
-async function verifyPayment(){
-const p=new URLSearchParams(location.search),session=p.get("session_id")||p.get("checkout_session_id");if(!session)return;
-loading(true,t("paymentCheck"));try{const d=await api("/api/verify-payment?session_id="+encodeURIComponent(session));if(d.access){state.access=true;state.admin=false;history.replaceState({},document.title,location.pathname);toast(t("paid"));go(2)}else toast(t("unpaid"))}catch(e){toast(e.message)}finally{loading(false)}
-}
-
-async function loadTramites(){
-if(!state.access){go(1);return}const box=$("tramitesBox");box.innerHTML="<p class='muted'>"+esc(t("loadingData"))+"</p>";
+const username=$("adminUser").value.trim(),password=$("adminPass").value;
+if(!username||!password){toast("Escribe usuario y contraseña.");return}
+loading(true,"Comprobando acceso...");
 try{
-const d=await api("/api/tramites");let list=d.tramites||d.data||d,arr=Array.isArray(list)?list:[];
-if(!arr.length&&list&&typeof list==="object"&&!Array.isArray(list))arr=Object.entries(list).map(([id,v])=>Object.assign({id},v||{}));
-state.tramites=arr;box.innerHTML="";
-arr.forEach(x=>{const id=x.id||x.codigo;if(!id)return;const b=document.createElement("button");b.className="choice";b.innerHTML="<strong>"+esc(localizedValue(x.nombre)||x.name||procedureName(id))+"</strong><small>"+esc(x.institucion||x.autoridad||t("tramiteHelp"))+"</small>";b.onclick=()=>selectTramite(id);box.appendChild(b)});
-if(!arr.length)box.innerHTML="<div class='notice danger'>"+esc(t("noOptions"))+"</div>";
-}catch(e){box.innerHTML="<div class='notice danger'>"+esc(t("noOptions"))+"</div>";toast(e.message)}
-}
-function procedureName(id){return({PASAPORTE:state.lang==="es"?"Pasaporte mexicano":"Mexican passport",MATRICULA_CONSULAR:state.lang==="es"?"Matrícula Consular de Alta Seguridad":"High-Security Consular Registration",INE_EXTRANJERO:state.lang==="es"?"Credencial para Votar desde el Extranjero":"Voter Credential from Abroad"})[id]||id}
-function selectTramite(id){
-state.tramite=id;state.modalidad="";state.ficha=null;state.preguntas=[];state.preguntaIndex=0;state.respuestas={};state.documentos=[];state.docEstados={};state.personal={};state.personalIndex=0;state.pdf="";go(3)
-}
-
-async function loadModalidades(){
-const box=$("modalidadesBox");box.innerHTML="<p class='muted'>"+esc(t("loadingData"))+"</p>";
-try{
-const d=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite)),mods=d.modalidades||(d.ficha&&d.ficha.modalidades)||(d.data&&d.data.modalidades)||[];
-state.modalidades=Array.isArray(mods)?mods:[];box.innerHTML="";
-state.modalidades.forEach(m=>{const id=m.id||m.codigo;if(!id)return;const b=document.createElement("button");b.className="choice";b.innerHTML="<strong>"+esc(localizedValue(m.nombre)||id)+"</strong>"+(localizedValue(m.descripcion)?"<small>"+esc(localizedValue(m.descripcion))+"</small>":"");b.onclick=()=>selectModalidad(id);box.appendChild(b)});
-if(!state.modalidades.length)box.innerHTML="<div class='notice danger'>"+esc(t("noOptions"))+"</div>";
-}catch(e){box.innerHTML="<div class='notice danger'>"+esc(t("noOptions"))+"</div>";toast(e.message)}
-}
-async function selectModalidad(id){
-state.modalidad=id;state.ficha=null;state.preguntas=[];state.preguntaIndex=0;state.respuestas={};state.documentos=[];state.docEstados={};state.personal={};state.personalIndex=0;state.pdf="";
-loading(true,t("loadingData"));
-try{
-const d=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite)+"&modalidad="+encodeURIComponent(id));state.ficha=d.ficha||d.data||d;
-state.preguntas=Array.isArray(state.ficha.preguntas)?state.ficha.preguntas:[];state.documentos=Array.isArray(state.ficha.documentos)?state.ficha.documentos:(state.ficha.documentos&&typeof state.ficha.documentos==="object"?Object.values(state.ficha.documentos):[]);
-if(!state.preguntas.length){toast(t("noQuestions"));return}go(4)
+const d=await api("/api/admin-login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})});
+state.access=true;state.admin=true;toast(d.message||"Acceso autorizado.");go(2)
 }catch(e){toast(e.message)}finally{loading(false)}
 }
 
-function normalizeQuestionType(x){
-x=String(x||"").toLowerCase();
+async function checkout(plan){
+loading(true,"Preparando pago seguro...");
+try{
+const d=await api("/api/create-checkout-session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({plan})});
+const u=d.url||d.checkout_url;if(!u)throw Error("Stripe no devolvió la sesión de pago.");
+location.href=u
+}catch(e){toast(e.message);loading(false)}
+}
+
+async function verifyPayment(){
+const q=new URLSearchParams(location.search),sid=q.get("session_id")||q.get("checkout_session_id");
+if(!sid)return;
+loading(true,"Verificando pago...");
+try{
+const d=await api("/api/verify-payment?session_id="+encodeURIComponent(sid));
+if(d.access){state.access=true;state.admin=false;history.replaceState({},document.title,location.pathname);toast("Pago verificado. Acceso autorizado.");go(2)}
+else toast("El pago todavía no ha sido confirmado.")
+}catch(e){toast(e.message)}finally{loading(false)}
+}
+
+async function checkAccess(){
+try{
+const d=await api("/api/check-access");
+state.access=!!d.access;state.admin=!!d.admin;
+if(state.access)go(2)
+}catch{}
+}
+
+function procedureName(id){
+return({
+PASAPORTE:"Pasaporte mexicano",
+MATRICULA_CONSULAR:"Matrícula Consular de Alta Seguridad",
+INE_EXTRANJERO:"Credencial para Votar desde el Extranjero"
+}[id]||id)
+}
+
+async function loadTramites(){
+if(!state.access){go(1);return}
+const box=$("tramitesBox");box.innerHTML="<p class='muted'>Cargando información...</p>";
+try{
+const d=await api("/api/tramites"),raw=d.tramites??d.data??d;
+let a=[];
+if(Array.isArray(raw))a=raw;
+else if(raw&&typeof raw==="object")a=Object.entries(raw).map(([id,v])=>Object.assign({id},v||{}));
+state.tramites=a;box.innerHTML="";
+a.forEach(x=>{
+const id=x.id||x.codigo;if(!id)return;
+const b=document.createElement("button");b.className="choice";
+b.innerHTML="<strong>"+esc(txt(x.nombre)||x.name||procedureName(id))+"</strong><small>"+esc(x.autoridad||x.institucion||"Autoridad correspondiente")+"</small>";
+b.onclick=()=>selectTramite(id);box.appendChild(b)
+});
+if(!a.length)box.innerHTML="<div class='notice danger'>No hay trámites disponibles.</div>"
+}catch(e){box.innerHTML="<div class='notice danger'>No se pudo cargar la información de los trámites.</div>";toast(e.message)}
+}
+
+function selectTramite(id){
+state.tramite=id;state.modalidad="";state.ficha=null;state.modalidades=[];state.preguntas=[];state.preguntaIndex=0;state.respuestas={};state.documentos=[];state.docEstados={};state.personal={};state.personalIndex=0;state.pdf="";
+go(3)
+}
+
+function normalizeObjects(v){
+if(Array.isArray(v))return v.filter(x=>x&&typeof x==="object");
+if(v&&typeof v==="object")return Object.entries(v).map(([id,x])=>Object.assign({id},x||{}));
+return[]
+}
+
+async function loadModalidades(){
+const box=$("modalidadesBox");box.innerHTML="<p class='muted'>Cargando información...</p>";
+try{
+const d=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite));
+const raw=d.modalidades??(d.ficha?.modalidades)??d.data?.modalidades??[];
+state.modalidades=normalizeObjects(raw);box.innerHTML="";
+state.modalidades.forEach(m=>{
+const id=m.id||m.codigo;if(!id)return;
+const b=document.createElement("button");b.className="choice";
+b.innerHTML="<strong>"+esc(txt(m.nombre)||id)+"</strong>"+(txt(m.descripcion)?("<small>"+esc(txt(m.descripcion))+"</small>"):"");
+b.onclick=()=>selectModalidad(id);box.appendChild(b)
+});
+if(!state.modalidades.length)box.innerHTML="<div class='notice danger'>No hay opciones configuradas para este trámite.</div>"
+}catch(e){box.innerHTML="<div class='notice danger'>No se pudieron cargar las opciones.</div>";toast(e.message)}
+}
+
+async function selectModalidad(id){
+state.modalidad=id;state.ficha=null;state.preguntas=[];state.preguntaIndex=0;state.respuestas={};state.documentos=[];state.docEstados={};state.personal={};state.personalIndex=0;state.pdf="";
+loading(true,"Cargando información...");
+try{
+const d=await api("/api/ficha-tramite?tramite="+encodeURIComponent(state.tramite)+"&modalidad="+encodeURIComponent(id));
+state.ficha=d.ficha||d.data||d;
+state.preguntas=normalizeObjects(state.ficha.preguntas||state.ficha.preguntas_situacion||state.ficha.preguntas_especificas);
+state.documentos=extractDocuments(state.ficha);
+if(!state.preguntas.length){
+toast("Esta opción no tiene preguntas configuradas.");return
+}
+go(4)
+}catch(e){toast(e.message)}finally{loading(false)}
+}
+
+function extractDocuments(f){
+let out=[];
+const blocks=f?.bloques_documentales??f?.bloques??[];
+if(Array.isArray(blocks)){
+blocks.forEach(b=>{
+const arr=b?.documentos;
+if(Array.isArray(arr))arr.forEach(d=>out.push(Object.assign({},d,{_bloque:b.id||b.seccion||""})))
+else if(arr&&typeof arr==="object")Object.values(arr).forEach(d=>out.push(Object.assign({},d,{_bloque:b.id||b.seccion||""})))
+})
+}else if(blocks&&typeof blocks==="object"){
+Object.entries(blocks).forEach(([k,b])=>{
+const arr=b?.documentos||[];
+if(Array.isArray(arr))arr.forEach(d=>out.push(Object.assign({},d,{_bloque:b.id||b.seccion||k})))
+})
+}
+if(!out.length){
+const d=f?.documentos;
+if(Array.isArray(d))out=d;
+else if(d&&typeof d==="object")out=Object.values(d)
+}
+return out
+}
+
+function typeOf(q){
+const x=String(q?.tipo||q?.type||"texto").toLowerCase();
 if(["si_no","yes_no","boolean"].includes(x))return"si_no";
 if(["opciones","options","single","select"].includes(x))return"opciones";
 if(["multiple","multi_select"].includes(x))return"multiple";
@@ -259,166 +283,336 @@ if(["fecha","date"].includes(x))return"fecha";
 if(["numero","number"].includes(x))return"numero";
 if(x==="email")return"email";
 if(["textarea","texto_largo"].includes(x))return"textarea";
-return"texto";
+return"texto"
 }
 
-function valueMatch(actual,expected){
-if(Array.isArray(actual))return actual.some(x=>String(x)===String(expected));
-return String(actual??"")===String(expected??"");
+function valueMatch(a,e){
+if(Array.isArray(a))return a.some(x=>String(x)===String(e));
+return String(a??"")===String(e??"")
 }
-function conditionMatch(c){
-if(!c||typeof c!=="object")return true;
-const key=c.pregunta||c.respuesta_id||c.id||c.campo||c.depende_de||c.respuesta;if(!key)return true;
-const actual=state.respuestas[key];
-if(c.valor!==undefined)return valueMatch(actual,c.valor);
-if(c.es!==undefined)return valueMatch(actual,c.es);
-if(c.igual_a!==undefined)return valueMatch(actual,c.igual_a);
-if(c.valores!==undefined)return c.valores.some(v=>valueMatch(actual,v));
-if(c.incluye!==undefined)return valueMatch(actual,c.incluye);
-if(c.distinto_de!==undefined)return !valueMatch(actual,c.distinto_de);
-if(c.no_es!==undefined)return !valueMatch(actual,c.no_es);
-if(c.cantidad_mayor_que!==undefined)return Array.isArray(actual)&&actual.length>Number(c.cantidad_mayor_que);
-return true;
+
+function cond(c){
+if(c===true||c==null)return true;
+if(c===false)return false;
+if(Array.isArray(c))return c.every(cond);
+if(typeof c!=="object")return true;
+if(c.y||c.and)return (c.y||c.and).every(cond);
+if(c.o||c.or)return (c.o||c.or).some(cond);
+const key=c.pregunta||c.respuesta_id||c.id||c.campo||c.depende_de||c.respuesta;
+if(!key)return true;
+const a=state.respuestas[key];
+if(c.respuesta!==undefined&&typeof c.respuesta!=="object")return valueMatch(a,c.respuesta);
+if(c.valor!==undefined)return valueMatch(a,c.valor);
+if(c.es!==undefined)return valueMatch(a,c.es);
+if(c.igual_a!==undefined)return valueMatch(a,c.igual_a);
+if(c.distinto_de!==undefined)return !valueMatch(a,c.distinto_de);
+if(c.no_es!==undefined)return !valueMatch(a,c.no_es);
+if(c.incluye!==undefined)return valueMatch(a,c.incluye);
+if(c.no_incluye!==undefined)return !valueMatch(a,c.no_incluye);
+if(c.en!==undefined)return(Array.isArray(c.en)?c.en:[]).some(v=>valueMatch(a,v));
+if(c.alguno_de!==undefined)return(Array.isArray(c.alguno_de)?c.alguno_de:[]).some(v=>valueMatch(a,v));
+if(c.todos_de!==undefined)return(Array.isArray(c.todos_de)?c.todos_de:[]).every(v=>valueMatch(a,v));
+if(c.cantidad_mayor_que!==undefined)return Array.isArray(a)&&a.length>Number(c.cantidad_mayor_que);
+if(c.cantidad_igual_a!==undefined)return Array.isArray(a)&&a.length===Number(c.cantidad_igual_a);
+if(c.existe!==undefined)return c.existe?!(a==null||a===""||(Array.isArray(a)&&!a.length)):a==null||a==="";
+return true
 }
-function questionVisible(q){
-if(!q)return false;
-const c=q.mostrar_si||q.visible_si||q.condicion||q.cuando;
-if(c&&!conditionMatch(c))return false;
+
+function visibleQuestions(){
+return state.preguntas.filter(q=>{
+const c=q.mostrar_si??q.visible_si??q.condicion??q.cuando;
+if(c!==undefined&&!cond(c))return false;
 if(q.depende_de&&q.valor!==undefined&&!valueMatch(state.respuestas[q.depende_de],q.valor))return false;
-return true;
+return true
+})
 }
-function visibleQuestions(){return state.preguntas.filter(questionVisible)}
-function currentQuestion(){const l=visibleQuestions();if(state.preguntaIndex>=l.length)state.preguntaIndex=Math.max(0,l.length-1);return l[state.preguntaIndex]||null}
+
+function currentQuestion(){
+const a=visibleQuestions();
+if(state.preguntaIndex>=a.length)state.preguntaIndex=Math.max(0,a.length-1);
+return a[state.preguntaIndex]||null
+}
+
+function optionValue(o){return typeof o==="string"?o:o?.valor??o?.id??""}
+function optionName(o){return typeof o==="string"?o:txt(o?.nombre||o?.texto)||optionValue(o)}
 
 function renderPregunta(){
-const q=currentQuestion();if(!q){go(5);return}const list=visibleQuestions(),box=$("preguntaBox"),type=normalizeQuestionType(q.tipo||q.type),saved=state.respuestas[q.id];
-$("preguntaTitle").textContent=localizedValue(q.texto)||localizedValue(q.pregunta)||localizedValue(q.title)||t("answer");
-$("preguntaHelp").textContent=(state.lang==="es"?"Pregunta ":"Question ")+(state.preguntaIndex+1)+" "+t("of")+" "+list.length;box.innerHTML="";
+const q=currentQuestion();
+if(!q){go(5);return}
+const a=visibleQuestions(),box=$("preguntaBox"),type=typeOf(q),saved=state.respuestas[q.id];
+$("questionStep").textContent="PASO 3 DE 7 — PREGUNTA "+(state.preguntaIndex+1)+" DE "+a.length;
+$("preguntaTitle").textContent=txt(q.texto||q.pregunta||q.titulo||q.title)||"Responde esta pregunta";
+$("preguntaHelp").textContent=q.ayuda?txt(q.ayuda):"Selecciona o escribe la respuesta que corresponda a tu situación.";
+box.innerHTML="";
+
 if(type==="si_no"){
-let o=[["SI",t("yes")],["NO",t("no")]];if(q.permite_no_se!==false)o.push(["NO_SE",state.lang==="es"?"No sé":"I don't know"]);
+let o=[["SI","Sí"],["NO","No"]];
+if(q.permite_no_se!==false)o.push(["NO_SE","No sé"]);
 box.innerHTML="<div class='option-list'>"+o.map(x=>"<label class='option'><input type='radio' name='q' value='"+esc(x[0])+"'> "+esc(x[1])+"</label>").join("")+"</div>";
-if(saved!=null)document.querySelector("input[name='q'][value='"+CSS.escape(String(saved))+"']")?.setAttribute("checked","checked");
-}else if(type==="opciones"){
-const options=Array.isArray(q.opciones||q.options)?q.opciones||q.options:[];let html="<div class='option-list'>";
-options.forEach(o=>{const v=typeof o==="string"?o:o?.valor??o?.id??"",n=typeof o==="string"?o:o?.nombre??v;if(v!=="")html+="<label class='option'><input type='radio' name='q' value='"+esc(v)+"'> "+esc(localizedValue(n))+"</label>"});
-if(q.permite_no_se===true)html+="<label class='option'><input type='radio' name='q' value='NO_SE'> "+esc(state.lang==="es"?"No sé":"I don't know")+"</label>";
-if(q.permite_otro!==false)html+="<label class='option'><input type='radio' name='q' value='OTRO' id='otherRadio'> "+esc(t("other"))+"</label><div id='otherField' class='field hidden'><label>"+esc(t("specify"))+"</label><input id='otherInput' placeholder='"+esc(t("otherPlaceholder"))+"'></div>";
-html+="</div>";box.innerHTML=html;
-document.querySelectorAll("input[name='q']").forEach(r=>r.onchange=()=>{$("otherField")?.classList.toggle("hidden",r.value!=="OTRO")});
-if(saved!=null){const r=document.querySelector("input[name='q'][value='"+CSS.escape(String(saved))+"']");if(r)r.checked=true;else{$("otherRadio")?.click();if($("otherInput"))$("otherInput").value=String(saved)}}
-}else if(type==="multiple"){
-const options=Array.isArray(q.opciones||q.options)?q.opciones||q.options:[],a=Array.isArray(saved)?saved:[];let html="<div class='option-list'>";
-options.forEach(o=>{const v=typeof o==="string"?o:o?.valor??o?.id??"",n=typeof o==="string"?o:o?.nombre??v;if(v!=="")html+="<label class='option'><input type='checkbox' name='qmulti' value='"+esc(v)+"'> "+esc(localizedValue(n))+"</label>"});
-if(q.permite_no_se===true)html+="<label class='option'><input type='checkbox' name='qmulti' value='NO_SE'> "+esc(state.lang==="es"?"No sé":"I don't know")+"</label>";
-if(q.permite_otro!==false)html+="<div class='field'><label>"+esc(t("other"))+"</label><input id='multiOther' placeholder='"+esc(t("otherPlaceholder"))+"'></div>";
-html+="</div>";box.innerHTML=html;
-document.querySelectorAll("input[name='qmulti']").forEach(r=>r.checked=a.map(String).includes(String(r.value)));
-if($("multiOther")){const known=options.map(o=>String(typeof o==="string"?o:o?.valor??o?.id??""));$("multiOther").value=a.filter(x=>!known.includes(String(x))&&String(x)!=="NO_SE").join(", ")}
-}else{
+if(saved!=null)document.querySelector("input[name=q][value='"+CSS.escape(String(saved))+"']")?.click()
+}
+else if(type==="opciones"){
+const o=Array.isArray(q.opciones||q.options)?(q.opciones||q.options):[];
+let h="<div class='option-list'>";
+o.forEach(x=>{const v=optionValue(x);if(v)h+="<label class='option'><input type='radio' name='q' value='"+esc(v)+"'> "+esc(optionName(x))+"</label>"});
+if(q.permite_no_se===true)h+="<label class='option'><input type='radio' name='q' value='NO_SE'> No sé</label>";
+if(q.permite_otro!==false)h+="<label class='option'><input type='radio' name='q' value='OTRO'> Otro</label><div id='otherField' class='field hidden'><label>Especifica</label><input id='otherInput' placeholder='Escribe aquí'></div>";
+h+="</div>";box.innerHTML=h;
+document.querySelectorAll("input[name=q]").forEach(r=>r.onchange=()=>{$("otherField")?.classList.toggle("hidden",r.value!=="OTRO")});
+if(saved!=null){
+const r=document.querySelector("input[name=q][value='"+CSS.escape(String(saved))+"']");
+if(r)r.click();else{document.querySelector("input[name=q][value=OTRO]")?.click();if($("otherInput"))$("otherInput").value=String(saved)}
+}
+}
+else if(type==="multiple"){
+const o=Array.isArray(q.opciones||q.options)?(q.opciones||q.options):[],savedA=Array.isArray(saved)?saved:[];
+let h="<div class='option-list'>";
+o.forEach(x=>{const v=optionValue(x);if(v)h+="<label class='option'><input type='checkbox' name='qm' value='"+esc(v)+"'> "+esc(optionName(x))+"</label>"});
+if(q.permite_no_se===true)h+="<label class='option'><input type='checkbox' name='qm' value='NO_SE'> No sé</label>";
+if(q.permite_otro!==false)h+="<div class='field'><label>Otro</label><input id='multiOther' placeholder='Escribe aquí'></div>";
+h+="</div>";box.innerHTML=h;
+document.querySelectorAll("input[name=qm]").forEach(x=>x.checked=savedA.map(String).includes(String(x.value)));
+if($("multiOther")){
+const known=o.map(optionValue).map(String);
+$("multiOther").value=savedA.filter(x=>!known.includes(String(x))&&String(x)!=="NO_SE").join(", ")
+}
+}
+else{
 const old=saved==null?"":String(saved),it=type==="numero"?"number":type==="fecha"?"date":type==="email"?"email":"text";
-box.innerHTML=type==="textarea"?"<div class='field'><textarea id='qInput' placeholder='"+esc(t("otherPlaceholder"))+"'>"+esc(old)+"</textarea></div>":"<div class='field'><input id='qInput' type='"+it+"' autocomplete='off' value='"+esc(old)+"'></div>";
+box.innerHTML=type==="textarea"
+?"<div class='field'><textarea id='qInput'>"+esc(old)+"</textarea></div>"
+:"<div class='field'><input id='qInput' type='"+it+"' value='"+esc(old)+"' autocomplete='off'></div>";
+$("qInput")?.focus()
 }
-$("preguntaNext").textContent=state.preguntaIndex===list.length-1?t("continue"):t("next");
+$("preguntaNext").textContent=state.preguntaIndex===a.length-1?"Continuar":"Siguiente"
 }
 
-function getPreguntaValue(){
-const q=currentQuestion();if(!q)return null;const type=normalizeQuestionType(q.tipo||q.type);
-if(type==="si_no"||type==="opciones"){const r=document.querySelector("input[name='q']:checked");if(!r)return"";if(r.value==="OTRO")return $("otherInput")?.value.trim()||"";return r.value}
-if(type==="multiple"){const a=[...document.querySelectorAll("input[name='qmulti']:checked")].map(x=>x.value),o=$("multiOther")?.value.trim();if(o)a.push(o);return a}
-return $("qInput")?.value.trim()||"";
+function preguntaValue(){
+const q=currentQuestion(),type=typeOf(q);
+if(type==="si_no"||type==="opciones"){
+const r=document.querySelector("input[name=q]:checked");if(!r)return"";
+if(r.value==="OTRO")return $("otherInput")?.value.trim()||"";
+return r.value
 }
+if(type==="multiple"){
+const a=[...document.querySelectorAll("input[name=qm]:checked")].map(x=>x.value),o=$("multiOther")?.value.trim();if(o)a.push(o);return a
+}
+return $("qInput")?.value.trim()||""
+}
+
 function preguntaNext(){
-const q=currentQuestion();if(!q){go(5);return}const v=getPreguntaValue(),type=normalizeQuestionType(q.tipo||q.type),empty=Array.isArray(v)?!v.length:!v&&v!==0;
-if(q.obligatoria===true&&empty){toast(t("required"));return}
-if(type==="opciones"&&q.permite_otro!==false){const r=document.querySelector("input[name='q']:checked");if(r?.value==="OTRO"&&!v){toast(t("choose"));$("otherInput")?.focus();return}}
-if(type==="multiple"&&q.obligatoria===true&&empty){toast(t("required"));return}
-state.respuestas[q.id]=v;const l=visibleQuestions();if(state.preguntaIndex<l.length-1){state.preguntaIndex++;renderPregunta()}else go(5)
+const q=currentQuestion();if(!q){go(5);return}
+const v=preguntaValue(),empty=Array.isArray(v)?!v.length:!v;
+if((q.obligatoria===true||q.required===true)&&empty){toast("Esta pregunta es obligatoria.");return}
+const r=document.querySelector("input[name=q]:checked");
+if(r?.value==="OTRO"&&!v){toast("Especifica qué necesitas.");$("otherInput")?.focus();return}
+state.respuestas[q.id]=v;
+const a=visibleQuestions();
+if(state.preguntaIndex<a.length-1){state.preguntaIndex++;renderPregunta()}else go(5)
 }
-function preguntaBack(){if(state.preguntaIndex>0){state.preguntaIndex--;renderPregunta()}else go(3)}
 
-function docName(d){return typeof d==="string"?d:localizedValue(d?.nombre)||d?.name||d?.documento||""}
-function docReason(d){return localizedValue(d?.motivo)||localizedValue(d?.descripcion)||""}
-function docRequired(d){return d?.obligatorio!==false&&d?.required!==false}
-function docId(d,i){return d?.id||d?.codigo||"d"+i}
+function preguntaBack(){
+if(state.preguntaIndex>0){state.preguntaIndex--;renderPregunta()}else go(3)
+}
+
+function docId(d,i){return d?.id||d?.codigo||"DOC_"+(i+1)}
+function docName(d){return txt(d?.nombre||d?.name||d?.documento)||docId(d,0)}
+function docReason(d){return txt(d?.motivo||d?.descripcion||d?.nota)||""}
+function docRequired(d){return d?.obligatorio_base===true||d?.obligatorio===true||d?.required===true}
+function docApplicable(d){const c=d?.cuando??d?.mostrar_si;return c===undefined||c===true||cond(c)}
+
 function renderDocs(){
-const box=$("docsBox"),docs=state.documentos||[];if(!docs.length){box.innerHTML="<div class='notice'>"+esc(t("noDocs"))+"</div>";return}
-box.innerHTML=docs.map((d,i)=>{const id="d"+i,s=state.docEstados[id]||"",name=docName(d),reason=docReason(d);return"<div class='doc'><div class='doc-name'><b>"+esc(name)+"</b>"+(reason?"<div class='small muted'>"+esc(reason)+"</div>":"")+"</div><div class='doc-status'>"+docButton(id,"have",s,t("have"))+docButton(id,"missing",s,t("missing"))+docButton(id,"unsure",s,t("unsure"))+docButton(id,"na",s,t("notApplicable"))+"</div></div>"}).join("")
+const box=$("docsBox"),docs=(state.documentos||[]).filter(docApplicable);
+state.documentosVisibles=docs;
+if(!docs.length){box.innerHTML="<div class='notice'>No hay documentos específicos configurados para esta opción. Confirma los documentos directamente con la autoridad.</div>";return}
+box.innerHTML=docs.map((d,i)=>{
+const id=docId(d,i),s=state.docEstados[id]||"";
+return"<div class='doc'><div class='doc-name'><b>"+esc(docName(d))+"</b></div>"+(docReason(d)?"<div class='doc-meta'>"+esc(docReason(d))+"</div>":"")+(docRequired(d)?"<div class='doc-meta'>Documento requerido</div>":"")+((d.confirmar===true)?"<div class='doc-meta'>Debe confirmarse con la autoridad.</div>":"")+"<div class='doc-status'>"+docBtn(id,"have",s,"Lo tengo")+docBtn(id,"missing",s,"No lo tengo")+docBtn(id,"unsure",s,"No estoy seguro")+docBtn(id,"na",s,"No aplica")+"</div></div>"
+}).join("")
 }
-function docButton(id,s,c,l){return"<button class='"+(c===s?"active "+s:"")+"' onclick=\"setDoc('"+esc(id)+"','"+s+"')\">"+esc(l)+"</button>"}
+
+function docBtn(id,c,s,label){return"<button class='"+(s===c?"active "+c:"")+"' onclick=\"setDoc('"+esc(id)+"','"+c+"')\">"+label+"</button>"}
 function setDoc(id,s){state.docEstados[id]=s;renderDocs()}
-function saveDocsAndContinue(){if((state.documentos||[]).some((d,i)=>docRequired(d)&&!state.docEstados["d"+i])){toast(t("docsRequired"));return}go(6)}
 
-function personalLabel(k){
-const es={nombres:"Nombre(s)",apellido_paterno:"Apellido paterno",apellido_materno:"Apellido materno",fecha_nacimiento:"Fecha de nacimiento",lugar_nacimiento:"Lugar de nacimiento",entidad_nacimiento:"Entidad de nacimiento",sexo:"Sexo",nacionalidad:"Nacionalidad",estado_residencia_usa:"Estado donde vive en EE.UU.",ciudad_residencia_usa:"Ciudad donde vive en EE.UU.",domicilio_usa:"Domicilio actual en EE.UU.",codigo_postal:"Código postal",telefono:"Teléfono",email:"Correo electrónico"};
-const en={nombres:"First name(s)",apellido_paterno:"Father's last name",apellido_materno:"Mother's last name",fecha_nacimiento:"Date of birth",lugar_nacimiento:"Place of birth",entidad_nacimiento:"State/entity of birth",sexo:"Sex",nacionalidad:"Nationality",estado_residencia_usa:"U.S. state of residence",ciudad_residencia_usa:"U.S. city of residence",domicilio_usa:"Current U.S. address",codigo_postal:"ZIP code",telefono:"Phone",email:"Email"};
-return(state.lang==="es"?es:en)[k]||k
+function saveDocsAndContinue(){
+const docs=state.documentosVisibles||[];
+if(docs.some(d=>docRequired(d)&&!state.docEstados[docId(d,docs.indexOf(d))])){toast("Indica el estado de cada documento requerido.");return}
+go(6)
 }
-function renderPersonal(){
-const f=PERSONAL_FIELDS[state.personalIndex];if(!f){go(7);return}const [key,,type,required]=f;
-$("personalHelp").textContent=(state.lang==="es"?"Dato ":"Information ")+(state.personalIndex+1)+" "+t("of")+" "+PERSONAL_FIELDS.length;
-$("personalBox").innerHTML="<div class='field'><label for='personalInput'>"+esc(personalLabel(key))+(required?" *":"")+"</label><input id='personalInput' type='"+esc(type)+"' value='"+esc(state.personal[key]||"")+"' autocomplete='off'></div>";
-$("personalInput").focus();$("personalNextBtn").textContent=state.personalIndex===PERSONAL_FIELDS.length-1?t("continue"):t("next")
+
+async function loadPersonalFields(){
+if(state.personalFields.length)return;
+try{
+const d=await api("/api/datos-personales");
+const x=d.datos_personales||d.fields||d.data;
+if(Array.isArray(x))state.personalFields=x;
+else if(x&&typeof x==="object"){
+state.personalFields=Object.entries(x).map(([id,v])=>Object.assign({id},v||{}))
 }
+}catch{}
+if(!state.personalFields.length){
+state.personalFields=[
+{id:"nombres",nombre:"Nombre(s)",obligatorio:true,tipo:"texto"},
+{id:"apellido_paterno",nombre:"Apellido paterno",obligatorio:true,tipo:"texto"},
+{id:"apellido_materno",nombre:"Apellido materno",obligatorio:false,tipo:"texto"},
+{id:"fecha_nacimiento",nombre:"Fecha de nacimiento",obligatorio:true,tipo:"fecha"},
+{id:"lugar_nacimiento",nombre:"Lugar de nacimiento",obligatorio:true,tipo:"texto"},
+{id:"entidad_nacimiento",nombre:"Entidad de nacimiento",obligatorio:true,tipo:"texto"},
+{id:"sexo",nombre:"Sexo",obligatorio:true,tipo:"texto"},
+{id:"nacionalidad",nombre:"Nacionalidad",obligatorio:true,tipo:"texto"},
+{id:"estado_residencia_usa",nombre:"Estado donde vive en EE.UU.",obligatorio:true,tipo:"texto"},
+{id:"ciudad_residencia_usa",nombre:"Ciudad donde vive en EE.UU.",obligatorio:true,tipo:"texto"},
+{id:"domicilio_usa",nombre:"Domicilio actual en EE.UU.",obligatorio:true,tipo:"texto"},
+{id:"codigo_postal",nombre:"Código postal",obligatorio:true,tipo:"texto"},
+{id:"telefono",nombre:"Teléfono",obligatorio:true,tipo:"texto"},
+{id:"email",nombre:"Correo electrónico",obligatorio:false,tipo:"email"}
+]
+}
+}
+
+async function renderPersonal(){
+await loadPersonalFields();
+const f=state.personalFields[state.personalIndex];
+if(!f){go(7);return}
+const id=f.id||f.codigo,nombre=txt(f.nombre||f.titulo||f.label)||id,required=f.obligatorio===true||f.required===true;
+$("personalHelp").textContent="Dato "+(state.personalIndex+1)+" de "+state.personalFields.length;
+let type=String(f.tipo||f.type||"texto").toLowerCase();
+if(type==="fecha")type="date";else if(type==="email")type="email";else type="text";
+$("personalBox").innerHTML="<div class='field'><label>"+esc(nombre)+(required?" *":"")+"</label><input id='personalInput' type='"+type+"' value='"+esc(state.personal[id]||"')+"' autocomplete='off'></div>";
+$("personalInput").focus();$("personalNextBtn").textContent=state.personalIndex===state.personalFields.length-1?"Continuar":"Siguiente"
+}
+
 function personalNext(){
-const f=PERSONAL_FIELDS[state.personalIndex];if(!f){go(7);return}const v=$("personalInput")?.value.trim()||"";if(f[3]&&!v){toast(t("personalRequired"));$("personalInput")?.focus();return}
-if(v)state.personal[f[0]]=v;else delete state.personal[f[0]];if(state.personalIndex<PERSONAL_FIELDS.length-1){state.personalIndex++;renderPersonal()}else go(7)
+const f=state.personalFields[state.personalIndex];if(!f){go(7);return}
+const id=f.id||f.codigo,v=$("personalInput")?.value.trim()||"",required=f.obligatorio===true||f.required===true;
+if(required&&!v){toast("Completa este dato antes de continuar.");return}
+if(v)state.personal[id]=v;else delete state.personal[id];
+if(state.personalIndex<state.personalFields.length-1){state.personalIndex++;renderPersonal()}else go(7)
 }
 
-function getTramiteName(){const x=state.tramites.find(a=>String(a.id||a.codigo)===String(state.tramite));return x?(localizedValue(x.nombre)||x.name||procedureName(state.tramite)):procedureName(state.tramite)}
-function getModalidadName(){const x=state.modalidades.find(a=>String(a.id||a.codigo)===String(state.modalidad));return x?(localizedValue(x.nombre)||x.name||state.modalidad):state.modalidad}
-function questionLabel(id){const q=state.preguntas.find(x=>String(x.id)===String(id));return q?(localizedValue(q.texto)||localizedValue(q.pregunta)||localizedValue(q.title)||id):id}
-function answerText(v){
-if(Array.isArray(v))return v.map(answerText).join(", ");const x=String(v??"");
-return({SI:t("yes"),NO:t("no"),NO_SE:state.lang==="es"?"No sé":"I don't know",NO_APLICA:t("notApplicable")})[x]||x||t("noAnswer")
+function personalBack(){
+if(state.personalIndex>0){state.personalIndex--;renderPersonal()}else go(5)
 }
-function documentStatusText(s){return({have:t("have"),missing:t("missing"),unsure:t("unsure"),na:t("notApplicable")})[s]||t("noAnswer")}
-function caseStatus(){
+
+function getTramiteName(){
+const x=state.tramites.find(a=>String(a.id||a.codigo)===String(state.tramite));
+return txt(x?.nombre)||x?.name||procedureName(state.tramite)
+}
+
+function getModalidadName(){
+const x=state.modalidades.find(a=>String(a.id||a.codigo)===String(state.modalidad));
+return txt(x?.nombre)||x?.name||state.modalidad
+}
+
+function questionName(id){
+const q=state.preguntas.find(x=>String(x.id)===String(id));
+return txt(q?.texto||q?.pregunta||q?.titulo||q?.title)||id
+}
+
+function answerText(v){
+if(Array.isArray(v))return v.map(answerText).join(", ");
+return({SI:"Sí",NO:"No",NO_SE:"No sé",NO_APLICA:"No aplica"})[String(v)]||String(v||"Sin respuesta")
+}
+
+function status(){
+if(Object.values(state.respuestas).some(v=>Array.isArray(v)?v.includes("NINGUNO"):String(v)==="NINGUNO")){}
 if(Object.values(state.docEstados).some(x=>x==="missing"))return"FALTAN_DOCUMENTOS";
 if(Object.values(state.docEstados).some(x=>x==="unsure"))return"REQUIERE_CONFIRMACION";
-if(Object.values(state.respuestas).flat().includes("NO_SE"))return"REQUIERE_CONFIRMACION";
+if(Object.values(state.respuestas).some(v=>Array.isArray(v)?v.includes("NO_SE"):String(v)==="NO_SE"))return"REQUIERE_CONFIRMACION";
 return"LISTO_PARA_CONFIRMAR"
 }
-function statusText(s){return({LISTO_PARA_CONFIRMAR:t("readyResult"),FALTAN_DOCUMENTOS:t("missingResult"),REQUIERE_CONFIRMACION:t("confirmation"),HAY_INCONSISTENCIAS:t("inconsistency")})[s]||s}
+
+function statusLabel(s){
+return({
+LISTO_PARA_CONFIRMAR:"LISTO PARA CONFIRMAR",
+FALTAN_DOCUMENTOS:"FALTAN DOCUMENTOS",
+REQUIERE_CONFIRMACION:"REQUIERE CONFIRMACIÓN",
+HAY_INCONSISTENCIAS:"HAY INCONSISTENCIAS"
+}[s]||s)
+}
 
 function renderReview(){
-let h="<div class='summary'><b>"+esc(t("tramite"))+"</b>"+esc(getTramiteName())+"</div><div class='summary'><b>"+esc(t("modality"))+"</b>"+esc(getModalidadName())+"</div>";
-h+="<div class='summary'><b>"+esc(t("personalData"))+"</b>";
-Object.entries(state.personal).forEach(([k,v])=>{if(v)h+="<div>"+esc(personalLabel(k))+": "+esc(v)+"</div>"});if(!Object.keys(state.personal).length)h+="<div class='muted'>"+esc(t("noAnswer"))+"</div>";h+="</div>";
-h+="<div class='summary'><b>"+esc(t("answers"))+"</b>";Object.entries(state.respuestas).forEach(([k,v])=>h+="<div style='margin:0 0 10px'><b>"+esc(questionLabel(k))+"</b><br>"+esc(answerText(v))+"</div>");h+="</div>";
-h+="<div class='summary'><b>"+esc(t("docs"))+"</b>";(state.documentos||[]).forEach((d,i)=>h+="<div style='margin:8px 0'>"+esc(docName(d))+" — <span class='tag'>"+esc(documentStatusText(state.docEstados["d"+i]))+"</span></div>");h+="</div>";
-h+="<div class='notice warning small'><b>"+esc(t("reviewBefore"))+"</b><br>"+esc(t("authority"))+"</div>";$("reviewBox").innerHTML=h
+let h="";
+h+="<div class='summary'><b>TRÁMITE</b>"+esc(getTramiteName())+"</div>";
+h+="<div class='summary'><b>MODALIDAD</b>"+esc(getModalidadName())+"</div>";
+h+="<div class='summary'><b>DATOS PERSONALES</b>";
+Object.entries(state.personal).forEach(([k,v])=>h+="<div>"+esc(k)+": "+esc(v)+"</div>");
+h+="</div>";
+h+="<div class='summary'><b>RESPUESTAS</b>";
+Object.entries(state.respuestas).forEach(([k,v])=>h+="<div style='margin:0 0 12px'><b>"+esc(questionName(k))+"</b><br>"+esc(answerText(v))+"</div>");
+h+="</div>";
+h+="<div class='summary'><b>DOCUMENTOS</b>";
+(state.documentosVisibles||[]).forEach(d=>{
+const id=docId(d,0),s=state.docEstados[id]||"SIN ESTADO";
+h+="<div style='margin:8px 0'>"+esc(docName(d))+" — <span class='tag'>"+esc(documentStatusLabel(s))+"</span></div>"
+});
+h+="</div>";
+const s=status(),cls=s==="LISTO_PARA_CONFIRMAR"?"ok":s==="FALTAN_DOCUMENTOS"?"bad":"warn";
+h+="<div class='result "+cls+"'>"+esc(statusLabel(s))+"</div>";
+h+="<div class='notice warning small'>Antes de generar el PDF, revisa que todos los datos sean correctos. El resultado es una preparación privada y no una decisión oficial.</div>";
+$("reviewBox").innerHTML=h
+}
+
+function documentStatusLabel(s){
+return({have:"LO TENGO",missing:"NO LO TENGO",unsure:"NO ESTOY SEGURO",na:"NO APLICA"})[s]||"SIN ESTADO"
 }
 
 async function generatePDF(){
-const status=caseStatus();renderReview();loading(true,state.lang==="es"?"Generando tu guía PDF...":"Generating your PDF guide...");
+renderReview();
+loading(true,"Generando tu guía PDF...");
 try{
-const docs=(state.documentos||[]).map((d,i)=>({
-id:docId(d,i),bloque:d?.bloque||("DOCUMENTO: "+docId(d,i)),nombre:docName(d),motivo:docReason(d),obligatorio:docRequired(d),estado:state.docEstados["d"+i]||""
-}));
+const docs=(state.documentosVisibles||[]).map((d,i)=>{
+const id=docId(d,i);
+return{
+id,
+bloque:d._bloque||d.seccion||"",
+nombre:docName(d),
+categoria:d.categoria||"",
+motivo:docReason(d),
+nota:txt(d.nota)||"",
+obligatorio:docRequired(d),
+confirmar:d.confirmar===true,
+estado:state.docEstados[id]||""
+}
+});
 const payload={
-tramite:state.tramite,modalidad:state.modalidad,datos_personales:state.personal,datos_especificos:state.respuestas,
+tramite:state.tramite,
+modalidad:state.modalidad,
+datos_personales:state.personal,
+datos_especificos:state.respuestas,
 documentos:docs,
-documentos_disponibles:docs.filter(d=>d.estado==="have").map(d=>d.nombre),
-documentos_faltantes:docs.filter(d=>d.estado==="missing").map(d=>d.nombre),
-documentos_dudosos:docs.filter(d=>d.estado==="unsure").map(d=>d.nombre),
-documentos_no_aplican:docs.filter(d=>d.estado==="na").map(d=>d.nombre),
-estado_revision:status,idioma:state.lang
+documentos_disponibles:docs.filter(d=>d.estado==="have").map(d=>d.id),
+documentos_faltantes:docs.filter(d=>d.estado==="missing").map(d=>d.id),
+documentos_dudosos:docs.filter(d=>d.estado==="unsure").map(d=>d.id),
+situaciones:[],
+aclaraciones:[],
+idioma:"es"
 };
 const d=await api("/api/generar-guia-consular",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-state.pdf=d.filename||d.file||d.pdf||"";if(!state.pdf)throw new Error(t("noPdf"));
-$("pdfInfo").innerHTML="<div class='summary'><b>"+esc(t("tramite"))+"</b>"+esc(getTramiteName())+"</div><div class='summary'><b>"+esc(t("modality"))+"</b>"+esc(getModalidadName())+"</div><div class='summary'><b>"+esc(t("status"))+"</b>"+esc(statusText(d.estado||status))+"</div><p class='muted small'>"+esc(t("prepared"))+"</p>";
+state.pdf=d.filename||d.file||d.pdf||"";
+if(!state.pdf)throw Error("El servidor no devolvió el archivo PDF.");
+$("pdfInfo").innerHTML="<div class='summary'><b>TRÁMITE</b>"+esc(getTramiteName())+"</div><div class='summary'><b>MODALIDAD</b>"+esc(getModalidadName())+"</div><div class='result "+(status()==="LISTO_PARA_CONFIRMAR"?"ok":"warn")+"'>"+esc(statusLabel(d.estado||status()))+"</div><p class='muted small'>Archivo preparado correctamente.</p>";
 $("downloadBtn").onclick=()=>downloadPDF(state.pdf);go(8)
 }catch(e){toast(e.message)}finally{loading(false)}
 }
-function downloadPDF(n){if(!n){toast(t("noFile"));return}location.href="/descargar/"+encodeURIComponent(n)}
-async function logout(){try{await api("/api/logout",{method:"POST"})}catch(e){}state.access=false;state.admin=false;startOver();go(1)}
-function startOver(){
-Object.assign(state,{tramite:"",modalidad:"",ficha:null,tramites:[],modalidades:[],preguntas:[],preguntaIndex:0,respuestas:{},documentos:[],docEstados:{},personal:{},personalIndex:0,pdf:""});
-$("adminUser").value="";$("adminPass").value="";
-["tramitesBox","modalidadesBox","preguntaBox","docsBox","personalBox","reviewBox","pdfInfo"].forEach(id=>$(id).innerHTML="")
+
+function downloadPDF(n){if(!n){toast("No hay un PDF disponible.");return}location.href="/descargar/"+encodeURIComponent(n)}
+
+async function logout(){
+try{await api("/api/logout",{method:"POST"})}catch{}
+state.access=false;state.admin=false;startOver();go(1)
 }
 
-window.addEventListener("load",async()=>{updateLanguage();await verifyPayment();await checkAccess()});
+function startOver(){
+Object.assign(state,{tramite:"",modalidad:"",ficha:null,tramites:[],modalidades:[],preguntas:[],preguntaIndex:0,respuestas:{},documentos:[],documentosVisibles:[],docEstados:{},personal:{},personalIndex:0,pdf:""});
+$("adminUser").value="";$("adminPass").value="";
+["tramitesBox","modalidadesBox","preguntaBox","docsBox","personalBox","reviewBox","pdfInfo"].forEach(id=>{if($(id))$(id).innerHTML=""})
+}
+
+window.addEventListener("load",async()=>{
+await verifyPayment();
+await checkAccess()
+});
 </script>
 </body>
 </html>
