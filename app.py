@@ -1,401 +1,243 @@
-const $=id=>document.getElementById(id);
-const state={servicio:"",caso:"",pregunta_id:"",respuestas:{},perfil:{},resultado:null};
+import os,io
+from fastapi import FastAPI,HTTPException
+from fastapi.responses import FileResponse,StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel,Field
+from typing import Any,Dict,Optional
+from reportlab.lib.pagesizes import LETTER
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer,Table,TableStyle
+from consular_engine import iniciar,seleccionar_caso,continuar,interpretar,obtener_caso,FUENTES,catalogo
 
-async function api(url,opt={}){
- const r=await fetch(url,{headers:{"Content-Type":"application/json",...(opt.headers||{})},...opt});
- let d={};
- try{d=await r.json()}catch(e){}
- if(!r.ok)throw new Error(d.detail||d.mensaje||"No se pudo completar la operación.");
- return d;
-}
+app=FastAPI(title="MEXICANO APOYA MEXICANO",version="3.2.0")
+app.mount("/static",StaticFiles(directory="static"),name="static")
 
-function mostrar(id){
- ["inicio","servicios","pregunta","resultado"].forEach(x=>$(x)?.classList.add("oculto"));
- $(id)?.classList.remove("oculto");
- window.scrollTo({top:0,behavior:"smooth"});
-}
+class Respuesta(BaseModel):
+ servicio:Optional[str]=""
+ caso:Optional[str]=""
+ pregunta_id:Optional[str]=""
+ texto:Optional[str]=""
+ respuestas:Dict[str,Any]=Field(default_factory=dict)
+ resultado:Optional[Dict[str,Any]]=None
 
-function toast(txt){
- let x=$("toast");
- if(!x){
-  x=document.createElement("div");
-  x.id="toast";x.className="toast";
-  document.body.appendChild(x);
- }
- x.textContent=txt;x.classList.add("show");
- clearTimeout(window.__toast);
- window.__toast=setTimeout(()=>x.classList.remove("show"),2800);
-}
+@app.get("/")
+def home():
+ return FileResponse("static/index.html")
 
-function guardar(d){
- if(d.respuestas)state.respuestas={...d.respuestas};
- if(d.perfil)state.perfil={...d.perfil};
- if(d.caso)state.caso=d.caso;
- if(d.pregunta_id)state.pregunta_id=d.pregunta_id;
- if(d.resultado)state.resultado=d.resultado;
-}
+@app.get("/api/estado")
+def estado():
+ return {"ok":True,"app":"MEXICANO APOYA MEXICANO","version":"3.2.0"}
 
-function limpiar(){
- state.servicio="";state.caso="";state.pregunta_id="";
- state.respuestas={};state.perfil={};state.resultado=null;
- if($("textoUsuario"))$("textoUsuario").value="";
-}
+@app.get("/api/casos")
+def casos(servicio:Optional[str]=None):
+ return {"estado":"seleccionar","tipo":"catalogo","servicio":servicio or "todos","opciones":catalogo(servicio)}
 
-function textoSeguro(x){
- return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-}
+@app.get("/api/inicio/{servicio}")
+def inicio(servicio:str):
+ if servicio not in ("cita","documento"):
+  raise HTTPException(400,"Servicio no válido.")
+ return iniciar(servicio)
 
-function renderOpciones(opciones=[]){
- const box=$("opciones");
- if(!box)return;
- box.innerHTML="";
- (opciones||[]).forEach(o=>{
-  const id=typeof o==="string"?o:o.id;
-  const texto=typeof o==="string"?o:(o.texto||o.titulo||o.nombre||o.id);
-  const b=document.createElement("button");
-  b.type="button";b.className="opcion";b.textContent=texto;
-  b.onclick=()=>seleccionarOpcion(id,texto,o);
-  box.appendChild(b);
- });
-}
+@app.post("/api/iniciar")
+def api_iniciar(data:Respuesta):
+ if data.servicio not in ("cita","documento"):
+  raise HTTPException(400,"Falta seleccionar el tipo de servicio.")
+ if data.caso:
+  if not obtener_caso(data.caso):
+   raise HTTPException(404,"Trámite no encontrado.")
+  return seleccionar_caso(data.caso,data.respuestas or {})
+ return iniciar(data.servicio,None,data.respuestas or {})
 
-function renderPregunta(d){
- guardar(d);
- state.caso=d.caso||state.caso;
- state.pregunta_id=d.pregunta_id||"";
- if($("paso"))$("paso").textContent=d.titulo?`TRÁMITE: ${d.titulo}`:"";
- if($("preguntaTexto"))$("preguntaTexto").textContent=d.pregunta||"";
- if($("textoEntrada"))$("textoEntrada").style.display=(d.opciones&&d.opciones.length)?"none":"block";
- renderOpciones(d.opciones||[]);
- if($("textoUsuario")){
-  $("textoUsuario").value="";
-  $("textoUsuario").focus();
- }
- mostrar("pregunta");
-}
+@app.post("/api/entender")
+def entender(data:Respuesta):
+ if data.servicio not in ("cita","documento"):
+  raise HTTPException(400,"Falta seleccionar el servicio.")
+ return interpretar(data.servicio,data.texto or "",data.respuestas or {},data.pregunta_id or "")
 
-function renderCatalogo(d){
- guardar(d);
- state.pregunta_id="tramite";
- if($("paso"))$("paso").textContent="ELIGE TU TRÁMITE";
- if($("preguntaTexto"))$("preguntaTexto").textContent=d.pregunta||"¿Qué trámite necesitas preparar?";
- if($("textoEntrada"))$("textoEntrada").style.display="none";
- renderOpciones(d.opciones||[]);
- mostrar("pregunta");
-}
+@app.post("/api/responder")
+def responder(data:Respuesta):
+ if data.servicio not in ("cita","documento"):
+  raise HTTPException(400,"Falta seleccionar el servicio.")
+ texto=(data.texto or "").strip()
+ respuestas=dict(data.respuestas or {})
+ if data.caso:
+  if not obtener_caso(data.caso):
+   raise HTTPException(404,"Trámite no encontrado.")
+  if data.pregunta_id and texto:
+   respuestas[data.pregunta_id]=texto
+  return continuar(data.caso,respuestas,data.pregunta_id or "",texto)
+ return interpretar(data.servicio,texto,respuestas,data.pregunta_id or "")
 
-async function entrar(){
- try{
-  mostrar("servicios");
- }catch(e){toast(e.message)}
-}
+def esc(v):
+ return str(v or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\n","<br/>")
 
-async function iniciarServicio(servicio){
- try{
-  state.servicio=servicio;state.caso="";state.respuestas={};state.perfil={};state.resultado=null;
-  const d=await api(`/api/inicio/${encodeURIComponent(servicio)}`);
-  if(d.tipo==="catalogo"||d.catalogo||d.estado==="seleccionar"){
-   renderCatalogo(d);return;
-  }
-  procesar(d);
- }catch(e){toast(e.message)}
-}
+def lista(items):
+ return [str(x) for x in (items or []) if str(x).strip()]
 
-async function seleccionarOpcion(id,texto,obj){
- if(state.pregunta_id==="tramite"||!state.caso){
-  if(!id)return;
-  await iniciarCaso(id);
-  return;
- }
- const valor=texto||id;
- await responder(valor);
-}
+def generar_pdf(r):
+ buf=io.BytesIO()
+ doc=SimpleDocTemplate(buf,pagesize=LETTER,rightMargin=42,leftMargin=42,topMargin=42,bottomMargin=42)
+ styles=getSampleStyleSheet()
+ titulo=ParagraphStyle("Titulo",parent=styles["Title"],fontSize=18,leading=22,alignment=TA_CENTER,spaceAfter=4)
+ h=ParagraphStyle("H",parent=styles["Heading2"],fontSize=12,leading=15,spaceBefore=14,spaceAfter=7)
+ body=ParagraphStyle("Body",parent=styles["BodyText"],fontSize=9.5,leading=13,spaceAfter=5)
+ small=ParagraphStyle("Small",parent=styles["BodyText"],fontSize=8,leading=11)
+ story=[]
 
-async function iniciarCaso(caso){
- try{
-  const d=await api("/api/iniciar",{
-   method:"POST",
-   body:JSON.stringify({
-    servicio:state.servicio,
-    caso:caso,
-    respuestas:state.respuestas
-   })
-  });
-  if(d.estado==="error"){toast(d.mensaje||"No se pudo iniciar el trámite.");return}
-  state.caso=caso;
-  state.pregunta_id=d.pregunta_id||"";
-  guardar(d);
-  procesar(d);
- }catch(e){toast(e.message)}
-}
+ def H(t):
+  story.append(Paragraph(esc(t),h))
+  story.append(Spacer(1,3))
 
-async function responder(texto){
- texto=String(texto||"").trim();
- if(!texto){
-  toast("Escribe o selecciona una respuesta.");
-  return;
- }
- if(!state.caso){
-  toast("Primero selecciona el trámite.");
-  return;
- }
- const pid=state.pregunta_id;
- if(!pid){
-  toast("No hay una pregunta activa.");
-  return;
- }
- try{
-  const d=await api("/api/responder",{
-   method:"POST",
-   body:JSON.stringify({
-    servicio:state.servicio,
-    caso:state.caso,
-    pregunta_id:pid,
-    texto:texto,
-    respuestas:state.respuestas
-   })
-  });
-  procesar(d);
- }catch(e){toast(e.message)}
-}
+ def P(t):
+  if t is not None and str(t).strip():
+   story.append(Paragraph(esc(t),body))
 
-function procesar(d){
- if(!d)return;
- if(d.estado==="error"){
-  toast(d.mensaje||"Ocurrió un error.");
-  return;
- }
- guardar(d);
+ def L(items):
+  for x in lista(items):
+   P("• "+x)
 
- if(d.tipo==="catalogo"||d.tipo==="seleccionar_caso"||d.catalogo){
-  renderCatalogo(d);return;
- }
+ def T(rows):
+  if not rows:return
+  tabla=Table(rows,colWidths=[145,345],repeatRows=1)
+  tabla.setStyle(TableStyle([
+   ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#173452")),
+   ("TEXTCOLOR",(0,0),(-1,0),colors.white),
+   ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
+   ("FONTNAME",(0,1),(0,-1),"Helvetica-Bold"),
+   ("FONTSIZE",(0,0),(-1,-1),9),
+   ("LEADING",(0,0),(-1,-1),12),
+   ("GRID",(0,0),(-1,-1),.4,colors.HexColor("#b7c1cb")),
+   ("VALIGN",(0,0),(-1,-1),"TOP"),
+   ("ROWBACKGROUNDS",(0,1),(-1,-1),[colors.white,colors.HexColor("#f7f9fb")]),
+   ("LEFTPADDING",(0,0),(-1,-1),7),
+   ("RIGHTPADDING",(0,0),(-1,-1),7),
+   ("TOPPADDING",(0,0),(-1,-1),6),
+   ("BOTTOMPADDING",(0,0),(-1,-1),6)
+  ]))
+  story.append(tabla)
+  story.append(Spacer(1,8))
 
- if(d.tipo==="pregunta"){
-  renderPregunta(d);return;
- }
+ nivel=r.get("nivel","amarillo")
+ estado=r.get("estado_texto","TE FALTA ALGO")
+ perfil=r.get("perfil") or {}
+ docs=r.get("documentos") or []
+ tiene=[x.get("nombre") for x in docs if x.get("estado")=="tiene"]
+ falta=[x.get("nombre") for x in docs if x.get("estado")=="falta"]
+ revisar=[x.get("nombre") for x in docs if x.get("estado")=="revisar"]
 
- if(d.tipo==="resultado"&&d.estado==="resuelto"){
-  renderResultado(d);return;
- }
+ story.append(Paragraph("MEXICANO APOYA MEXICANO",titulo))
+ story.append(Paragraph("HOJA DE RUTA PERSONAL DEL TRÁMITE",titulo))
+ story.append(Spacer(1,10))
 
- if(d.pregunta){
-  renderPregunta(d);return;
- }
+ color="#9b2424" if nivel=="rojo" else "#8a6500" if nivel=="amarillo" else "#087f3e"
+ estado_style=ParagraphStyle("Estado",parent=styles["BodyText"],fontSize=12,leading=16,alignment=TA_CENTER,textColor=colors.HexColor(color),spaceAfter=8)
+ story.append(Paragraph("<b>"+esc(estado)+"</b>",estado_style))
 
- toast("La aplicación no recibió una respuesta válida.");
-}
+ H("1. DATOS PERSONALES")
+ filas=[["DATO","INFORMACIÓN"]]
+ campos=[
+  ("Nombre",perfil.get("nombre")),
+  ("Nacionalidad",perfil.get("nacionalidad")),
+  ("Teléfono",perfil.get("telefono")),
+  ("Dirección",perfil.get("direccion")),
+  ("Estado",perfil.get("estado")),
+  ("ZIP",perfil.get("zip") or perfil.get("codigo_postal")),
+  ("Correo",perfil.get("email") or perfil.get("correo"))
+ ]
+ for nombre,valor in campos:
+  filas.append([nombre,valor or "PENDIENTE DE COMPLETAR"])
+ T(filas)
 
-function bloque(t,html){
- return `<div class="bloque"><h3>${t}</h3>${html}</div>`;
-}
+ H("2. TRÁMITE")
+ P(r.get("tramite") or r.get("titulo") or "PENDIENTE DE COMPLETAR")
 
-function lista(arr){
- if(!arr||!arr.length)return `<p class="vacio">PENDIENTE DE COMPLETAR</p>`;
- return `<ul>${arr.map(x=>`<li>${textoSeguro(x)}</li>`).join("")}</ul>`;
-}
+ personas=r.get("personas_obligatorias") or []
+ if personas:
+  H("3. PERSONAS QUE DEBEN PRESENTARSE")
+  L(personas)
 
-function datosPerfil(p){
- const filas=[
-  ["Nombre",p.nombre],
-  ["Nacionalidad",p.nacionalidad],
-  ["Teléfono",p.telefono],
-  ["Dirección",p.direccion],
-  ["Estado",p.estado],
-  ["ZIP",p.zip||p.codigo_postal],
-  ["Correo",p.email||p.correo]
- ];
- return `<div class="datos">${filas.map(x=>`<div><strong>${x[0]}</strong><span>${textoSeguro(x[1]||"PENDIENTE DE COMPLETAR")}</span></div>`).join("")}</div>`;
-}
+ H("4. REQUISITOS OBLIGATORIOS")
+ L(r.get("requisitos_obligatorios") or ["PENDIENTE DE COMPLETAR"])
 
-function renderResultado(d){
- state.resultado=d;
- const nivel=d.nivel||"amarillo";
- const clase=nivel==="verde"?"estado-verde":nivel==="rojo"?"estado-rojo":"estado-amarillo";
- const titulo=d.estado_texto||"TE FALTA ALGO";
- const c=d.checklist||{};
- const personas=d.personas_obligatorias||[];
- const requisitos=d.requisitos_obligatorios||[];
- const originales=d.originales||[];
- const cita=d.cita||[];
- const importantes=d.importante||[];
- let html="";
+ H("5. LO QUE YA TIENES")
+ L(tiene or ["No se registró todavía un documento como disponible."])
 
- html+=`<div class="resultadoCabecera ${clase}">${textoSeguro(titulo)}</div>`;
+ H("6. LO QUE TE FALTA")
+ L(falta or ["PENDIENTE DE COMPLETAR"])
 
- html+=bloque("1. DATOS PERSONALES",datosPerfil(d.perfil||{}));
- html+=bloque("2. TRÁMITE",`<p>${textoSeguro(d.tramite||d.titulo||"PENDIENTE DE COMPLETAR")}</p>`);
+ H("7. LO QUE DEBES CONFIRMAR")
+ L(revisar)
+ L(r.get("especiales"))
 
- if(personas.length)
-  html+=bloque("3. PERSONAS QUE DEBEN PRESENTARSE",lista(personas));
+ H("8. ¿QUÉ DEBES HACER?")
+ P(r.get("prepara") or "PENDIENTE DE COMPLETAR")
 
- html+=bloque("4. REQUISITOS OBLIGATORIOS",lista(requisitos));
- html+=bloque("5. LO QUE YA TIENES",lista(c.tiene));
- html+=bloque("6. LO QUE TE FALTA",lista(c.falta));
- html+=bloque("7. LO QUE DEBES CONFIRMAR",lista([...(c.revisar||[]),...(d.especiales||[])]));
- html+=bloque("8. ¿QUÉ DEBES HACER?",`<p>${textoSeguro(d.prepara||"PENDIENTE DE COMPLETAR")}</p>`);
- html+=bloque("9. CITA",lista(cita.length?cita:["Confirma la necesidad de cita según tu trámite y conserva la confirmación."]));
- html+=bloque("10. DOCUMENTOS ORIGINALES",lista(originales));
- if(d.copias&&d.copias.length)html+=bloque("11. COPIAS",lista(d.copias));
- html+=bloque("12. PAGO",`<p>${textoSeguro(d.pago||"Confirma la tarifa y forma de pago vigente.")}</p>`);
- html+=bloque("13. ANTES DE FIRMAR O IMPRIMIR",`<p>${textoSeguro(d.revision||"Revisa cuidadosamente todos los datos.")}</p>`);
- if(d.vigencia)html+=bloque("14. VIGENCIA",`<p>${textoSeguro(d.vigencia)}</p>`);
- if(d.entrega)html+=bloque("15. ENTREGA",`<p>${textoSeguro(d.entrega)}</p>`);
- html+=bloque("16. INFORMACIÓN IMPORTANTE",lista(importantes.concat(d.confirma?[d.confirma]:[])));
- if(d.fuente){
-  html+=`<div class="bloque"><h3>INFORMACIÓN OFICIAL</h3><a class="fuente" href="${textoSeguro(d.fuente)}" target="_blank" rel="noopener noreferrer">ABRIR INFORMACIÓN OFICIAL</a></div>`;
- }
+ H("9. CITA")
+ L(r.get("cita") or ["Confirma la necesidad de cita y conserva la confirmación correspondiente."])
 
- if($("respuesta"))$("respuesta").innerHTML=html;
- if($("fuenteOficial")){
-  $("fuenteOficial").href=d.fuente||"#";
-  $("fuenteOficial").style.display=d.fuente?"block":"none";
- }
- mostrar("resultado");
-}
+ H("10. DOCUMENTOS ORIGINALES")
+ L(r.get("originales") or ["Presenta los documentos ORIGINALES que correspondan a tu caso."])
 
-async function descargarPDF(){
- const b=$("pdf");
- if(!state.resultado){
-  toast("Primero termina la consulta.");
-  return;
- }
- try{
-  if(b)b.disabled=true;
-  const r=await fetch("/api/pdf",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    servicio:state.servicio,
-    caso:state.caso,
-    respuestas:state.respuestas,
-    resultado:state.resultado
-   })
-  });
-  if(!r.ok){
-   let e={};
-   try{e=await r.json()}catch(x){}
-   throw new Error(e.detail||"No se pudo generar el PDF.");
-  }
-  const blob=await r.blob();
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;
-  a.download="Hoja_de_Ruta_Mexicano_Apoya_Mexicano.pdf";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
- }catch(e){toast(e.message)}
- finally{if(b)b.disabled=false}
-}
+ copias=r.get("copias") or []
+ if copias:
+  H("11. COPIAS")
+  L(copias)
 
-function nuevo(){
- limpiar();
- mostrar("inicio");
-}
+ H("12. PAGO")
+ P(r.get("pago") or "Confirma la tarifa y forma de pago vigente.")
 
-function salir(){
- $("salida")?.classList.remove("oculto");
-}
+ H("13. ANTES DE FIRMAR O IMPRIMIR")
+ P(r.get("revision") or "Revisa cuidadosamente todos los datos antes de firmar o imprimir.")
 
-function cancelarSalida(){
- $("salida")?.classList.add("oculto");
-}
+ if r.get("vigencia"):
+  H("14. VIGENCIA")
+  P(r.get("vigencia"))
 
-function confirmarSalida(){
- $("salida")?.classList.add("oculto");
- limpiar();
- mostrar("inicio");
-}
+ if r.get("entrega"):
+  H("15. ENTREGA")
+  P(r.get("entrega"))
 
-function abrirOficial(){
- $("infoOficial")?.classList.remove("oculto");
-}
+ H("16. INFORMACIÓN IMPORTANTE")
+ L(r.get("importante"))
+ if r.get("confirma"):
+  P(r.get("confirma"))
 
-function cerrarOficial(){
- $("infoOficial")?.classList.add("oculto");
-}
+ H("INFORMACIÓN OFICIAL")
+ P(r.get("fuente") or r.get("fuente_oficial") or FUENTES.get("tarifas",""))
 
-function usarTexto(){
- const x=$("textoUsuario");
- if(!x)return;
- responder(x.value);
-}
+ story.append(Spacer(1,10))
+ story.append(Paragraph(
+  "Esta Hoja de Ruta se basa en la información proporcionada durante la consulta y no sustituye la revisión de la autoridad consular. MEXICANO APOYA MEXICANO es una aplicación independiente y no es el Gobierno de México ni representa a ningún Consulado.",
+  small
+ ))
 
-let reconocimiento=null;
+ doc.build(story)
+ buf.seek(0)
+ return buf
 
-function voz(){
- const b=$("voz"),x=$("textoUsuario");
- if(!x)return;
+@app.post("/api/pdf")
+def pdf(data:Respuesta):
+ r=data.resultado
+ if not r and data.caso:
+  if not obtener_caso(data.caso):
+   raise HTTPException(404,"Trámite no encontrado.")
+  r=continuar(data.caso,data.respuestas or {})
+ if not r:
+  raise HTTPException(400,"Primero termina la consulta.")
+ if r.get("tipo")!="resultado":
+  raise HTTPException(400,"La consulta todavía no está terminada.")
+ try:
+  archivo=generar_pdf(r)
+ except Exception as e:
+  raise HTTPException(500,f"No se pudo generar el PDF: {e}")
+ return StreamingResponse(
+  archivo,
+  media_type="application/pdf",
+  headers={"Content-Disposition":"attachment; filename=Hoja_de_Ruta_Mexicano_Apoya_Mexicano.pdf"}
+ )
 
- if(!("webkitSpeechRecognition" in window||"SpeechRecognition" in window)){
-  toast("Tu navegador no permite entrada por voz.");
-  return;
- }
-
- const R=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(reconocimiento){
-  reconocimiento.stop();
-  reconocimiento=null;
-  if(b)b.textContent="🎤 HABLAR";
-  return;
- }
-
- reconocimiento=new R();
- reconocimiento.lang="es-MX";
- reconocimiento.interimResults=false;
- reconocimiento.continuous=false;
-
- if(b)b.textContent="🔴 ESCUCHANDO...";
-
- reconocimiento.onresult=e=>{
-  const t=e.results?.[0]?.[0]?.transcript||"";
-  x.value=t;
-  responder(t);
- };
-
- reconocimiento.onerror=e=>{
-  toast("No se pudo reconocer la voz.");
- };
-
- reconocimiento.onend=()=>{
-  reconocimiento=null;
-  if(b)b.textContent="🎤 HABLAR";
- };
- reconocimiento.start();
-}
-
-function teclado(e){
- if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){
-  e.preventDefault();
-  usarTexto();
- }
-}
-
-document.addEventListener("DOMContentLoaded",async()=>{
- $("entrar")?.addEventListener("click",entrar);
-
- $("servicioCita")?.addEventListener("click",()=>iniciarServicio("cita"));
- $("servicioDocumento")?.addEventListener("click",()=>iniciarServicio("documento"));
-
- $("continuar")?.addEventListener("click",usarTexto);
- $("voz")?.addEventListener("click",voz);
- $("textoUsuario")?.addEventListener("keydown",teclado);
-
- $("pdf")?.addEventListener("click",descargarPDF);
- $("nuevo")?.addEventListener("click",nuevo);
- $("salir")?.addEventListener("click",salir);
-
- $("confirmarSalida")?.addEventListener("click",confirmarSalida);
- $("cancelarSalida")?.addEventListener("click",cancelarSalida);
-
- $("oficial")?.addEventListener("click",abrirOficial);
- $("cerrarOficial")?.addEventListener("click",cerrarOficial);
-
- try{
-  await api("/api/estado");
- }catch(e){
-  console.warn("Servidor:",e.message);
- }
-});
+if __name__=="__main__":
+ import uvicorn
+ uvicorn.run("app:app",host="0.0.0.0",port=int(os.getenv("PORT","8000")))
