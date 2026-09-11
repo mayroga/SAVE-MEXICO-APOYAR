@@ -4,71 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
+<meta name="description" content="MEXICANO APOYA MEXICANO - guía sencilla para trámites consulares.">
 <title>MEXICANO APOYA MEXICANO</title>
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:#07111f;color:#f5f7fa}
-body{display:flex;justify-content:center}
-main{width:100%;max-width:760px;padding:18px 14px 40px}
-header{text-align:center;margin-bottom:18px}
-header h1{font-size:clamp(25px,6vw,42px);margin:8px 0 4px;line-height:1.05}
-header p{margin:0;color:#b9c4d0;font-size:15px}
-.card{background:#101b2b;border:1px solid #223249;border-radius:18px;padding:22px;margin-top:14px;box-shadow:0 8px 30px #0005}
-h2{font-size:clamp(21px,5vw,30px);margin:0 0 15px;line-height:1.15}
-h3{font-size:19px;margin:20px 0 8px}
-p{font-size:17px;line-height:1.55;margin:8px 0}
-button,input,textarea{font:inherit}
-button{width:100%;border:0;border-radius:14px;padding:17px 14px;margin:7px 0;cursor:pointer;font-weight:700;font-size:17px;background:#1e88e5;color:#fff}
-button:hover{filter:brightness(1.1)}
-.opcion{background:#16283d;border:1px solid #31506f;text-align:left;min-height:58px}
-.continuar{background:#159447}
-#entrar{font-size:21px;padding:20px;background:#1687e8}
-#servicios{display:none}
-#pregunta,#resultado{display:none}
-#preguntaTexto{font-size:clamp(22px,5vw,31px);font-weight:700;line-height:1.25;margin-bottom:18px}
-#opciones{display:flex;flex-direction:column}
-#textoEntrada{display:none;margin-top:12px}
-#textoUsuario{width:100%;min-height:110px;border-radius:14px;border:1px solid #38506a;background:#081321;color:#fff;padding:15px;font-size:17px;resize:vertical}
-#textoUsuario:focus{outline:2px solid #2196f3}
-.acciones{display:flex;gap:8px;flex-wrap:wrap}
-.acciones button{flex:1;min-width:140px}
-#voz{background:#394b61}
-#respuesta{margin-top:5px}
-#respuesta h3{border-bottom:1px solid #2b4058;padding-bottom:7px}
-#respuesta p{white-space:pre-line}
-.fuente{display:block;margin:12px 0;padding:15px;border-radius:12px;background:#182c43;color:#73c5ff;text-decoration:none;font-weight:700;text-align:center;word-break:break-word}
-.tituloCaso{background:#0b1625;border:1px solid #263c54;border-radius:12px;padding:13px;margin:0 0 10px;font-weight:700;font-size:18px}
-.nota{color:#aebaca;font-size:14px;line-height:1.5;margin-top:18px}
-.legal{font-size:13px;color:#8997a8;line-height:1.5;margin-top:18px;text-align:center}
-.oculto{display:none!important}
-@media(max-width:520px){
- main{padding:10px 10px 30px}
- .card{padding:17px 14px;border-radius:15px}
- button{font-size:16px;padding:16px 12px}
- p{font-size:16px}
-}
-</style>
+<link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <main>
 <header>
 <h1>MEXICANO APOYA MEXICANO</h1>
-<p>Información sencilla para tus trámites consulares.</p>
+<p>Una guía sencilla para preparar tus trámites consulares.</p>
 </header>
 
 <section id="inicio" class="card">
 <h2>¿PARA QUÉ SIRVE?</h2>
-<p>Esta aplicación te ayuda a saber qué trámite o documento puede corresponder a tu situación y qué debes preparar antes de acudir al consulado.</p>
-<p>No sustituye al consulado. La autoridad consular es quien confirma los requisitos de tu caso.</p>
-<button id="entrar">ENTRAR</button>
-<div class="legal">Tu información se usa para ayudarte durante esta consulta. No afirmamos ser parte del Gobierno de México.</div>
+<div class="caja">
+<p>Te ayudamos a entender qué necesitas preparar antes de acudir al consulado.</p>
+<p>La aplicación te hace preguntas sencillas y al final puede preparar una <strong>Hoja de Ruta en PDF</strong> con lo que tienes, lo que te falta y lo que debes revisar.</p>
+</div>
+<button id="entrar" class="principal" type="button">ENTRAR</button>
+<p class="legal">Esta aplicación es independiente. No somos el Gobierno de México ni hablamos en nombre de ningún consulado.</p>
 </section>
 
 <section id="servicios" class="card">
 <h2>¿QUÉ NECESITAS?</h2>
-<p>Elige la opción que más se parece a tu situación.</p>
-<button class="opcion" id="servicioCita">TENGO UNA CITA</button>
-<button class="opcion" id="servicioDocumento">NO SÉ QUÉ DOCUMENTO NECESITO</button>
+<p class="grande">Elige la opción que más se parece a tu situación.</p>
+<button id="servicioCita" class="opcion" type="button">TENGO UNA CITA</button>
+<button id="servicioDocumento" class="opcion" type="button">NO SÉ QUÉ DOCUMENTO NECESITO</button>
 </section>
 
 <section id="pregunta" class="card">
@@ -76,21 +37,130 @@ button:hover{filter:brightness(1.1)}
 <div id="opciones"></div>
 
 <div id="textoEntrada">
-<textarea id="textoUsuario" placeholder="Escribe aquí o usa tu voz"></textarea>
+<textarea id="textoUsuario" placeholder="Escribe aquí con tus propias palabras..."></textarea>
 <div class="acciones">
-<button id="voz" type="button">🎤 HABLAR</button>
-<button id="continuar" type="button" class="continuar">CONTINUAR</button>
+<button id="voz" class="voz" type="button">🎤 HABLAR</button>
+<button id="continuar" class="continuar" type="button">CONTINUAR</button>
 </div>
+<p class="nota">Puedes escribir o hablar. No necesitas saber el nombre oficial del trámite.</p>
 </div>
 </section>
 
 <section id="resultado" class="card">
-<h2>✓ TU RESULTADO</h2>
+<div class="check">✓</div>
+<h2>TU RESULTADO</h2>
 <div id="respuesta"></div>
-<button id="nuevo" type="button" class="continuar">EMPEZAR DE NUEVO</button>
+
+<div id="accionesResultado" class="acciones resultadoAcciones">
+<button id="pdf" class="principal" type="button">DESCARGAR HOJA DE RUTA PDF</button>
+<button id="oficial" class="opcion" type="button">VER INFORMACIÓN OFICIAL</button>
+<button id="nuevo" class="continuar" type="button">EMPEZAR DE NUEVO</button>
+<button id="salir" class="salir" type="button">SALIR</button>
+</div>
 </section>
 
+<div id="infoOficial" class="modal oculto">
+<div class="modalCaja">
+<h2>INFORMACIÓN OFICIAL</h2>
+<p>La información oficial debe consultarse directamente en la fuente correspondiente a tu trámite.</p>
+<a id="fuenteOficial" href="#" target="_blank" rel="noopener noreferrer">ABRIR FUENTE OFICIAL</a>
+<button id="cerrarOficial" type="button">CERRAR</button>
+</div>
+</div>
+
+<div id="salida" class="modal oculto">
+<div class="modalCaja">
+<h2>¿SALIR?</h2>
+<p>Si sales, esta consulta se cerrará.</p>
+<div class="acciones">
+<button id="confirmarSalida" class="salir" type="button">SALIR</button>
+<button id="cancelarSalida" class="continuar" type="button">CONTINUAR</button>
+</div>
+</div>
+</div>
 </main>
+
 <script src="/static/app.js"></script>
+<script>
+(function(){
+ const $=id=>document.getElementById(id);
+ let ultimaFuente="";
+
+ function mostrar(id,ver){
+  const e=$(id);
+  if(e)e.classList.toggle("oculto",!ver);
+ }
+
+ function descargarPDF(){
+  const caso=window.casoActual||"";
+  const respuestas=window.respuestasActuales||{};
+  if(!caso){
+   alert("Primero completa la consulta.");
+   return;
+  }
+  const b=$("pdf");
+  if(b){b.disabled=true;b.textContent="PREPARANDO PDF...";}
+  fetch("/api/pdf",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({caso:caso,respuestas:respuestas})
+  }).then(async r=>{
+   if(!r.ok)throw new Error("pdf");
+   const blob=await r.blob();
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement("a");
+   a.href=url;
+   a.download="Hoja_Ruta_Mexicano_Apoya_Mexicano.pdf";
+   document.body.appendChild(a);
+   a.click();
+   a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }).catch(()=>{
+   alert("No pudimos generar el PDF. Intenta nuevamente.");
+  }).finally(()=>{
+   if(b){b.disabled=false;b.textContent="DESCARGAR HOJA DE RUTA PDF";}
+  });
+ }
+
+ function abrirFuente(){
+  if(!ultimaFuente)return;
+  $("fuenteOficial").href=ultimaFuente;
+  mostrar("infoOficial",true);
+ }
+
+ function salir(){
+  mostrar("salida",true);
+ }
+
+ function confirmarSalida(){
+  mostrar("salida",false);
+  if(typeof window.reiniciar==="function")window.reiniciar();
+  window.scrollTo({top:0,behavior:"smooth"});
+ }
+
+ function cancelarSalida(){
+  mostrar("salida",false);
+ }
+
+ $("pdf").onclick=descargarPDF;
+ $("oficial").onclick=abrirFuente;
+ $("cerrarOficial").onclick=()=>mostrar("infoOficial",false);
+ $("salir").onclick=salir;
+ $("confirmarSalida").onclick=confirmarSalida;
+ $("cancelarSalida").onclick=cancelarSalida;
+
+ const anterior=window.mostrarResultado;
+ window.mostrarResultado=function(d){
+  ultimaFuente=d?.fuente||"";
+  window.casoActual=d?.caso||"";
+  window.respuestasActuales=d?.respuestas||{};
+  if(typeof anterior==="function")anterior(d);
+  const a=$("oficial");
+  if(a)a.style.display=ultimaFuente?"block":"none";
+ };
+
+ window.descargarPDF=descargarPDF;
+})();
+</script>
 </body>
 </html>
