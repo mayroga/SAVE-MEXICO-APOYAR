@@ -33,7 +33,7 @@ PRICE_ANNUAL=os.getenv("STRIPE_PRICE_ID_ANNUAL","")
 if STRIPE_SECRET_KEY:
     stripe.api_key=STRIPE_SECRET_KEY
 
-app=FastAPI(title="SAVE MÉXICO AYUDAR",version="5.0.0")
+app=FastAPI(title="SAVE MÉXICO AYUDAR",version="5.1.0")
 app.mount("/static",StaticFiles(directory=str(STATIC)),name="static")
 
 ADMIN_TOKENS=set()
@@ -68,20 +68,17 @@ def load_data():
         raise HTTPException(500,f"No se pudo leer tramites.json: {e}")
 
 def get_tramites():
-    data=load_data().get("tramites",{})
-    return data if isinstance(data,dict) else {}
+    x=load_data().get("tramites",{})
+    return x if isinstance(x,dict) else {}
 
 def get_tramite(tid):
     t=get_tramites().get(tid)
-    if not t:
-        raise HTTPException(404,"Trámite no encontrado.")
+    if not t: raise HTTPException(404,"Trámite no encontrado.")
     return t
 
 def get_modalidad(tid,mid):
-    t=get_tramite(tid)
-    m=t.get("modalidades",{}).get(mid)
-    if not m:
-        raise HTTPException(404,"Modalidad no encontrada.")
+    m=get_tramite(tid).get("modalidades",{}).get(mid)
+    if not m: raise HTTPException(404,"Modalidad no encontrada.")
     return m
 
 def new_token(store):
@@ -89,12 +86,12 @@ def new_token(store):
     store.add(token)
     return token
 
-def cookie_access(request:Request):
+def cookie_access(request):
     a=request.cookies.get("save_admin_token")
     p=request.cookies.get("save_access_token")
     return a in ADMIN_TOKENS,p in ACCESS_TOKENS
 
-def require_access(request:Request):
+def require_access(request):
     admin,paid=cookie_access(request)
     if not(admin or paid):
         raise HTTPException(401,"Se requiere acceso autorizado.")
@@ -106,10 +103,8 @@ def clean_name(name):
 def txt(v):
     if v is None:return ""
     if isinstance(v,bool):return "Sí" if v else "No"
-    if isinstance(v,(list,tuple,set)):
-        return ", ".join(txt(x) for x in v)
-    if isinstance(v,dict):
-        return ", ".join(f"{k}: {txt(x)}" for k,x in v.items())
+    if isinstance(v,(list,tuple,set)):return ", ".join(txt(x) for x in v)
+    if isinstance(v,dict):return ", ".join(f"{k}: {txt(x)}" for k,x in v.items())
     return str(v)
 
 def norm(v):
@@ -135,16 +130,14 @@ def flatten_values(v):
 
 def selected_values(respuestas):
     out=[]
-    for v in respuestas.values():
-        out.extend(flatten_values(v))
+    for v in respuestas.values():out.extend(flatten_values(v))
     return [x for x in out if x!=""]
 
 def find_question(qmap,key):
     if key in qmap:return qmap[key]
     nk=norm(key)
     for k,q in qmap.items():
-        if nk==norm(k) or nk==norm(q.get("texto","")):
-            return q
+        if nk==norm(k) or nk==norm(q.get("texto","")):return q
     return {}
 
 def answer_for(respuestas,key):
@@ -157,11 +150,8 @@ def answer_for(respuestas,key):
 def answer_has(respuestas,terms):
     if isinstance(terms,str):terms=[terms]
     terms=[norm(x) for x in terms]
-    for v in selected_values(respuestas):
-        n=norm(v)
-        if any(t and (n==t or t in n) for t in terms):
-            return True
-    return False
+    return any(t and (norm(v)==t or t in norm(v))
+               for v in selected_values(respuestas) for t in terms)
 
 def values_match(value,expected):
     vals=[norm(x) for x in flatten_values(value)]
@@ -169,38 +159,40 @@ def values_match(value,expected):
     return any(e and (v==e or e in v or v in e) for v in vals for e in exps)
 
 def condition_match(respuestas,condition):
-    if not condition:return True
-    if not isinstance(condition,dict):return True
+    if not condition or not isinstance(condition,dict):return True
     key=condition.get("respuesta") or condition.get("pregunta") or condition.get("campo")
     value=answer_for(respuestas,key) if key else None
-    if "incluye" in condition:
-        return values_match(value,condition["incluye"])
-    if "contiene" in condition:
-        return values_match(value,condition["contiene"])
+    vals=flatten_values(value)
+    if "incluye" in condition:return values_match(value,condition["incluye"])
+    if "contiene" in condition:return values_match(value,condition["contiene"])
     if "igual_a" in condition or "es" in condition:
         return values_match(value,condition.get("igual_a",condition.get("es")))
+    if "distinto_de" in condition:
+        return not values_match(value,condition["distinto_de"])
+    if "no_es" in condition:return not values_match(value,condition["no_es"])
+    if "no_incluye" in condition:return not values_match(value,condition["no_incluye"])
     if "alguno_de" in condition:
         return any(values_match(value,x) for x in condition["alguno_de"])
     if "todos_de" in condition:
         return all(values_match(value,x) for x in condition["todos_de"])
-    if "no_incluye" in condition:
-        return not values_match(value,condition["no_incluye"])
-    if "no_es" in condition:
-        return not values_match(value,condition["no_es"])
+    if "cantidad_mayor_que" in condition:
+        return len([x for x in vals if txt(x)])>float(condition["cantidad_mayor_que"])
+    if "cantidad_igual_a" in condition:
+        return len([x for x in vals if txt(x)])==int(condition["cantidad_igual_a"])
     if "existe" in condition:
-        return (value not in (None,"",[]))==bool(condition["existe"])
+        return (value not in (None,"",[],{}))==bool(condition["existe"])
     return True
 
 def question_visible(q,respuestas):
     if not isinstance(q,dict):return False
-    cond=q.get("mostrar_si") or q.get("si") or q.get("condicion")
+    cond=q.get("mostrar_si") or q.get("si") or q.get("condicion") or q.get("cuando")
     if not cond:return True
-    if isinstance(cond,list):
-        return all(condition_match(respuestas,x) for x in cond)
+    if isinstance(cond,list):return all(condition_match(respuestas,x) for x in cond)
     return condition_match(respuestas,cond)
 
 def visible_questions(m,respuestas):
-    return [q for q in m.get("preguntas",[]) if isinstance(q,dict) and question_visible(q,respuestas)]
+    return [q for q in m.get("preguntas",[])
+            if isinstance(q,dict) and question_visible(q,respuestas)]
 
 def unanswered_required(m,respuestas):
     missing=[]
@@ -208,9 +200,9 @@ def unanswered_required(m,respuestas):
         if not q.get("obligatoria",False):continue
         qid=str(q.get("id",""))
         if not qid:continue
-        value=answer_for(respuestas,qid)
-        empty=value is None or value=="" or value==[] or value=={}
-        if empty:missing.append(q.get("texto",label(qid)))
+        v=answer_for(respuestas,qid)
+        if v is None or v=="" or v==[] or v=={}:
+            missing.append(q.get("texto",label(qid)))
     return missing
 
 def dynamic_situations(m,respuestas):
@@ -219,14 +211,12 @@ def dynamic_situations(m,respuestas):
     for key,value in respuestas.items():
         q=find_question(qmap,key)
         if not q or not question_visible(q,respuestas):continue
-        vals=flatten_values(value)
         special=q.get("situaciones") or q.get("casos_especiales") or []
         if isinstance(special,str):special=[special]
-        for val in vals:
+        for val in flatten_values(value):
             nv=norm(val)
             for s in special:
-                ns=norm(s)
-                if ns and (ns in nv or nv in ns) and s not in found:
+                if norm(s) and (norm(s) in nv or nv in norm(s)) and s not in found:
                     found.append(s)
             if any(x in nv for x in ["perdí","perdi","robaron","robada","robado","extrav","perdida"]):
                 if "Pérdida, robo o extravío de documento" not in found:
@@ -241,25 +231,33 @@ def dynamic_situations(m,respuestas):
 
 def document_condition(d,respuestas):
     if not isinstance(d,dict):return True
-    cond=d.get("mostrar_si") or d.get("si") or d.get("condicion")
+    cond=d.get("mostrar_si") or d.get("si") or d.get("condicion") or d.get("cuando")
     if not cond:return True
-    if isinstance(cond,list):
-        return all(condition_match(respuestas,x) for x in cond)
+    if isinstance(cond,list):return all(condition_match(respuestas,x) for x in cond)
     return condition_match(respuestas,cond)
 
 def document_items(m):
     base=m.get("documentos",[]) or []
     if isinstance(base,dict):
-        items=[]
+        out=[]
         for k,v in base.items():
             if isinstance(v,dict):
                 x=dict(v)
+                x.setdefault("id",k)
                 x.setdefault("nombre",k)
-                items.append(x)
+                out.append(x)
             else:
-                items.append({"nombre":k,"obligatorio":bool(v)})
-        return items
-    return base if isinstance(base,list) else []
+                out.append({"id":k,"nombre":k,"obligatorio":bool(v)})
+        return out
+    out=[]
+    for d in base:
+        if isinstance(d,dict):
+            x=dict(d)
+            x.setdefault("id",x.get("nombre",""))
+            out.append(x)
+        else:
+            out.append({"id":str(d),"nombre":str(d),"obligatorio":True})
+    return out
 
 def normalize_document_names(value):
     if isinstance(value,dict):
@@ -267,37 +265,71 @@ def normalize_document_names(value):
         for k,v in value.items():
             if isinstance(v,dict):
                 status=v.get("estado") or v.get("status")
-                if status in ("LO_TENGO","Disponible","SI","sí","si"):result.append(k)
-            elif isinstance(v,str) and norm(v) in ("lo_tengo","disponible","si","sí"):
+                if norm(status) in ("lo_tengo","disponible","si","sí","tengo"):
+                    result.append(k)
+            elif isinstance(v,str) and norm(v) in ("lo_tengo","disponible","si","sí","tengo"):
                 result.append(k)
         return result
     return [txt(x) for x in flatten_values(value) if txt(x)]
 
+def document_status_map(g):
+    result={}
+    groups=[
+        ("LO_TENGO",g.documentos_disponibles),
+        ("NO_LO_TENGO",g.documentos_faltantes),
+        ("NO_ESTOY_SEGURO",g.documentos_dudosos)
+    ]
+    for status,items in groups:
+        for x in normalize_document_names(items):
+            result[norm(x)]=status
+    if isinstance(g.documentos,dict):
+        for k,v in g.documentos.items():
+            if isinstance(v,dict):
+                s=v.get("estado") or v.get("status")
+            else:s=v
+            if s:result[norm(k)]=txt(s)
+    return result
+
 def document_rules(m,respuestas,disponibles,faltantes,dudosos,documentos=None):
     result=[]
-    def add(name,status="Por revisar",reason=""):
-        if not name:return
-        key=norm(name)
-        for d in result:
-            if norm(d["documento"])==key:return
-        result.append({"documento":txt(name),"estado":status,"motivo":reason})
-    disp=normalize_document_names(disponibles)
-    falt=normalize_document_names(faltantes)
-    duda=normalize_document_names(dudosos)
-    if documentos:
-        if not disp:disp=normalize_document_names(documentos)
+    status_map=document_status_map(Guide(
+        tramite="",modalidad="",documentos=documentos or {},
+        documentos_disponibles=disponibles or [],
+        documentos_faltantes=faltantes or [],
+        documentos_dudosos=dudosos or []
+    ))
+    def add(d,status="POR_REVISAR",reason=""):
+        if not d:return
+        did=norm(d.get("id") or d.get("nombre") or d.get("documento") or d.get("titulo"))
+        name=d.get("nombre") or d.get("documento") or d.get("titulo") or did
+        for x in result:
+            if norm(x["id"])==did:return
+        result.append({
+            "id":did,
+            "documento":txt(name),
+            "estado":status,
+            "motivo":txt(reason),
+            "confirmar":bool(d.get("confirmar",False)),
+            "obligatorio":bool(d.get("obligatorio",d.get("requerido",True))),
+            "bloque":d.get("bloque","")
+        })
     for d in document_items(m):
-        if not isinstance(d,dict): 
-            add(d)
-            continue
         if not document_condition(d,respuestas):continue
-        name=d.get("nombre") or d.get("documento") or d.get("titulo")
-        reason=d.get("motivo") or d.get("razon") or ""
-        required=d.get("obligatorio",d.get("requerido",True))
-        if required:add(name,"Por revisar",reason)
-    for d in disp:add(d,"Disponible","La persona indicó que lo tiene.")
-    for d in falt:add(d,"Falta","La persona indicó que no lo tiene.")
-    for d in duda:add(d,"Dudoso","La persona indicó que necesita revisar su aceptación o situación.")
+        did=norm(d.get("id") or d.get("nombre") or d.get("documento") or d.get("titulo"))
+        status=status_map.get(did)
+        if status:
+            ns=norm(status)
+            if ns in ("lo_tengo","disponible","si","sí","tengo"):
+                status="LO_TENGO"
+            elif ns in ("no_lo_tengo","falta","faltante","no"):
+                status="NO_LO_TENGO"
+            elif ns in ("no_estoy_seguro","dudoso","revision","revisión_necesaria"):
+                status="NO_ESTOY_SEGURO"
+            elif ns in ("no_aplica","no aplica"):
+                status="NO_APLICA"
+            else:status="POR_REVISAR"
+        else:status="POR_REVISAR"
+        add(d,status,d.get("motivo") or d.get("razon",""))
     return result
 
 def contradictions(g,m):
@@ -317,11 +349,14 @@ def contradictions(g,m):
             v=answer_for(respuestas,str(q.get("id","")))
             if isinstance(v,list) and len(v)>1:
                 issues.append(f"La pregunta «{q.get('texto','')}» recibió varias respuestas cuando requiere una sola.")
-    if "OTRO" in [str(x).upper() for x in selected_values(respuestas)] and not answer_has(respuestas,["detalle","especifica","especifique"]):
-        issues.append("Se seleccionó «Otro» y debe explicarse qué situación corresponde.")
+    for v in selected_values(respuestas):
+        if norm(v) in ("otro","__otro__"):
+            if not answer_has(respuestas,["detalle","especifica","especifique"]):
+                issues.append("Se seleccionó «Otro» y debe explicarse qué situación corresponde.")
+            break
     return issues
 
-def evaluate_case(g:Guide,m):
+def evaluate_case(g,m):
     respuestas=g.datos_especificos or {}
     qmap=question_map(m)
     situations=[]
@@ -330,25 +365,18 @@ def evaluate_case(g:Guide,m):
     for x in dynamic_situations(m,respuestas):
         if x not in situations:situations.append(x)
     issues=contradictions(g,m)
-    missing_questions=unanswered_required(m,respuestas)
-    docs=document_rules(
-        m,respuestas,
-        g.documentos_disponibles,
-        g.documentos_faltantes,
-        g.documentos_dudosos,
-        g.documentos
-    )
+    pending=unanswered_required(m,respuestas)
+    docs=document_rules(m,respuestas,g.documentos_disponibles,
+                        g.documentos_faltantes,g.documentos_dudosos,g.documentos)
     for d in docs:
-        if d["estado"]=="Por revisar":
+        if d["estado"]=="POR_REVISAR":
             for x in g.aclaraciones:
-                if norm(d["documento"]) in norm(x):
-                    d["estado"]="Revisión necesaria"
+                if norm(d["documento"]) in norm(x) or norm(d["id"]) in norm(x):
+                    d["estado"]="REQUIERE_CONFIRMACION"
                     break
-    missing=[d["documento"] for d in docs if d["estado"]=="Falta"]
-    doubtful=[d["documento"] for d in docs if d["estado"] in ("Dudoso","Revisión necesaria")]
-    if missing_questions:
-        status="Necesita aclaración"
-    elif issues:
+    missing=[d["documento"] for d in docs if d["estado"]=="NO_LO_TENGO" and d["obligatorio"]]
+    doubtful=[d["documento"] for d in docs if d["estado"]=="NO_ESTOY_SEGURO" or d["estado"]=="REQUIERE_CONFIRMACION"]
+    if pending or issues:
         status="Necesita aclaración"
     elif missing:
         status="Falta documentación"
@@ -364,7 +392,7 @@ def evaluate_case(g:Guide,m):
         "situaciones":situations,
         "contradicciones":issues,
         "preguntas":qmap,
-        "preguntas_pendientes":missing_questions
+        "preguntas_pendientes":pending
     }
 
 def pdf_line(c,text,x,y,width=500,size=10,leading=14):
@@ -390,7 +418,23 @@ def pdf_section(c,title,y):
 def pdf_bullet(c,text,y):
     return pdf_line(c,f"• {text}",55,y,480,10,14)
 
-def make_pdf(g:Guide):
+def pdf_document(c,d,y):
+    if y<105:
+        c.showPage()
+        y=LETTER[1]-55
+    c.setFont("Helvetica-Bold",10)
+    y=pdf_line(c,f"DOCUMENTO: {d.get('id','')}",55,y,480,10,13)
+    y=pdf_line(c,f"Nombre: {d.get('documento','')}",70,y,465,10,13)
+    y=pdf_line(c,f"Estado: {label(d.get('estado',''))}",70,y,465,10,13)
+    if d.get("obligatorio"):
+        y=pdf_line(c,"Importancia: documento aplicable al caso.",70,y,465,9,12)
+    if d.get("motivo"):
+        y=pdf_line(c,f"Nota: {d['motivo']}",70,y,465,9,12)
+    if d.get("confirmar"):
+        y=pdf_line(c,"CONFIRMAR CON LA AUTORIDAD antes de acudir.",70,y,465,9,12)
+    return y-5
+
+def make_pdf(g):
     t=get_tramite(g.tramite)
     m=get_modalidad(g.tramite,g.modalidad)
     evaluation=evaluate_case(g,m)
@@ -413,124 +457,116 @@ def make_pdf(g:Guide):
     y=pdf_line(c,f"Preparado: {now}",45,y-2,500,9,13)
     y-=8
 
-    estado=evaluation["estado"]
     y=pdf_section(c,"1. RESULTADO DE LA REVISIÓN",y)
+    estado=evaluation["estado"]
     y=pdf_line(c,f"Estado del caso: {estado}",55,y,480,11,15)
-    if estado=="Preparación avanzada":
-        y=pdf_line(c,"La información proporcionada permite continuar con la preparación.",55,y,480)
-    elif estado=="Falta documentación":
-        y=pdf_line(c,"Todavía existe documentación marcada como faltante.",55,y,480)
-    elif estado=="Necesita aclaración":
-        y=pdf_line(c,"Antes de considerar el caso preparado deben aclararse las situaciones indicadas.",55,y,480)
-    else:
-        y=pdf_line(c,"Existen documentos o circunstancias que requieren revisión antes de acudir.",55,y,480)
+    mensajes={
+        "Preparación avanzada":"La información proporcionada permite continuar con la preparación.",
+        "Falta documentación":"Todavía existe documentación marcada como faltante.",
+        "Necesita aclaración":"Antes de considerar el caso preparado deben aclararse las situaciones indicadas.",
+        "Revisión necesaria":"Existen documentos o circunstancias que requieren revisión antes de acudir."
+    }
+    y=pdf_line(c,mensajes.get(estado,"Debe revisarse la información del caso."),55,y,480)
 
     if evaluation["preguntas_pendientes"]:
         y-=5
-        y=pdf_section(c,"PREGUNTAS O DATOS PENDIENTES",y)
+        y=pdf_section(c,"2. PREGUNTAS O DATOS PENDIENTES",y)
         for x in evaluation["preguntas_pendientes"]:y=pdf_bullet(c,x,y)
 
     y-=5
-    y=pdf_section(c,"2. DATOS PERSONALES",y)
+    y=pdf_section(c,"3. DATOS PERSONALES",y)
     if g.datos_personales:
         for k,v in g.datos_personales.items():
             if v not in ("",None,[],{}):
                 y=pdf_line(c,f"{label(k)}: {txt(v)}",55,y,480)
-    else:
-        y=pdf_line(c,"No se proporcionaron datos personales.",55,y,480)
+    else:y=pdf_line(c,"No se proporcionaron datos personales.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"3. LO QUE LA PERSONA INDICÓ",y)
+    y=pdf_section(c,"4. SITUACIÓN DEL TRÁMITE",y)
     if g.datos_especificos:
         qmap=question_map(m)
         for k,v in g.datos_especificos.items():
             q=find_question(qmap,k)
             if q and not question_visible(q,g.datos_especificos):continue
-            pregunta=q.get("texto",label(k))
-            y=pdf_line(c,pregunta,55,y,480,10,14)
+            y=pdf_line(c,q.get("texto",label(k)),55,y,480,10,14)
             y=pdf_line(c,f"Respuesta: {txt(v) if txt(v) else 'Sin respuesta'}",70,y,465,10,14)
             y-=2
-    else:
-        y=pdf_line(c,"No se proporcionaron respuestas específicas.",55,y,480)
+    else:y=pdf_line(c,"No se proporcionaron respuestas específicas.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"4. DOCUMENTOS APLICABLES A ESTE CASO",y)
-    if evaluation["documentos"]:
-        for d in evaluation["documentos"]:
-            y=pdf_bullet(c,f"{d['documento']} — {d['estado']}",y)
-            if d.get("motivo"):
-                y=pdf_line(c,f"Motivo: {d['motivo']}",70,y,465,9,12)
-    else:
-        y=pdf_line(c,"POR CONFIRMAR CON LA AUTORIDAD.",55,y,480)
+    y=pdf_section(c,"5. DOCUMENTOS APLICABLES A ESTE CASO",y)
+    docs=evaluation["documentos"]
+    if docs:
+        for d in docs:y=pdf_document(c,d,y)
+    else:y=pdf_line(c,"No se pudo determinar un documento aplicable. POR CONFIRMAR CON LA AUTORIDAD.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"5. DOCUMENTOS QUE LA PERSONA DECLARA TENER",y)
+    y=pdf_section(c,"6. DOCUMENTOS QUE LA PERSONA DECLARA TENER",y)
     disponibles=normalize_document_names(g.documentos_disponibles)
     if disponibles:
         for d in disponibles:y=pdf_bullet(c,d,y)
-    else:
-        y=pdf_line(c,"No se identificó ningún documento como disponible.",55,y,480)
+    else:y=pdf_line(c,"No se identificó ningún documento como disponible.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"6. DOCUMENTOS FALTANTES",y)
+    y=pdf_section(c,"7. DOCUMENTOS FALTANTES",y)
     if evaluation["faltantes"]:
         for d in evaluation["faltantes"]:y=pdf_bullet(c,d,y)
-    else:
-        y=pdf_line(c,"No se identificó documentación faltante en las respuestas proporcionadas.",55,y,480)
+    else:y=pdf_line(c,"No se identificó documentación faltante en las respuestas proporcionadas.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"7. DOCUMENTOS O SITUACIONES POR REVISAR",y)
+    y=pdf_section(c,"8. DOCUMENTOS O SITUACIONES POR REVISAR",y)
     if evaluation["dudosos"]:
         for d in evaluation["dudosos"]:y=pdf_bullet(c,d,y)
-    else:
-        y=pdf_line(c,"No se identificaron documentos marcados como dudosos.",55,y,480)
+    else:y=pdf_line(c,"No se identificaron documentos marcados como dudosos.",55,y,480)
 
     if evaluation["situaciones"]:
         y-=5
-        y=pdf_section(c,"8. SITUACIONES ESPECÍFICAS DETECTADAS",y)
+        y=pdf_section(c,"9. SITUACIONES ESPECÍFICAS DETECTADAS",y)
         for x in evaluation["situaciones"]:y=pdf_bullet(c,x,y)
 
     if evaluation["contradicciones"]:
         y-=5
-        y=pdf_section(c,"9. ACLARACIONES NECESARIAS",y)
+        y=pdf_section(c,"10. ACLARACIONES NECESARIAS",y)
         for x in evaluation["contradicciones"]:y=pdf_bullet(c,x,y)
 
     y-=5
-    y=pdf_section(c,"10. INFORMACIÓN QUE DEBE CONFIRMARSE",y)
+    y=pdf_section(c,"11. INFORMACIÓN QUE DEBE CONFIRMARSE",y)
     confirm=[]
     for x in g.aclaraciones:
         if x not in confirm:confirm.append(x)
     for x in evaluation["preguntas_pendientes"]:
-        if x not in confirm:confirm.append(f"Completar: {x}")
+        z=f"Completar: {x}"
+        if z not in confirm:confirm.append(z)
     if evaluation["dudosos"]:
         confirm.append("Confirmar con la autoridad la aceptación de los documentos o circunstancias marcadas para revisión.")
+    if any(d.get("confirmar") for d in docs):
+        confirm.append("Confirmar con la autoridad los documentos señalados expresamente como POR CONFIRMAR.")
     if not confirm:
-        confirm=["Si la autoridad modifica requisitos, costos, citas o documentos aceptados, deberá seguirse la información oficial vigente."]
+        confirm=["Verificar la información oficial vigente antes de acudir."]
     for x in confirm:y=pdf_bullet(c,x,y)
 
     y-=5
-    y=pdf_section(c,"11. INFORMACIÓN OFICIAL Y ADVERTENCIAS",y)
+    y=pdf_section(c,"12. INFORMACIÓN OFICIAL Y ADVERTENCIAS",y)
     warnings=[
-        "Esta guía es un servicio privado de organización y preparación de información.",
+        "Esta guía es un servicio privado de organización y preparación documental.",
         "SAVE MÉXICO AYUDAR no es el Gobierno de México, la SRE, un Consulado ni el INE.",
         "La guía no sustituye la decisión ni las instrucciones de la autoridad competente.",
         "Los requisitos, documentos aceptados, costos, citas y procedimientos pueden cambiar.",
         "No se garantiza la aprobación del trámite.",
-        "Cuando el caso tenga una condición especial o una duda no resuelta, debe confirmarse antes de acudir."
+        "Una situación especial o una duda no resuelta debe confirmarse antes de acudir."
     ]
     for x in warnings:y=pdf_bullet(c,x,y)
 
     y-=5
-    y=pdf_section(c,"12. FUENTES OFICIALES",y)
+    y=pdf_section(c,"13. FUENTES OFICIALES",y)
     fuentes=t.get("fuentes",[]) or m.get("fuentes",[])
     if fuentes:
         for x in fuentes:y=pdf_bullet(c,x,y)
-    else:
-        y=pdf_line(c,"POR CONFIRMAR CON LA AUTORIDAD.",55,y,480)
+    else:y=pdf_line(c,"POR CONFIRMAR CON LA AUTORIDAD.",55,y,480)
 
     y-=10
     y=pdf_line(c,"Documento generado por SAVE MÉXICO AYUDAR.",45,y,500,8,11)
-    y=pdf_line(c,"Verifique la información oficial vigente antes de acudir.",45,y,500,8,11)
+    pdf_line(c,"Verifique la información oficial vigente antes de acudir.",45,y,500,8,11)
     c.save()
     return path
 
@@ -558,8 +594,7 @@ async def admin_login(data:Login):
 
 @app.post("/api/create-checkout-session")
 async def create_checkout_session(data:Checkout):
-    if not STRIPE_SECRET_KEY:
-        raise HTTPException(503,"Stripe no está configurado.")
+    if not STRIPE_SECRET_KEY:raise HTTPException(503,"Stripe no está configurado.")
     prices={"daily":PRICE_DAILY,"monthly":PRICE_MONTHLY,"annual":PRICE_ANNUAL}
     price=prices.get(data.plan)
     if not price:raise HTTPException(400,"Plan de pago no configurado.")
@@ -608,15 +643,17 @@ async def stripe_webhook(request:Request):
 @app.get("/api/tramites")
 async def tramites(request:Request):
     require_access(request)
-    result=[]
-    for tid,t in get_tramites().items():
-        result.append({
-            "id":tid,
-            "nombre":t.get("nombre",tid),
-            "nombre_corto":t.get("nombre_corto",t.get("nombre",tid)),
-            "autoridad":t.get("autoridad","")
-        })
-    return {"tramites":result}
+    return {
+        "tramites":[
+            {
+                "id":tid,
+                "nombre":t.get("nombre",tid),
+                "nombre_corto":t.get("nombre_corto",t.get("nombre",tid)),
+                "autoridad":t.get("autoridad","")
+            }
+            for tid,t in get_tramites().items()
+        ]
+    }
 
 @app.get("/api/modalidades")
 async def modalidades(tramite:str,request:Request):
@@ -680,7 +717,6 @@ async def pregunta(tramite:str,modalidad:str,numero:int,request:Request):
     require_access(request)
     m=get_modalidad(tramite,modalidad)
     preguntas=m.get("preguntas",[])
-    visibles=visible_questions(m,{})
     if numero<0 or numero>=len(preguntas):
         raise HTTPException(404,"Pregunta no encontrada.")
     q=dict(preguntas[numero])
@@ -691,7 +727,6 @@ async def pregunta(tramite:str,modalidad:str,numero:int,request:Request):
     return {
         "numero":numero,
         "total":len(preguntas),
-        "visibles_iniciales":len(visibles),
         "pregunta":q
     }
 
@@ -716,31 +751,27 @@ async def resultado_tramite(payload:dict,request:Request):
         aclaraciones=payload.get("aclaraciones") or [],
         idioma=payload.get("idioma","es")
     )
-    result=evaluate_case(g,m)
+    r=evaluate_case(g,m)
     return {
         "ok":True,
         "tramite":tramite,
         "modalidad":modalidad,
         "modalidad_nombre":m.get("nombre",modalidad),
-        "estado":result["estado"],
-        "listo":result["estado"]=="Preparación avanzada",
-        "documentos_correspondientes":result["documentos"],
+        "estado":r["estado"],
+        "listo":r["estado"]=="Preparación avanzada",
+        "documentos_correspondientes":r["documentos"],
         "documentos_disponibles":normalize_document_names(g.documentos_disponibles),
-        "documentos_faltantes":result["faltantes"],
-        "documentos_dudosos":result["dudosos"],
+        "documentos_faltantes":r["faltantes"],
+        "documentos_dudosos":r["dudosos"],
         "respuestas":g.datos_especificos,
-        "situaciones":result["situaciones"],
-        "contradicciones":result["contradicciones"],
-        "preguntas_pendientes":result["preguntas_pendientes"],
+        "situaciones":r["situaciones"],
+        "contradicciones":r["contradicciones"],
+        "preguntas_pendientes":r["preguntas_pendientes"],
         "siguiente_accion":(
-            "Completar las preguntas pendientes."
-            if result["preguntas_pendientes"] else
-            "Aclarar las respuestas indicadas."
-            if result["contradicciones"] else
-            "Completar los documentos faltantes."
-            if result["faltantes"] else
-            "Revisar los documentos marcados."
-            if result["dudosos"] else
+            "Completar las preguntas pendientes." if r["preguntas_pendientes"] else
+            "Aclarar las respuestas indicadas." if r["contradicciones"] else
+            "Completar los documentos faltantes." if r["faltantes"] else
+            "Revisar los documentos marcados." if r["dudosos"] else
             "Continuar con la preparación de la guía."
         ),
         "pdf":m.get("pdf",{})
@@ -754,8 +785,7 @@ async def generar_guia(g:Guide,request:Request):
     if g.modalidad not in get_tramite(g.tramite).get("modalidades",{}):
         raise HTTPException(404,"Modalidad no encontrada.")
     try:
-        m=get_modalidad(g.tramite,g.modalidad)
-        result=evaluate_case(g,m)
+        result=evaluate_case(g,get_modalidad(g.tramite,g.modalidad))
         path=make_pdf(g)
         return {
             "ok":True,
@@ -846,10 +876,13 @@ async def logout(request:Request):
 
 @app.get("/health")
 async def health():
+    data=load_data()
     return {
         "ok":True,
         "app":"SAVE MÉXICO AYUDAR",
-        "version":"5.0.0",
+        "version":"5.1.0",
+        "datos_version":data.get("version",""),
+        "datos_actualizado":data.get("actualizado",""),
         "tramites":list(get_tramites().keys()),
         "stripe":bool(STRIPE_SECRET_KEY),
         "stripe_webhook":bool(STRIPE_WEBHOOK_SECRET),
