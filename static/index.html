@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,71 +11,102 @@
 <main>
 
 <section id="inicio" class="pantalla activa">
-    <div class="bandera">🇲🇽</div>
-    <h1>MEXICANO<br>APOYA MEXICANO</h1>
-    <p class="subtitulo">Ayuda para preparar tu visita al Consulado de México</p>
-    <button class="principal" onclick="entrar()">ENTRAR</button>
-    <p id="servidor" class="servidor">Preparando...</p>
+  <div class="bandera">🇲🇽</div>
+  <h1>MEXICANO<br>APOYA MEXICANO</h1>
+  <p class="grande">Ayuda para preparar tus trámites consulares.</p>
+  <button class="principal" onclick="entrar()">ENTRAR</button>
+  <p id="servidor" class="estado">Preparando...</p>
 </section>
 
-<section id="paraQue" class="pantalla">
-    <h2>¿PARA QUÉ SIRVE?</h2>
+<section id="info" class="pantalla">
+  <h2>¿PARA QUÉ SIRVE?</h2>
 
-    <div class="texto">
-        <p>Esta aplicación ayuda a mexicanos que necesitan prepararse para una visita al Consulado de México.</p>
+  <div class="caja">
+    <p><strong>TÚ NOS DICES QUÉ NECESITAS.</strong></p>
+    <p>La aplicación te hace solamente las preguntas necesarias.</p>
+    <p>Después organiza tu información y te dice qué debes preparar y qué debes confirmar.</p>
+  </div>
 
-        <p>Te hace pocas preguntas y organiza la información de tu caso de una manera sencilla.</p>
-
-        <p>La aplicación es un servicio privado.</p>
-    </div>
-
-    <button class="principal" onclick="mostrar('legal')">CONTINUAR</button>
+  <button class="principal" onclick="mostrar('legal')">CONTINUAR</button>
 </section>
 
 <section id="legal" class="pantalla">
-    <h2>IMPORTANTE</h2>
+  <h2>ANTES DE CONTINUAR</h2>
 
-    <div class="aviso">
-        <p><strong>ESTE SERVICIO NO ES EL CONSULADO DE MÉXICO.</strong></p>
+  <div class="caja">
+    <p><strong>ESTE NO ES EL CONSULADO DE MÉXICO.</strong></p>
+    <p>MEXICANO APOYA MEXICANO es un servicio privado de ayuda y preparación.</p>
+    <p>La decisión final sobre un trámite corresponde a la autoridad consular.</p>
+    <p>No prometemos la aprobación de ningún trámite.</p>
+  </div>
 
-        <p>No somos el Gobierno de México ni hablamos en nombre del Consulado.</p>
+  <div class="caja">
+    <p><strong>PROTECCIÓN</strong></p>
+    <p>No escribas contraseñas, números de tarjetas ni información que no sea necesaria.</p>
+    <p>Usa la aplicación solamente para preparar tu trámite.</p>
+  </div>
 
-        <p>La información que prepares aquí debe ser confirmada con el Consulado correspondiente.</p>
-
-        <p>La aplicación no garantiza que un trámite sea aprobado.</p>
-    </div>
-
-    <h2 class="pequeno">PROTECCIÓN Y PRIVACIDAD</h2>
-
-    <div class="texto">
-        <p>Usa la aplicación solamente para preparar tu información.</p>
-
-        <p>No escribas contraseñas, números de tarjetas ni información que no sea necesaria para tu preparación.</p>
-
-        <p>Al continuar aceptas utilizar este servicio bajo estas condiciones.</p>
-    </div>
-
-    <button class="principal" onclick="mostrar('servicios')">ACEPTO Y CONTINUAR</button>
+  <button class="principal" onclick="mostrar('servicios')">ACEPTO Y CONTINUAR</button>
 </section>
 
 <section id="servicios" class="pantalla">
-    <h2>¿QUÉ NECESITAS?</h2>
+  <h2>¿QUÉ NECESITAS?</h2>
 
-    <button class="opcion azul" onclick="abrirServicio('cita')">
-        <strong>TENGO UNA CITA</strong>
-        <span>Quiero saber qué debo preparar antes de ir.</span>
-    </button>
+  <button class="opcion azul" onclick="elegirServicio('pasaporte')">
+    <strong>PASAPORTE</strong>
+    <span>Necesito sacar, renovar o resolver algo sobre mi pasaporte.</span>
+  </button>
 
-    <button class="opcion verde" onclick="abrirServicio('documento')">
-        <strong>NO SÉ QUÉ DOCUMENTO NECESITO</strong>
-        <span>Tengo una situación y quiero saber qué debo preparar.</span>
-    </button>
+  <button class="opcion verde" onclick="elegirServicio('matricula')">
+    <strong>MATRÍCULA CONSULAR</strong>
+    <span>Necesito información sobre mi matrícula.</span>
+  </button>
+
+  <button class="opcion rojo" onclick="elegirServicio('ine')">
+    <strong>INE</strong>
+    <span>Necesito información sobre mi credencial para votar.</span>
+  </button>
+
+  <button class="opcion amarillo" onclick="elegirServicio('registro')">
+    <strong>REGISTRO DE NACIMIENTO</strong>
+    <span>Necesito registrar un nacimiento.</span>
+  </button>
+
+  <button class="opcion morado" onclick="elegirServicio('poder')">
+    <strong>PODER O AUTORIZACIÓN</strong>
+    <span>Necesito información sobre un poder o autorización.</span>
+  </button>
+
+  <div class="hablar">
+    <p><strong>¿NO SABES CUÁL ES?</strong></p>
+    <p>Dímelo con tus propias palabras.</p>
+    <button class="voz" onclick="escuchar()">🎙️ HABLAR</button>
+    <button class="textoBtn" onclick="mostrarEntrada()">⌨️ ESCRIBIR</button>
+  </div>
+</section>
+
+<section id="entrada" class="pantalla">
+  <h2>¿QUÉ NECESITAS?</h2>
+
+  <p class="grande">Dímelo con tus propias palabras.</p>
+
+  <button class="voz" onclick="escuchar()">🎙️ HABLAR</button>
+
+  <textarea id="texto" placeholder="Escribe aquí lo que necesitas"></textarea>
+
+  <button class="principal" onclick="enviarTexto()">CONTINUAR</button>
+
+  <p id="escuchando" class="estado"></p>
 </section>
 
 <section id="resultado" class="pantalla">
-    <h2 id="resultadoTitulo"></h2>
-    <div id="resultadoTexto" class="texto"></div>
-    <button class="principal" onclick="mostrar('servicios')">REGRESAR</button>
+  <h2 id="tituloResultado">RESULTADO</h2>
+
+  <div id="resultadoTexto" class="caja"></div>
+
+  <button id="hablarResultado" class="voz" onclick="leerResultado()">🔊 ESCUCHAR</button>
+
+  <button class="principal" onclick="mostrar('servicios')">REGRESAR</button>
 </section>
 
 </main>
@@ -84,4 +114,3 @@
 <script src="/static/app.js"></script>
 </body>
 </html>
-```
