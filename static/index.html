@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
-<meta name="description" content="MEXICANO APOYA MEXICANO - guía sencilla para preparar trámites consulares.">
+<meta name="description" content="MEXICANO APOYA MEXICANO - prepara tu trámite consular de forma sencilla.">
 <title>MEXICANO APOYA MEXICANO</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -12,14 +12,15 @@
 <main>
 <header>
 <h1>MEXICANO APOYA MEXICANO</h1>
-<p>Una guía sencilla para preparar tus trámites consulares.</p>
+<p>Prepara tu trámite antes de ir al Consulado.</p>
 </header>
 
 <section id="inicio" class="card">
 <h2>ANTES DE IR AL CONSULADO</h2>
 <div class="caja">
-<p>Te hacemos preguntas sencillas para ayudarte a saber qué debes preparar.</p>
-<p>Al terminar puedes obtener una <strong>Hoja de Ruta en PDF</strong> con tu información, lo que tienes, lo que te falta y lo que debes revisar.</p>
+<p><strong>Evita perder un día de trabajo, gastar dinero y regresar porque te falta algo.</strong></p>
+<p>Cuéntanos con tus propias palabras qué necesitas. Puedes escribir, hablar o pegar información que tengas.</p>
+<p>La aplicación organiza tu caso y te muestra <strong>qué tienes, qué te falta y qué debes confirmar</strong>.</p>
 </div>
 <button id="entrar" class="principal" type="button">ENTRAR</button>
 <p class="legal">Esta aplicación es independiente. No es el Gobierno de México ni representa a ningún Consulado.</p>
@@ -27,17 +28,17 @@
 
 <section id="servicios" class="card">
 <h2>¿QUÉ NECESITAS?</h2>
-<p class="grande">Elige lo que más se parece a tu situación.</p>
-<button id="servicioCita" class="opcion" type="button">TENGO QUE HACER UN TRÁMITE</button>
+<p class="grande">Elige la opción que más se parece a tu situación.</p>
+<button id="servicioCita" class="opcion" type="button">QUIERO PREPARAR UN TRÁMITE</button>
 <button id="servicioDocumento" class="opcion" type="button">NECESITO UN DOCUMENTO</button>
 </section>
 
 <section id="pregunta" class="card">
-<div id="preguntaTexto">¿Qué necesitas?</div>
+<div class="paso" id="paso"></div>
+<h2 id="preguntaTexto">¿Qué necesitas?</h2>
 <div id="opciones"></div>
-
 <div id="textoEntrada">
-<textarea id="textoUsuario" placeholder="Escribe aquí con tus propias palabras..."></textarea>
+<textarea id="textoUsuario" autocomplete="off" placeholder="Escribe aquí con tus propias palabras..."></textarea>
 <div class="acciones">
 <button id="voz" class="voz" type="button">🎤 HABLAR</button>
 <button id="continuar" class="continuar" type="button">CONTINUAR</button>
@@ -48,9 +49,8 @@
 
 <section id="resultado" class="card">
 <div class="check">✓</div>
-<h2>TU RESULTADO</h2>
+<h2>TU HOJA DE RUTA</h2>
 <div id="respuesta"></div>
-
 <div id="accionesResultado" class="acciones resultadoAcciones">
 <button id="pdf" class="principal" type="button">DESCARGAR HOJA DE RUTA PDF</button>
 <button id="oficial" class="opcion" type="button">VER INFORMACIÓN OFICIAL</button>
@@ -59,16 +59,16 @@
 </div>
 </section>
 
-<div id="infoOficial" class="modal oculto">
+<div id="infoOficial" class="modal oculto" role="dialog" aria-modal="true">
 <div class="modalCaja">
 <h2>INFORMACIÓN OFICIAL</h2>
-<p>Consulta directamente la fuente oficial relacionada con tu trámite.</p>
-<a id="fuenteOficial" href="#" target="_blank" rel="noopener noreferrer">ABRIR FUENTE OFICIAL</a>
+<p>Consulta directamente la información oficial relacionada con tu trámite.</p>
+<a id="fuenteOficial" href="#" target="_blank" rel="noopener noreferrer">ABRIR INFORMACIÓN OFICIAL</a>
 <button id="cerrarOficial" class="salir" type="button">CERRAR</button>
 </div>
 </div>
 
-<div id="salida" class="modal oculto">
+<div id="salida" class="modal oculto" role="dialog" aria-modal="true">
 <div class="modalCaja">
 <h2>¿SALIR?</h2>
 <p>Si sales, esta consulta se cerrará.</p>
@@ -79,7 +79,6 @@
 </div>
 </div>
 </main>
-
 <script src="/static/app.js"></script>
 </body>
 </html>
