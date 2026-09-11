@@ -1,11 +1,12 @@
 import os,json,secrets,uuid,re
 from datetime import datetime
 from pathlib import Path
+from typing import Any,Optional
 import stripe
 from fastapi import FastAPI,HTTPException,Request,UploadFile,File
 from fastapi.responses import FileResponse,JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.utils import simpleSplit
@@ -16,9 +17,9 @@ STATIC=BASE/"static"
 DATA=BASE/"data"
 OUT=BASE/"out"
 TRAMITES=DATA/"tramites.json"
-OUT.mkdir(exist_ok=True)
 STATIC.mkdir(exist_ok=True)
 DATA.mkdir(exist_ok=True)
+OUT.mkdir(exist_ok=True)
 
 ADMIN_USERNAME=os.getenv("ADMIN_USERNAME","")
 ADMIN_PASSWORD=os.getenv("ADMIN_PASSWORD","")
@@ -32,7 +33,7 @@ PRICE_ANNUAL=os.getenv("STRIPE_PRICE_ID_ANNUAL","")
 if STRIPE_SECRET_KEY:
     stripe.api_key=STRIPE_SECRET_KEY
 
-app=FastAPI(title="SAVE MÉXICO AYUDAR",version="3.0.0")
+app=FastAPI(title="SAVE MÉXICO AYUDAR",version="4.0.0")
 app.mount("/static",StaticFiles(directory=str(STATIC)),name="static")
 
 ADMIN_TOKENS=set()
@@ -48,12 +49,14 @@ class Checkout(BaseModel):
 class Guide(BaseModel):
     tramite:str
     modalidad:str=""
-    datos_personales:dict={}
-    datos_especificos:dict={}
-    documentos:dict={}
-    documentos_disponibles:list=[]
-    documentos_faltantes:list=[]
-    documentos_dudosos:list=[]
+    datos_personales:dict=Field(default_factory=dict)
+    datos_especificos:dict=Field(default_factory=dict)
+    documentos:dict=Field(default_factory=dict)
+    documentos_disponibles:list=Field(default_factory=list)
+    documentos_faltantes:list=Field(default_factory=list)
+    documentos_dudosos:list=Field(default_factory=list)
+    situaciones:list=Field(default_factory=list)
+    aclaraciones:list=Field(default_factory=list)
     idioma:str="es"
 
 def load_data():
@@ -86,9 +89,9 @@ def new_token(store):
     return token
 
 def cookie_access(request:Request):
-    admin=request.cookies.get("save_admin_token")
-    paid=request.cookies.get("save_access_token")
-    return (admin in ADMIN_TOKENS),(paid in ACCESS_TOKENS)
+    a=request.cookies.get("save_admin_token")
+    p=request.cookies.get("save_access_token")
+    return a in ADMIN_TOKENS,p in ACCESS_TOKENS
 
 def require_access(request:Request):
     admin,paid=cookie_access(request)
@@ -97,11 +100,167 @@ def require_access(request:Request):
     return True
 
 def clean_name(name):
-    return re.sub(r"[^A-Za-z0-9._-]","_",name)[:120]
+    return re.sub(r"[^A-Za-z0-9._-]","_",str(name))[:120]
+
+def txt(v):
+    if v is None:return ""
+    if isinstance(v,bool):return "Sí" if v else "No"
+    if isinstance(v,(list,tuple)):
+        return ", ".join(txt(x) for x in v)
+    if isinstance(v,dict):
+        return ", ".join(f"{k}: {txt(x)}" for k,x in v.items())
+    return str(v)
+
+def norm(v):
+    return re.sub(r"\s+"," ",txt(v)).strip().lower()
+
+def label(v):
+    s=re.sub(r"[_-]+"," ",str(v))
+    return s[:1].upper()+s[1:]
+
+def question_map(m):
+    return {str(x.get("id")):x for x in m.get("preguntas",[]) if isinstance(x,dict)}
+
+def flatten_values(v):
+    if isinstance(v,list):
+        return [txt(x) for x in v]
+    return [txt(v)]
+
+def selected_values(respuestas):
+    out=[]
+    for k,v in respuestas.items():
+        out.extend(flatten_values(v))
+    return out
+
+def find_question(qmap,key):
+    if key in qmap:return qmap[key]
+    nk=norm(key)
+    for k,q in qmap.items():
+        if nk==norm(k) or nk==norm(q.get("texto","")):
+            return q
+    return {}
+
+def answer_has(respuestas,terms):
+    terms=[norm(x) for x in terms]
+    for v in selected_values(respuestas):
+        n=norm(v)
+        if any(t and t in n for t in terms):
+            return True
+    return False
+
+def answer_for(respuestas,key):
+    if key in respuestas:return respuestas[key]
+    nk=norm(key)
+    for k,v in respuestas.items():
+        if nk==norm(k):return v
+    return None
+
+def dynamic_situations(m,respuestas):
+    found=[]
+    qmap=question_map(m)
+    for key,value in respuestas.items():
+        q=find_question(qmap,key)
+        v=txt(value)
+        if not v:continue
+        special=q.get("situaciones") or q.get("casos_especiales") or []
+        if isinstance(special,str):special=[special]
+        nv=norm(v)
+        for s in special:
+            if norm(s) in nv or nv in norm(s):
+                if s not in found:found.append(s)
+        if any(x in nv for x in ["perdí","perdi","robaron","robada","robado","extrav","perdida"]):
+            if "Pérdida, robo o extravío de documento" not in found:
+                found.append("Pérdida, robo o extravío de documento")
+        if any(x in nv for x in ["diferente","distinto","no coincide","error","corregir","corrección"]):
+            if "Diferencias o errores entre documentos" not in found:
+                found.append("Diferencias o errores entre documentos")
+        if any(x in nv for x in ["vencid","caduc"]):
+            if "Documento vencido" not in found:
+                found.append("Documento vencido")
+    return found
+
+def document_rules(m,respuestas,disponibles,faltantes,dudosos):
+    base=m.get("documentos",[]) or []
+    if isinstance(base,dict):
+        base=list(base.values())
+    result=[]
+    def add(name,status="Por revisar",reason=""):
+        if not name:return
+        key=norm(name)
+        for d in result:
+            if norm(d["documento"])==key:return
+        result.append({"documento":txt(name),"estado":status,"motivo":reason})
+    for d in base:
+        name=d.get("nombre") if isinstance(d,dict) else d
+        reason=d.get("motivo","") if isinstance(d,dict) else ""
+        required=True
+        if isinstance(d,dict):
+            required=d.get("obligatorio",True)
+        if required:add(name,"Por revisar",reason)
+    for d in disponibles:add(d,"Disponible","La persona indicó que lo tiene.")
+    for d in faltantes:add(d,"Falta","La persona indicó que no lo tiene.")
+    for d in dudosos:add(d,"Dudoso","La persona indicó que necesita revisar su aceptación o situación.")
+    return result
+
+def contradictions(g,m):
+    issues=[]
+    respuestas=g.datos_especificos or {}
+    disp={norm(x) for x in g.documentos_disponibles}
+    falt={norm(x) for x in g.documentos_faltantes}
+    duda={norm(x) for x in g.documentos_dudosos}
+    for x in disp&falt:
+        issues.append(f"El documento «{x}» aparece como disponible y faltante.")
+    for x in disp&duda:
+        issues.append(f"El documento «{x}» aparece como disponible y dudoso.")
+    for x in falt&duda:
+        issues.append(f"El documento «{x}» aparece como faltante y dudoso.")
+    if answer_has(respuestas,["sí","si","yes"]) and answer_has(respuestas,["no"]):
+        issues.append("Existen respuestas incompatibles de sí y no que deben aclararse.")
+    if answer_has(respuestas,["tengo el documento","sí tengo","si tengo","lo tengo"]):
+        if not g.documentos_disponibles:
+            issues.append("La persona indicó tener un documento, pero no identificó cuál documento tiene.")
+    return issues
+
+def evaluate_case(g:Guide,m):
+    respuestas=g.datos_especificos or {}
+    qmap=question_map(m)
+    situations=[]
+    for x in m.get("casos_especiales",[]) or []:
+        nx=norm(x)
+        if answer_has(respuestas,[x]) or any(nx in norm(txt(v)) for v in selected_values(respuestas)):
+            situations.append(x)
+    for x in dynamic_situations(m,respuestas):
+        if x not in situations:situations.append(x)
+    issues=contradictions(g,m)
+    docs=document_rules(m,respuestas,g.documentos_disponibles,g.documentos_faltantes,g.documentos_dudosos)
+    for d in docs:
+        if d["estado"]=="Por revisar":
+            for x in g.aclaraciones:
+                if norm(d["documento"]) in norm(x):
+                    d["estado"]="Revisión necesaria"
+    missing=[d["documento"] for d in docs if d["estado"]=="Falta"]
+    doubtful=[d["documento"] for d in docs if d["estado"] in ("Dudoso","Revisión necesaria")]
+    if issues:
+        status="Necesita aclaración"
+    elif missing:
+        status="Falta documentación"
+    elif doubtful:
+        status="Revisión necesaria"
+    else:
+        status="Preparación avanzada"
+    return {
+        "estado":status,
+        "documentos":docs,
+        "faltantes":missing,
+        "dudosos":doubtful,
+        "situaciones":situations,
+        "contradicciones":issues,
+        "preguntas":qmap
+    }
 
 def pdf_line(c,text,x,y,width=500,size=10,leading=14):
     c.setFont("Helvetica",size)
-    lines=simpleSplit(str(text), "Helvetica", size, width)
+    lines=simpleSplit(txt(text),"Helvetica",size,width) or [""]
     for line in lines:
         if y<55:
             c.showPage()
@@ -119,127 +278,146 @@ def pdf_section(c,title,y):
     c.drawString(45,y,title)
     return y-19
 
+def pdf_bullet(c,text,y):
+    return pdf_line(c,f"• {text}",55,y,480,10,14)
+
 def make_pdf(g:Guide):
     t=get_tramite(g.tramite)
     m=get_modalidad(g.tramite,g.modalidad)
+    evaluation=evaluate_case(g,m)
     nombre=t.get("nombre",g.tramite)
     modalidad=m.get("nombre",g.modalidad)
     now=datetime.now().strftime("%Y-%m-%d %H:%M")
-    filename=f"guia_{g.tramite}_{g.modalidad}_{uuid.uuid4().hex[:10]}.pdf"
-    path=OUT/clean_name(filename)
+    filename=clean_name(f"guia_{g.tramite}_{g.modalidad}_{uuid.uuid4().hex[:10]}.pdf")
+    path=OUT/filename
     c=canvas.Canvas(str(path),pagesize=LETTER)
+    c.setTitle(f"SAVE MÉXICO AYUDAR - {nombre}")
     y=LETTER[1]-50
 
-    c.setTitle(f"SAVE MÉXICO AYUDAR - {nombre}")
     c.setFont("Helvetica-Bold",18)
     c.drawString(45,y,"SAVE MÉXICO AYUDAR")
     y-=25
-    c.setFont("Helvetica-Bold",14)
     y=pdf_line(c,nombre,45,y,500,14,18)
     y=pdf_line(c,f"Modalidad: {modalidad}",45,y-3,500,10,14)
     y=pdf_line(c,f"Preparado: {now}",45,y-2,500,9,13)
     y-=8
 
-    y=pdf_section(c,"1. DATOS PERSONALES",y)
+    estado=evaluation["estado"]
+    y=pdf_section(c,"1. RESULTADO DE LA REVISIÓN",y)
+    y=pdf_line(c,f"Estado del caso: {estado}",55,y,480,11,15)
+    if estado=="Preparación avanzada":
+        y=pdf_line(c,"La información proporcionada permite continuar con la preparación.",55,y,480)
+    elif estado=="Falta documentación":
+        y=pdf_line(c,"Todavía existe documentación marcada como faltante.",55,y,480)
+    elif estado=="Necesita aclaración":
+        y=pdf_line(c,"Antes de considerar el caso preparado deben aclararse las situaciones indicadas.",55,y,480)
+    else:
+        y=pdf_line(c,"Existen documentos o circunstancias que requieren revisión antes de acudir.",55,y,480)
+
+    y-=5
+    y=pdf_section(c,"2. DATOS PERSONALES",y)
     if g.datos_personales:
         for k,v in g.datos_personales.items():
-            if v not in ("",None):
-                y=pdf_line(c,f"{k.replace('_',' ').title()}: {v}",55,y,480,10,14)
+            if v not in ("",None,[]):
+                y=pdf_line(c,f"{label(k)}: {txt(v)}",55,y,480)
     else:
         y=pdf_line(c,"No se proporcionaron datos personales.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"2. INFORMACIÓN ESPECÍFICA DEL TRÁMITE",y)
+    y=pdf_section(c,"3. LO QUE LA PERSONA INDICÓ",y)
     if g.datos_especificos:
-        preguntas={x.get("id"):x for x in m.get("preguntas",[])}
+        qmap=question_map(m)
         for k,v in g.datos_especificos.items():
-            texto=preguntas.get(k,{}).get("texto",k.replace("_"," ").title())
-            y=pdf_line(c,f"{texto}",55,y,480,10,14)
-            y=pdf_line(c,f"Respuesta: {v if v not in ('',None) else 'Sin respuesta'}",70,y,465,10,14)
+            q=find_question(qmap,k)
+            pregunta=q.get("texto",label(k))
+            y=pdf_line(c,pregunta,55,y,480,10,14)
+            y=pdf_line(c,f"Respuesta: {txt(v) if txt(v) else 'Sin respuesta'}",70,y,465,10,14)
             y-=2
     else:
-        y=pdf_line(c,"No se proporcionaron respuestas adicionales.",55,y,480)
+        y=pdf_line(c,"No se proporcionaron respuestas específicas.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"3. DOCUMENTOS CORRESPONDIENTES",y)
-    docs=m.get("documentos",[])
-    if docs:
-        for d in docs:
-            y=pdf_line(c,f"• {d}",55,y,480,10,14)
+    y=pdf_section(c,"4. DOCUMENTOS PARA ESTE CASO",y)
+    if evaluation["documentos"]:
+        for d in evaluation["documentos"]:
+            y=pdf_bullet(c,f"{d['documento']} — {d['estado']}",y)
+            if d.get("motivo"):
+                y=pdf_line(c,f"Motivo: {d['motivo']}",70,y,465,9,12)
     else:
-        y=pdf_line(c,"POR CONFIRMAR CON LA AUTORIDAD.",55,y,480,10,14)
+        y=pdf_line(c,"POR CONFIRMAR CON LA AUTORIDAD.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"4. DOCUMENTOS QUE LA PERSONA DECLARA TENER",y)
+    y=pdf_section(c,"5. DOCUMENTOS QUE LA PERSONA DECLARA TENER",y)
     if g.documentos_disponibles:
-        for d in g.documentos_disponibles:
-            y=pdf_line(c,f"• {d}",55,y,480,10,14)
+        for d in g.documentos_disponibles:y=pdf_bullet(c,d,y)
     else:
-        y=pdf_line(c,"Ninguno marcado como disponible.",55,y,480)
+        y=pdf_line(c,"No se identificó ningún documento como disponible.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"5. DOCUMENTOS QUE LA PERSONA DECLARA NO TENER",y)
-    if g.documentos_faltantes:
-        for d in g.documentos_faltantes:
-            y=pdf_line(c,f"• {d}",55,y,480,10,14)
+    y=pdf_section(c,"6. DOCUMENTOS FALTANTES",y)
+    if evaluation["faltantes"]:
+        for d in evaluation["faltantes"]:y=pdf_bullet(c,d,y)
     else:
-        y=pdf_line(c,"Ninguno marcado como faltante.",55,y,480)
+        y=pdf_line(c,"No se identificó documentación faltante en las respuestas proporcionadas.",55,y,480)
 
     y-=5
-    y=pdf_section(c,"6. DOCUMENTOS SOBRE LOS QUE TIENE DUDA",y)
-    if g.documentos_dudosos:
-        for d in g.documentos_dudosos:
-            y=pdf_line(c,f"• {d}",55,y,480,10,14)
+    y=pdf_section(c,"7. DOCUMENTOS O SITUACIONES POR REVISAR",y)
+    if evaluation["dudosos"]:
+        for d in evaluation["dudosos"]:y=pdf_bullet(c,d,y)
     else:
-        y=pdf_line(c,"Ninguno marcado como dudoso.",55,y,480)
+        y=pdf_line(c,"No se identificaron documentos marcados como dudosos.",55,y,480)
 
-    especiales=m.get("casos_especiales",[])
-    if especiales:
+    if evaluation["situaciones"]:
         y-=5
-        y=pdf_section(c,"7. SITUACIONES ESPECIALES A CONSIDERAR",y)
-        for x in especiales:
-            y=pdf_line(c,f"• {x}",55,y,480,10,14)
+        y=pdf_section(c,"8. SITUACIONES ESPECÍFICAS DETECTADAS",y)
+        for x in evaluation["situaciones"]:y=pdf_bullet(c,x,y)
 
-    pdf=m.get("pdf",{})
-    secciones=pdf.get("secciones",[])
-    if secciones:
+    if evaluation["contradicciones"]:
         y-=5
-        y=pdf_section(c,"8. INFORMACIÓN ESPECÍFICA DE ESTA MODALIDAD",y)
-        for x in secciones:
-            y=pdf_line(c,f"• {x}",55,y,480,10,14)
+        y=pdf_section(c,"9. ACLARACIONES NECESARIAS",y)
+        for x in evaluation["contradicciones"]:y=pdf_bullet(c,x,y)
 
     y-=5
-    y=pdf_section(c,"9. ADVERTENCIAS IMPORTANTES",y)
+    y=pdf_section(c,"10. INFORMACIÓN QUE DEBE CONFIRMARSE",y)
+    confirm=[]
+    for x in g.aclaraciones:
+        if x not in confirm:confirm.append(x)
+    if evaluation["dudosos"]:
+        confirm.append("Confirmar con la autoridad la aceptación de los documentos o circunstancias marcadas para revisión.")
+    if not confirm:
+        confirm=["Si la autoridad modifica requisitos, costos, citas o documentos aceptados, deberá seguirse la información oficial vigente."]
+    for x in confirm:y=pdf_bullet(c,x,y)
+
+    y-=5
+    y=pdf_section(c,"11. INFORMACIÓN OFICIAL Y ADVERTENCIAS",y)
     warnings=[
-        "Esta guía organiza la información proporcionada por la persona usuaria.",
-        "La guía NO sustituye las instrucciones del Consulado de México ni del INE.",
-        "Los requisitos, costos, citas, documentos aceptados y procedimientos pueden cambiar.",
-        "Cuando exista una duda o un requisito dependiente del Consulado, debe confirmarse directamente con la autoridad.",
-        "La generación de este PDF no garantiza la aceptación ni aprobación del trámite."
+        "Esta guía es un servicio privado de organización y preparación de información.",
+        "SAVE MÉXICO AYUDAR no es el Gobierno de México, la SRE, un Consulado ni el INE.",
+        "La guía no sustituye la decisión ni las instrucciones de la autoridad competente.",
+        "Los requisitos, documentos aceptados, costos, citas y procedimientos pueden cambiar.",
+        "No se garantiza la aprobación del trámite.",
+        "Cuando el caso tenga una condición especial o una duda no resuelta, debe confirmarse antes de acudir."
     ]
-    for x in warnings:
-        y=pdf_line(c,f"• {x}",55,y,480,10,14)
+    for x in warnings:y=pdf_bullet(c,x,y)
 
     y-=5
-    y=pdf_section(c,"10. FUENTES OFICIALES",y)
+    y=pdf_section(c,"12. FUENTES OFICIALES",y)
     fuentes=t.get("fuentes",[])
     if fuentes:
-        for x in fuentes:
-            y=pdf_line(c,f"• {x}",55,y,480,10,14)
+        for x in fuentes:y=pdf_bullet(c,x,y)
     else:
         y=pdf_line(c,"POR CONFIRMAR CON LA AUTORIDAD.",55,y,480)
 
     y-=10
     y=pdf_line(c,"Documento generado por SAVE MÉXICO AYUDAR.",45,y,500,8,11)
-    y=pdf_line(c,"La información oficial debe verificarse antes de acudir al trámite.",45,y,500,8,11)
+    y=pdf_line(c,"Verifique la información oficial vigente antes de acudir.",45,y,500,8,11)
     c.save()
     return path
 
 @app.get("/")
 async def home():
     p=STATIC/"index.html"
-    if not p.exists():
-        raise HTTPException(404,"No existe static/index.html.")
+    if not p.exists():raise HTTPException(404,"No existe static/index.html.")
     return FileResponse(str(p))
 
 @app.get("/api/check-access")
@@ -259,38 +437,36 @@ async def admin_login(data:Login):
     return r
 
 @app.post("/api/create-checkout-session")
-async def create_checkout_session(data:Checkout,request:Request):
+async def create_checkout_session(data:Checkout):
     if not STRIPE_SECRET_KEY:
         raise HTTPException(503,"Stripe no está configurado.")
     prices={"daily":PRICE_DAILY,"monthly":PRICE_MONTHLY,"annual":PRICE_ANNUAL}
     price=prices.get(data.plan)
-    if not price:
-        raise HTTPException(400,"Plan de pago no configurado.")
+    if not price:raise HTTPException(400,"Plan de pago no configurado.")
     try:
-        session=stripe.checkout.Session.create(
-            mode="subscription" if data.plan in ("monthly","annual") else "payment",
+        mode="subscription" if data.plan in ("monthly","annual") else "payment"
+        s=stripe.checkout.Session.create(
+            mode=mode,
             line_items=[{"price":price,"quantity":1}],
             success_url=f"{APP_URL}/?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{APP_URL}/?payment=cancelled",
             metadata={"plan":data.plan,"app":"save_mexico_ayudar"},
             allow_promotion_codes=True
         )
-        return {"ok":True,"id":session.id,"url":session.url}
+        return {"ok":True,"id":s.id,"url":s.url}
     except Exception as e:
         raise HTTPException(500,f"No se pudo crear el pago: {e}")
 
 @app.get("/api/verify-payment")
-async def verify_payment(session_id:str,request:Request):
-    if not STRIPE_SECRET_KEY:
-        raise HTTPException(503,"Stripe no está configurado.")
-    if not session_id:
-        raise HTTPException(400,"Falta session_id.")
+async def verify_payment(session_id:str):
+    if not STRIPE_SECRET_KEY:raise HTTPException(503,"Stripe no está configurado.")
+    if not session_id:raise HTTPException(400,"Falta session_id.")
     try:
         s=stripe.checkout.Session.retrieve(session_id)
         paid=s.get("payment_status")=="paid"
-        status=s.get("status")
-        if not paid or status!="complete":
-            return {"access":False,"paid":False,"status":status,"payment_status":s.get("payment_status")}
+        complete=s.get("status")=="complete"
+        if not paid or not complete:
+            return {"access":False,"paid":False,"status":s.get("status"),"payment_status":s.get("payment_status")}
         token=new_token(ACCESS_TOKENS)
         r=JSONResponse({"access":True,"paid":True,"status":"complete"})
         r.set_cookie("save_access_token",token,httponly=True,secure=True,samesite="lax",max_age=86400)
@@ -302,25 +478,18 @@ async def verify_payment(session_id:str,request:Request):
 async def stripe_webhook(request:Request):
     payload=await request.body()
     signature=request.headers.get("stripe-signature")
-    if not STRIPE_WEBHOOK_SECRET:
-        raise HTTPException(503,"Webhook de Stripe no configurado.")
+    if not STRIPE_WEBHOOK_SECRET:raise HTTPException(503,"Webhook de Stripe no configurado.")
     try:
         event=stripe.Webhook.construct_event(payload,signature,STRIPE_WEBHOOK_SECRET)
     except Exception:
         raise HTTPException(400,"Webhook inválido.")
-    event_type=event.get("type","")
-    if event_type in ("checkout.session.completed","checkout.session.async_payment_succeeded"):
-        session=event["data"]["object"]
-        if session.get("payment_status")=="paid":
-            return {"received":True,"paid":True}
-    return {"received":True}
+    return {"received":True,"event":event.get("type","")}
 
 @app.get("/api/tramites")
 async def tramites(request:Request):
     require_access(request)
-    data=get_tramites()
     result=[]
-    for tid,t in data.items():
+    for tid,t in get_tramites().items():
         result.append({
             "id":tid,
             "nombre":t.get("nombre",tid),
@@ -333,17 +502,16 @@ async def tramites(request:Request):
 async def modalidades(tramite:str,request:Request):
     require_access(request)
     t=get_tramite(tramite)
-    result=[]
-    for mid,m in t.get("modalidades",{}).items():
-        result.append({
-            "id":mid,
-            "nombre":m.get("nombre",mid),
-            "descripcion":m.get("descripcion","")
-        })
-    return {"tramite":tramite,"modalidades":result}
+    return {
+        "tramite":tramite,
+        "modalidades":[
+            {"id":mid,"nombre":m.get("nombre",mid),"descripcion":m.get("descripcion","")}
+            for mid,m in t.get("modalidades",{}).items()
+        ]
+    }
 
 @app.get("/api/ficha-tramite")
-async def ficha_tramite(tramite:str,request:Request,modalidad:str|None=None):
+async def ficha_tramite(tramite:str,request:Request,modalidad:Optional[str]=None):
     require_access(request)
     t=get_tramite(tramite)
     if modalidad:
@@ -356,49 +524,36 @@ async def ficha_tramite(tramite:str,request:Request,modalidad:str|None=None):
             "ficha":m,
             "fuentes":t.get("fuentes",[])
         }
-    mods={}
-    for mid,m in t.get("modalidades",{}).items():
-        mods[mid]={
-            "nombre":m.get("nombre",mid),
-            "descripcion":m.get("descripcion","")
-        }
     return {
         "tramite":tramite,
         "nombre":t.get("nombre",tramite),
         "autoridad":t.get("autoridad",""),
-        "modalidades":mods,
+        "modalidades":{
+            k:{"nombre":v.get("nombre",k),"descripcion":v.get("descripcion","")}
+            for k,v in t.get("modalidades",{}).items()
+        },
         "fuentes":t.get("fuentes",[])
     }
 
 @app.get("/api/perfil-tramite")
-async def perfil_tramite(tramite:str,request:Request,modalidad:str|None=None):
+async def perfil_tramite(tramite:str,request:Request,modalidad:Optional[str]=None):
     require_access(request)
     t=get_tramite(tramite)
-    if modalidad:
-        m=get_modalidad(tramite,modalidad)
-        return {
-            "tramite":tramite,
-            "nombre":t.get("nombre",tramite),
-            "modalidad":modalidad,
-            "modalidad_nombre":m.get("nombre",modalidad),
-            "autoridad":t.get("autoridad",""),
-            "costo":t.get("costo",""),
-            "vigencia":t.get("vigencia",""),
-            "cita":t.get("cita",""),
-            "fuentes":t.get("fuentes",[])
-        }
-    return {
+    base={
         "tramite":tramite,
         "nombre":t.get("nombre",tramite),
         "autoridad":t.get("autoridad",""),
         "costo":t.get("costo",""),
         "vigencia":t.get("vigencia",""),
         "cita":t.get("cita",""),
-        "modalidades":{
-            k:v.get("nombre",k) for k,v in t.get("modalidades",{}).items()
-        },
         "fuentes":t.get("fuentes",[])
     }
+    if modalidad:
+        m=get_modalidad(tramite,modalidad)
+        base.update({"modalidad":modalidad,"modalidad_nombre":m.get("nombre",modalidad)})
+    else:
+        base["modalidades"]={k:v.get("nombre",k) for k,v in t.get("modalidades",{}).items()}
+    return base
 
 @app.get("/api/pregunta")
 async def pregunta(tramite:str,modalidad:str,numero:int,request:Request):
@@ -407,7 +562,12 @@ async def pregunta(tramite:str,modalidad:str,numero:int,request:Request):
     preguntas=m.get("preguntas",[])
     if numero<0 or numero>=len(preguntas):
         raise HTTPException(404,"Pregunta no encontrada.")
-    return {"numero":numero,"total":len(preguntas),"pregunta":preguntas[numero]}
+    q=dict(preguntas[numero])
+    q.setdefault("tipo","single")
+    q.setdefault("opciones",q.get("options",[]))
+    q.setdefault("permite_multiple",q.get("tipo") in ("multiple","multi_select"))
+    q.setdefault("permite_otro",True)
+    return {"numero":numero,"total":len(preguntas),"pregunta":q}
 
 @app.post("/api/resultado-tramite")
 async def resultado_tramite(payload:dict,request:Request):
@@ -417,21 +577,43 @@ async def resultado_tramite(payload:dict,request:Request):
     if not tramite or not modalidad:
         raise HTTPException(400,"Faltan trámite o modalidad.")
     m=get_modalidad(tramite,modalidad)
-    docs=m.get("documentos",[])
-    respuestas=payload.get("datos_especificos",{})
-    disponibles=payload.get("documentos_disponibles",[])
-    faltantes=payload.get("documentos_faltantes",[])
-    dudosos=payload.get("documentos_dudosos",[])
+    g=Guide(
+        tramite=tramite,
+        modalidad=modalidad,
+        datos_personales=payload.get("datos_personales") or {},
+        datos_especificos=payload.get("datos_especificos") or {},
+        documentos=payload.get("documentos") or {},
+        documentos_disponibles=payload.get("documentos_disponibles") or [],
+        documentos_faltantes=payload.get("documentos_faltantes") or [],
+        documentos_dudosos=payload.get("documentos_dudosos") or [],
+        situaciones=payload.get("situaciones") or [],
+        aclaraciones=payload.get("aclaraciones") or [],
+        idioma=payload.get("idioma","es")
+    )
+    result=evaluate_case(g,m)
     return {
+        "ok":True,
         "tramite":tramite,
         "modalidad":modalidad,
         "modalidad_nombre":m.get("nombre",modalidad),
-        "documentos_correspondientes":docs,
-        "documentos_disponibles":disponibles,
-        "documentos_faltantes":faltantes,
-        "documentos_dudosos":dudosos,
-        "respuestas":respuestas,
-        "casos_especiales":m.get("casos_especiales",[]),
+        "estado":result["estado"],
+        "listo":result["estado"]=="Preparación avanzada",
+        "documentos_correspondientes":result["documentos"],
+        "documentos_disponibles":g.documentos_disponibles,
+        "documentos_faltantes":result["faltantes"],
+        "documentos_dudosos":result["dudosos"],
+        "respuestas":g.datos_especificos,
+        "situaciones":result["situaciones"],
+        "contradicciones":result["contradicciones"],
+        "siguiente_accion":(
+            "Aclarar las respuestas indicadas."
+            if result["contradicciones"] else
+            "Completar los documentos faltantes."
+            if result["faltantes"] else
+            "Revisar los documentos marcados."
+            if result["dudosos"] else
+            "Continuar con la preparación de la guía."
+        ),
         "pdf":m.get("pdf",{})
     }
 
@@ -444,11 +626,17 @@ async def generar_guia(g:Guide,request:Request):
         raise HTTPException(404,"Modalidad no encontrada.")
     try:
         path=make_pdf(g)
+        result=evaluate_case(g,get_modalidad(g.tramite,g.modalidad))
         return {
             "ok":True,
             "filename":path.name,
             "file":path.name,
-            "download":f"/descargar/{path.name}"
+            "download":f"/descargar/{path.name}",
+            "estado":result["estado"],
+            "listo":result["estado"]=="Preparación avanzada",
+            "faltantes":result["faltantes"],
+            "dudosos":result["dudosos"],
+            "contradicciones":result["contradicciones"]
         }
     except Exception as e:
         raise HTTPException(500,f"No se pudo generar el PDF: {e}")
@@ -456,7 +644,7 @@ async def generar_guia(g:Guide,request:Request):
 @app.post("/api/extraer-pdf")
 async def extraer_pdf(request:Request,file:UploadFile=File(...)):
     require_access(request)
-    if not file.filename.lower().endswith(".pdf"):
+    if not(file.filename or "").lower().endswith(".pdf"):
         raise HTTPException(400,"El archivo debe ser PDF.")
     raw=await file.read()
     if len(raw)>15*1024*1024:
@@ -480,14 +668,11 @@ async def subir_fotos(request:Request,files:list[UploadFile]=File(...)):
     allowed={".jpg",".jpeg",".png",".webp"}
     for f in files[:10]:
         ext=Path(f.filename or "").suffix.lower()
-        if ext not in allowed:
-            continue
+        if ext not in allowed:continue
         raw=await f.read()
-        if len(raw)>8*1024*1024:
-            continue
+        if len(raw)>8*1024*1024:continue
         name=f"foto_{uuid.uuid4().hex}{ext}"
-        path=OUT/name
-        path.write_bytes(raw)
+        (OUT/name).write_bytes(raw)
         saved.append(name)
     return {"ok":True,"files":saved}
 
@@ -506,7 +691,7 @@ async def descargar(nombre:str,request:Request):
     )
 
 @app.get("/api/fuentes")
-async def fuentes(request:Request,tramite:str|None=None):
+async def fuentes(request:Request,tramite:Optional[str]=None):
     require_access(request)
     if tramite:
         t=get_tramite(tramite)
@@ -533,7 +718,7 @@ async def health():
     return {
         "ok":True,
         "app":"SAVE MÉXICO AYUDAR",
-        "version":"3.0.0",
+        "version":"4.0.0",
         "tramites":list(get_tramites().keys()),
         "stripe":bool(STRIPE_SECRET_KEY)
     }
@@ -541,4 +726,3 @@ async def health():
 if __name__=="__main__":
     import uvicorn
     uvicorn.run("app:app",host="0.0.0.0",port=int(os.getenv("PORT","8000")))
-
