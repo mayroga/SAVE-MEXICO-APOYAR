@@ -5,324 +5,268 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SAVE MÉXICO AYUDAR</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:Arial,sans-serif}header{background:#123b5d;color:white;text-align:center;padding:18px}header h1{margin:0;font-size:24px}header p{margin:6px 0;font-size:14px}main{max-width:900px;margin:auto;padding:16px}.card{background:white;border-radius:14px;padding:20px;margin:14px 0;box-shadow:0 3px 15px #0001}h2{margin-top:0;color:#123b5d}h3{color:#123b5d}label{display:block;font-weight:bold;margin:12px 0 6px}input,select,textarea{width:100%;padding:12px;border:1px solid #ccd3da;border-radius:8px;font-size:16px}textarea{min-height:100px;resize:vertical}button{border:0;border-radius:9px;padding:12px 18px;font-size:16px;font-weight:bold;cursor:pointer;background:#123b5d;color:white;margin:7px 4px 7px 0}button:hover{opacity:.9}.secondary{background:#68737d}.success{background:#18794e}.danger{background:#a52626}.hidden{display:none!important}.small{font-size:13px;color:#66717a}.error{color:#a52626;font-weight:bold}.ok{color:#18794e;font-weight:bold}.center{text-align:center}.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.plan{border:2px solid #d7dde2;border-radius:12px;padding:17px;text-align:center}.price{font-size:27px;font-weight:bold;margin:10px}.progress{display:flex;gap:5px;margin-bottom:20px}.progress span{height:7px;flex:1;background:#d9dfe4;border-radius:8px}.progress span.on{background:#123b5d}.step{display:none}.step.active{display:block}.checks label{font-weight:normal;background:#f5f7f8;padding:10px;border-radius:7px}.notice{background:#fff8e8;border:1px solid #efd18a;padding:13px;border-radius:9px}.result{background:#eef8f2;border:1px solid #b9dfc8;border-radius:10px;padding:15px}#loading{position:fixed;inset:0;background:#0008;color:white;display:none;align-items:center;justify-content:center;z-index:99;font-size:20px}@media(max-width:700px){.plans{grid-template-columns:1fr}.card{padding:16px}}
+*{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;min-height:100vh;background:#fff}header{padding:22px 20px 14px;border-bottom:1px solid #e4e7eb;text-align:center}.logo{font-size:23px;font-weight:800;color:#173f5f}.sub{font-size:13px;color:#68737d;margin-top:6px}.notice{margin:14px 18px;padding:11px 13px;background:#f7f9fb;border-radius:10px;font-size:11px;line-height:1.45;color:#59636d;text-align:center}main{padding:18px}.screen{display:none}.screen.active{display:block}h1{font-size:27px;line-height:1.15;margin:8px 0 10px}h2{font-size:20px;margin:4px 0 8px}p{line-height:1.5}.help{color:#66717b;font-size:14px;margin:0 0 22px}.options{display:grid;gap:11px}.option,.bigbtn{width:100%;border:1px solid #d8dee5;background:#fff;border-radius:14px;padding:17px 16px;text-align:left;font-weight:700;color:#1c3448}.option:hover{border-color:#2673a8;background:#eef7fd}.option small{display:block;font-weight:400;color:#6c7780;margin-top:5px}.primary{background:#17699b;color:#fff;border:0;text-align:center}.secondary{background:#eef2f5;border:0;text-align:center}.actions{display:flex;gap:10px;margin-top:22px}.actions button{flex:1}.back{border:0;background:none;color:#557080;padding:5px 0;margin-bottom:14px}.card{border:1px solid #dde3e8;border-radius:14px;padding:16px;margin:12px 0;background:#fff}.card-title{font-weight:800;margin-bottom:10px}.data-row{padding:10px 0;border-bottom:1px solid #edf0f2}.data-row:last-child{border-bottom:0}.label{font-size:11px;color:#74808a;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}.value{font-size:16px;word-break:break-word}input,select,textarea{width:100%;padding:13px;border:1px solid #ccd4db;border-radius:10px;background:#fff;color:#18222b;outline:none}input:focus,select:focus,textarea:focus{border-color:#2673a8}.field{margin:12px 0}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#52606b}.check{display:flex;align-items:center;gap:10px;padding:13px;border:1px solid #dde3e8;border-radius:11px;margin:8px 0}.check input{width:20px;height:20px}.filebox{border:2px dashed #cbd4dc;border-radius:15px;padding:28px 18px;text-align:center;background:#fafbfc}.filebox input{border:0;padding:0}.file-status{font-size:13px;color:#53616c;margin-top:12px;white-space:pre-wrap}.success{padding:13px;border-radius:11px;background:#eef9f1;color:#216b39;font-size:14px;margin-top:12px}.warn{padding:13px;border-radius:11px;background:#fff8e7;color:#775b08;font-size:13px;margin-top:12px}.preview{border:1px solid #cfd6dc;border-radius:12px;background:#fff;padding:22px;box-shadow:0 2px 8px #0000000d}.preview h3{text-align:center;margin:0 0 5px;color:#17456b}.preview .ptitle{text-align:center;font-size:12px;font-weight:700;margin-bottom:18px}.preview-section{margin-top:18px}.preview-section strong{display:block;border-bottom:1px solid #ddd;padding-bottom:5px;margin-bottom:7px}.preview-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:13px}.preview-row span:first-child{color:#69747d}.legal{font-size:10px;line-height:1.45;color:#68727a;border-top:1px solid #ddd;margin-top:20px;padding-top:10px}.progress{height:4px;background:#e8edf1}.progress i{display:block;height:100%;background:#2673a8;width:0}#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#18222b;color:#fff;padding:12px 16px;border-radius:10px;font-size:13px;display:none;max-width:90%;z-index:99}#login{position:fixed;inset:0;background:#f4f6f8;display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}.loginbox{width:100%;max-width:380px;background:#fff;border-radius:18px;padding:25px;box-shadow:0 8px 30px #00000012}.loginbox h1{text-align:center;font-size:23px}#app{display:none}.doubt{position:fixed;right:16px;bottom:16px;width:54px;height:54px;border:0;border-radius:50%;background:#17699b;color:#fff;font-size:22px;box-shadow:0 5px 18px #0003;z-index:20}.modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;z-index:40}.modal.open{display:flex}.sheet{background:#fff;width:100%;max-width:760px;border-radius:20px 20px 0 0;padding:22px;max-height:90vh;overflow:auto}.sheet h2{margin-top:0}.close{float:right;border:0;background:#eef1f4;border-radius:50%;width:34px;height:34px}@media(max-width:520px){main{padding:15px}h1{font-size:24px}.actions{flex-direction:column}.preview{padding:15px}}
 </style>
 </head>
 <body>
-<div id="loading">Procesando...</div>
-<header><h1>SAVE MÉXICO AYUDAR</h1><p>Apoyo para organizar información y documentos de trámites mexicanos</p></header>
+
+<div id="login">
+<div class="loginbox">
+<h1>SAVE MÉXICO AYUDAR</h1>
+<p class="sub">Asistencia privada para preparar tus trámites.</p>
+<div class="field"><label>Usuario</label><input id="user" autocomplete="username"></div>
+<div class="field"><label>Contraseña</label><input id="pass" type="password" autocomplete="current-password"></div>
+<button class="bigbtn primary" onclick="login()">ENTRAR</button>
+<div id="loginMsg" class="warn" style="display:none"></div>
+</div>
+</div>
+
+<div id="app" class="app">
+<header><div class="logo">SAVE MÉXICO AYUDAR</div><div class="sub">Tranquilo. Vamos paso por paso.</div></header>
+<div class="progress"><i id="bar"></i></div>
+<div class="notice">Servicio privado e independiente de MAY ROGA LLC, Florida. No es una agencia del Gobierno de México ni representa a ningún Consulado de México.</div>
+
 <main>
-
-<section id="acceso" class="card">
-<h2>Entrar</h2>
-<div class="notice"><b>Administrador:</b> acceso gratuito con usuario y contraseña.<br><b>Cliente:</b> selecciona y paga el servicio mediante Stripe.</div>
-<label>Usuario administrativo</label><input id="adminUser" autocomplete="username">
-<label>Contraseña</label><input id="adminPass" type="password" autocomplete="current-password">
-<button onclick="loginAdmin()">Entrar como administrador</button>
-<p id="loginMsg" class="small"></p>
-<hr>
-<h3>¿Eres cliente?</h3>
-<button class="success" onclick="mostrarPlanes()">Ver servicios</button>
-</section>
-
-<section id="planes" class="card hidden">
-<h2>Selecciona tu servicio</h2>
-<p class="small">El pago se procesa mediante Stripe. No guardamos los datos de tu tarjeta.</p>
-<div class="plans">
-<div class="plan"><h3>Servicio individual</h3><div class="price">$35.99</div><p>Un servicio.</p><button onclick="pagar('daily')">Contratar</button></div>
-<div class="plan"><h3>Servicio mensual</h3><div class="price">$69.99</div><p>Acceso mensual.</p><button onclick="pagar('monthly')">Contratar</button></div>
-<div class="plan"><h3>Servicio anual</h3><div class="price">$300.00</div><p>Acceso anual.</p><button onclick="pagar('annual')">Contratar</button></div>
+<section class="screen active" id="s1">
+<h1>¿Qué necesitas hacer?</h1><p class="help">Elige solamente una opción.</p>
+<div class="options">
+<button class="option" onclick="tramite('pasaporte')">PASAPORTE</button>
+<button class="option" onclick="tramite('matricula')">MATRÍCULA CONSULAR</button>
+<button class="option" onclick="tramite('ine')">INE</button>
+<button class="option" onclick="tramite('registro')">REGISTRO DE NACIMIENTO</button>
+<button class="option" onclick="tramite('actas')">ACTAS</button>
+<button class="option" onclick="tramite('poderes')">PODER NOTARIAL</button>
 </div>
-<button class="secondary" onclick="volver()">Volver</button>
-<p id="stripeMsg" class="small"></p>
 </section>
 
-<section id="app" class="hidden">
+<section class="screen" id="s2">
+<button class="back" onclick="go(1)">← Volver</button>
+<h1>¿Tienes algún documento?</h1><p class="help">Puedes usar un PDF. Si tienes una foto, podemos conservarla para incorporarla cuando corresponda, pero no la leeremos.</p>
+<div class="options">
+<button class="option" onclick="tipoDoc('pdf')">📄 TENGO UN PDF<small>Podemos extraer su texto.</small></button>
+<button class="option" onclick="tipoDoc('foto')">📷 TENGO UNA FOTO<small>No analizaremos la fotografía.</small></button>
+<button class="option" onclick="tipoDoc('ninguno')">NO TENGO DOCUMENTOS<small>Continuar sin subir nada.</small></button>
+</div>
+</section>
+
+<section class="screen" id="s3">
+<button class="back" onclick="go(2)">← Volver</button>
+<h1>Sube tu PDF</h1><p class="help">La información encontrada aparecerá aquí.</p>
+<div class="filebox"><input type="file" id="pdf" accept="application/pdf" onchange="leerPDF()"><div id="fileStatus" class="file-status">Selecciona un PDF.</div></div>
+<div id="extracted" class="card" style="display:none"><div class="card-title">DATOS ENCONTRADOS</div><div id="extractedText" class="value"></div></div>
+<div class="actions"><button class="bigbtn secondary" onclick="go(4)">CONTINUAR SIN PDF</button></div>
+</section>
+
+<section class="screen" id="s4">
+<button class="back" onclick="go(2)">← Volver</button>
+<h1>¿Qué documento tienes?</h1><p class="help">Marca solamente los documentos que ya tienes.</p>
+<div id="docs"></div>
+<div class="actions"><button class="bigbtn primary" onclick="go(5)">SIGUIENTE</button></div>
+</section>
+
+<section class="screen" id="s5">
+<button class="back" onclick="go(4)">← Volver</button>
+<h1>Datos de la persona</h1><p class="help">Revisa lo que encontramos. Puedes corregir cualquier dato.</p>
+<div class="field"><label>Primer nombre</label><input id="primer_nombre"></div>
+<div class="field"><label>Segundo nombre</label><input id="segundo_nombre"></div>
+<div class="field"><label>Primer apellido</label><input id="primer_apellido"></div>
+<div class="field"><label>Segundo apellido</label><input id="segundo_apellido"></div>
+<div class="field"><label>Fecha de nacimiento</label><input id="fecha_nacimiento" type="date"></div>
+<div class="field"><label>Lugar de nacimiento</label><input id="lugar_nacimiento"></div>
+<div class="field"><label>Domicilio en Estados Unidos</label><input id="direccion_usa"></div>
+<div class="field"><label>Teléfono</label><input id="telefono" inputmode="tel"></div>
+<div class="field"><label>Nacionalidad</label><input id="nacionalidad" value="Mexicana"></div>
+<div class="actions"><button class="bigbtn secondary" onclick="go(4)">← ANTERIOR</button><button class="bigbtn primary" onclick="guardarDatos();go(6)">SIGUIENTE</button></div>
+</section>
+
+<section class="screen" id="s6">
+<button class="back" onclick="go(5)">← Volver</button>
+<h1>¿Qué te falta?</h1><p class="help">Marca únicamente lo que todavía necesitas conseguir.</p>
+<div id="missing"></div>
+<div class="actions"><button class="bigbtn secondary" onclick="go(5)">← EDITAR DATOS</button><button class="bigbtn primary" onclick="buildReview()">REVISAR</button></div>
+</section>
+
+<section class="screen" id="s7">
+<button class="back" onclick="go(6)">← Volver</button>
+<h1>Revisa tu trámite</h1><p class="help">Aquí está toda la información que usaremos para preparar tu documento.</p>
+<div id="review" class="card"></div>
+<div class="actions"><button class="bigbtn secondary" onclick="go(5)">EDITAR</button><button class="bigbtn primary" onclick="buildPreview()">VER PDF</button></div>
+</section>
+
+<section class="screen" id="s8">
+<button class="back" onclick="go(7)">← Volver</button>
+<h1>Vista previa</h1><p class="help">Revisa antes de generar el documento.</p>
+<div id="preview" class="preview"></div>
+<div class="actions"><button class="bigbtn secondary" onclick="go(7)">EDITAR</button><button class="bigbtn primary" onclick="generar()">GENERAR PDF</button></div>
+</section>
+
+<section class="screen" id="s9">
+<h1>Tu documento está listo</h1><p class="help">Revisa nuevamente tus datos antes de utilizarlo.</p>
+<div id="pdfResult" class="card"></div>
+<div class="actions"><button class="bigbtn primary" onclick="abrirPDF()">ABRIR PDF</button></div>
 <div class="card">
-<div class="progress"><span id="p1"></span><span id="p2"></span><span id="p3"></span><span id="p4"></span><span id="p5"></span><span id="p6"></span><span id="p7"></span></div>
-
-<div id="s1" class="step active">
-<h2>1. ¿Qué trámite necesitas?</h2>
-<label>Trámite</label>
-<select id="tramite">
-<option value="">Selecciona una opción</option>
-<option>Pasaporte</option><option>Matrícula Consular</option><option>INE</option><option>Registro Civil</option><option>Actas</option><option>Poder Notarial</option>
-</select>
-<button onclick="next(1)">Continuar</button>
+<div class="card-title">¿Qué ocurrió con tu trámite?</div>
+<button class="option" onclick="resultado('aprobado')">✅ APROBADO / COMPLETADO</button>
+<button class="option" onclick="resultado('otro_documento')">⚠️ ME PIDIERON OTRO DOCUMENTO</button>
+<button class="option" onclick="resultado('no_pude')">❌ NO PUDE COMPLETARLO</button>
+<button class="option" onclick="resultado('continuar')">🔄 NECESITO CONTINUAR</button>
 </div>
-
-<div id="s2" class="step">
-<h2>2. ¿Tienes documentos?</h2>
-<select id="tipoDocumento">
-<option value="">Selecciona</option><option value="pdf">Tengo un PDF</option><option value="foto">Tengo fotografías</option><option value="ninguno">No tengo documentos ahora</option>
-</select>
-<div id="pdfArea" class="hidden">
-<label>Subir PDF</label><input id="pdfFile" type="file" accept=".pdf">
-<button class="secondary" onclick="extraerPDF()">Revisar PDF</button><p id="pdfMsg" class="small"></p>
-</div>
-<button class="secondary" onclick="back(2)">Atrás</button><button onclick="next(2)">Continuar</button>
-</div>
-
-<div id="s3" class="step">
-<h2>3. Documentos que tienes</h2>
-<p class="small">Marca los documentos que ya tienes.</p>
-<div id="docs" class="checks"></div>
-<button class="secondary" onclick="back(3)">Atrás</button><button onclick="next(3)">Continuar</button>
-</div>
-
-<div id="s4" class="step">
-<h2>4. Tus datos</h2>
-<label>Primer nombre</label><input id="primerNombre">
-<label>Segundo nombre</label><input id="segundoNombre">
-<label>Primer apellido</label><input id="primerApellido">
-<label>Segundo apellido</label><input id="segundoApellido">
-<label>Fecha de nacimiento</label><input id="fechaNacimiento" type="date">
-<label>Lugar de nacimiento</label><input id="lugarNacimiento" placeholder="Ciudad, Estado, México">
-<label>Dirección en Estados Unidos</label><input id="direccionUSA">
-<label>Teléfono</label><input id="telefono" type="tel">
-<button class="secondary" onclick="back(4)">Atrás</button><button onclick="next(4)">Continuar</button>
-</div>
-
-<div id="s5" class="step">
-<h2>5. Documentos que faltan</h2>
-<div id="faltantes" class="checks"></div>
-<label>Consulado, si lo conoces</label><input id="consulado">
-<label>Fecha de cita, si tienes</label><input id="cita">
-<button class="secondary" onclick="back(5)">Atrás</button><button onclick="next(5)">Continuar</button>
-</div>
-
-<div id="s6" class="step">
-<h2>6. Información adicional</h2>
-<label>Información adicional</label><textarea id="extra1"></textarea>
-<label>Otra información</label><textarea id="extra2"></textarea>
-<div class="notice">Revisa tus datos antes de generar la guía.</div>
-<button class="secondary" onclick="back(6)">Atrás</button><button onclick="revision()">Revisar</button>
-</div>
-
-<div id="s7" class="step">
-<h2>7. Revisa tu información</h2>
-<div id="revisionBox"></div>
-<button class="secondary" onclick="back(7)">Modificar</button><button class="success" onclick="generar()">Generar mi guía</button>
-</div>
-</div>
-
-<div id="resultado" class="card hidden">
-<h2>Tu guía está lista</h2>
-<div class="result"><p>La guía fue generada correctamente.</p><button class="success" onclick="abrirPDF()">Abrir / descargar PDF</button></div>
-<hr>
-<h3>¿Cómo terminó tu trámite?</h3>
-<select id="resultadoTramite"><option value="">Selecciona</option><option value="completado">Completado</option><option value="pendiente">Pendiente</option><option value="no_completado">No completado</option></select>
-<textarea id="comentarioResultado" placeholder="Comentario opcional"></textarea>
-<button onclick="guardarResultado()">Guardar resultado</button><button class="secondary" onclick="nuevo()">Nuevo trámite</button>
-</div>
-</section>
-
-<section id="ayuda" class="card hidden">
-<h2>¿Tienes una pregunta?</h2>
-<textarea id="pregunta" placeholder="Escribe tu pregunta"></textarea>
-<button onclick="preguntar()">Preguntar</button>
-<div id="respuesta" class="result hidden"></div>
 </section>
 </main>
+<button class="doubt" onclick="openDoubt()">?</button>
+</div>
+
+<div class="modal" id="doubtModal">
+<div class="sheet">
+<button class="close" onclick="closeDoubt()">×</button>
+<h2>Cajón de Dudas</h2>
+<p class="help">Pregunta sobre este trámite o sobre los documentos que estás preparando.</p>
+<textarea id="question" rows="4" placeholder="Ejemplo: ¿Qué documento necesito?"></textarea>
+<button class="bigbtn primary" style="margin-top:12px" onclick="ask()">PREGUNTAR</button>
+<div id="answer" class="card" style="display:none"></div>
+</div>
+</div>
+
+<div id="toast"></div>
 
 <script>
-let auth="",archivo="",paso=1,tramiteActual="",datosExtraidos=[],datos=null;
-
-const documentos={
-"Pasaporte":["Acta de nacimiento mexicana","Identificación oficial","Pasaporte anterior","Comprobante de domicilio","Fotografías"],
-"Matrícula Consular":["Acta de nacimiento","Identificación oficial","Comprobante de domicilio"],
-"INE":["Acta de nacimiento","Identificación","Comprobante de domicilio"],
-"Registro Civil":["Acta o documento relacionado","Identificación oficial","Documentos de apoyo"],
-"Actas":["Datos del acta","Identificación","Documentos de apoyo"],
-"Poder Notarial":["Identificación","Datos del poder","Documentos relacionados"]
-};
-
+let auth="",step=1,tramiteActual="",tipoDocumento="",pdfTexto="",archivo="",datos={};
+const req={
+pasaporte:["Identificación oficial vigente","Acta de nacimiento","Comprobante de domicilio reciente en EE. UU."],
+matricula:["Identificación oficial","Comprobante de domicilio reciente en EE. UU.","Datos necesarios para el trámite"],
+ine:["Identificación oficial","Comprobante de domicilio","Datos personales correctos"],
+registro:["Acta o certificado de nacimiento correspondiente","Identificaciones oficiales","Documentos que acrediten los datos necesarios"],
+actas:["Datos correctos de la persona registrada","Información disponible del registro","Identificación cuando corresponda"],
+poderes:["Identificación oficial vigente","Datos completos de la persona que recibirá el poder","Descripción clara del propósito"]};
+const nombres={pasaporte:"Pasaporte Mexicano",matricula:"Matrícula Consular",ine:"Credencial para Votar (INE)",registro:"Registro de Nacimiento",actas:"Solicitud de Actas",poderes:"Poderes Notariales"};
 const $=id=>document.getElementById(id);
-const val=id=>$(id).value.trim();
-const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-const load=v=>$("loading").style.display=v?"flex":"none";
-
-function mostrar(id){["acceso","planes","app"].forEach(x=>$(x).classList.add("hidden"));$(id).classList.remove("hidden")}
-function mostrarPlanes(){mostrar("planes")}
-function volver(){mostrar("acceso")}
-function msg(id,t,ok=false){$(id).textContent=t;$(id).className=ok?"ok":"small error"}
-
-async function loginAdmin(){
-const u=val("adminUser"),p=$("adminPass").value;
-if(!u||!p)return msg("loginMsg","Escribe usuario y contraseña.");
-load(true);
-try{
-const token=btoa(unescape(encodeURIComponent(u+":"+p)));
-const r=await fetch("/api/admin-login",{method:"POST",headers:{Authorization:"Basic "+token}});
-if(!r.ok)throw Error("Credenciales incorrectas.");
-auth="Basic "+token;sessionStorage.setItem("save_admin_auth",auth);
-iniciar();
-}catch(e){msg("loginMsg",e.message)}finally{load(false)}
+const esc=s=>String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]));
+function headers(json=false){
+ const h={};if(auth)h.Authorization=auth;if(json)h["Content-Type"]="application/json";return h;
 }
-
-async function pagar(plan){
-load(true);
-try{
-const r=await fetch("/api/create-checkout-session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({plan})});
-const j=await r.json();
-if(!r.ok)throw Error(j.detail||"No fue posible iniciar el pago.");
-if(!j.checkout_url)throw Error("Stripe no devolvió la dirección de pago.");
-sessionStorage.setItem("save_plan",plan);
-location.href=j.checkout_url;
-}catch(e){msg("stripeMsg",e.message)}finally{load(false)}
+async function login(){
+ const u=$("user").value.trim(),p=$("pass").value;
+ if(!u||!p)return msg("Escribe tu usuario y contraseña.");
+ auth="Basic "+btoa(unescape(encodeURIComponent(u+":"+p)));
+ try{
+  const r=await fetch("/api/admin-login",{method:"POST",headers:headers()});
+  if(!r.ok)throw 0;
+  sessionStorage.setItem("save_admin_auth",auth);
+  $("login").style.display="none";$("app").style.display="block";go(1);
+ }catch(e){msg("Usuario o contraseña incorrectos.")}
 }
-
-async function verificarPago(){
-const q=new URLSearchParams(location.search),sid=q.get("session_id");
-if(q.get("success")!=="true"||!sid)return false;
-load(true);
-try{
-const r=await fetch("/api/verify-payment?session_id="+encodeURIComponent(sid));
-const j=await r.json();
-if(!r.ok||!j.active)throw Error("El pago no aparece confirmado.");
-sessionStorage.setItem("save_paid","true");
-history.replaceState({},document.title,location.pathname);
-mostrar("app");$("ayuda").classList.remove("hidden");
-alert("Pago confirmado. Ya tienes acceso.");
-return true;
-}catch(e){alert(e.message);return false}finally{load(false)}
+function msg(t){$("loginMsg").style.display="block";$("loginMsg").textContent=t}
+async function restore(){
+ auth=sessionStorage.getItem("save_admin_auth")||"";
+ if(auth){
+  try{const r=await fetch("/api/check-access",{headers:headers()});if(r.ok&&(await r.json()).ok){$("login").style.display="none";$("app").style.display="block";return}}catch(e){}
+  auth="";sessionStorage.removeItem("save_admin_auth");
+ }
+ try{
+  const r=await fetch("/api/check-access");
+  const j=await r.json();
+  if(j.ok){$("login").style.display="none";$("app").style.display="block"}
+ }catch(e){}
 }
-
-function iniciar(){mostrar("app");$("ayuda").classList.remove("hidden");mostrarPaso(1)}
-function mostrarPaso(n){
-paso=n;
-document.querySelectorAll(".step").forEach(x=>x.classList.remove("active"));
-$("s"+n).classList.add("active");
-for(let i=1;i<=7;i++)$("p"+i).classList.toggle("on",i<=n);
-scrollTo({top:0,behavior:"smooth"});
+function go(n){
+ step=n;document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$("s"+n).classList.add("active");$("bar").style.width=Math.min(100,(n-1)*12.5)+"%";scrollTo({top:0,behavior:"smooth"});
 }
-function next(n){
-if(n===1){tramiteActual=val("tramite");if(!tramiteActual)return alert("Selecciona el trámite.");crearDocs()}
-if(n===2&&!val("tipoDocumento"))return alert("Selecciona una opción.");
-if(n===4){
-if(!val("primerNombre"))return alert("Escribe tu primer nombre.");
-if(!val("primerApellido"))return alert("Escribe tu primer apellido.");
-if(!val("fechaNacimiento"))return alert("Indica tu fecha de nacimiento.");
-if(!val("lugarNacimiento"))return alert("Indica tu lugar de nacimiento.");
+function tramite(t){tramiteActual=t;datos={};buildDocs();go(2)}
+function tipoDoc(t){tipoDocumento=t;go(t==="pdf"?3:4)}
+function buildDocs(){
+ const a=req[tramiteActual]||[];
+ $("docs").innerHTML=a.map(x=>`<label class="check"><input type="checkbox" data-doc="${esc(x)}"><span>${esc(x)}</span></label>`).join("");
+ $("missing").innerHTML=a.map(x=>`<label class="check"><input type="checkbox" data-miss="${esc(x)}"><span>${esc(x)}</span></label>`).join("");
 }
-mostrarPaso(n+1)
+async function leerPDF(){
+ const f=$("pdf").files[0];if(!f)return;
+ $("fileStatus").textContent="Leyendo PDF...";
+ const fd=new FormData();fd.append("file",f);
+ try{
+  const r=await fetch("/api/extraer-pdf",{method:"POST",headers:headers(),body:fd}),j=await r.json();
+  if(!r.ok)throw Error(j.detail||"No se pudo leer el PDF.");
+  pdfTexto=j.texto||"";$("fileStatus").textContent="PDF recibido correctamente.";
+  $("extractedText").textContent=pdfTexto||"No encontramos texto legible.";
+  $("extracted").style.display="block";autoDatos(pdfTexto);
+ }catch(e){$("fileStatus").textContent=e.message}
 }
-function back(n){mostrarPaso(Math.max(1,n-1))}
-
-$("tipoDocumento").onchange=e=>$("pdfArea").classList.toggle("hidden",e.target.value!=="pdf");
-
-function crearDocs(){
-const list=documentos[tramiteActual]||["Identificación","Acta de nacimiento","Comprobante de domicilio","Documento relacionado con el trámite"];
-$("docs").innerHTML=list.map((x,i)=>`<label><input type="checkbox" data-doc="${esc(x)}"> ${esc(x)}</label>`).join("");
-$("faltantes").innerHTML=list.map(x=>`<label><input type="checkbox" data-miss="${esc(x)}"> ${esc(x)}</label>`).join("")
+function autoDatos(t){
+ if(!t)return;
+ const clean=t.replace(/\s+/g," ").trim(),m=clean.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/);
+ if(m)$("fecha_nacimiento").value=`${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+ const tel=clean.match(/\b\d{3}[\s\-]?\d{3}[\s\-]?\d{4}\b/);
+ if(tel)$("telefono").value=tel[0].replace(/\D/g,"");
+ const places=["JALISCO","MICHOACÁN","MICHOACAN","GUERRERO","VERACRUZ","PUEBLA","OAXACA","CIUDAD DE MÉXICO","CDMX","CHIAPAS","YUCATÁN","SONORA","SINALOA","TAMAULIPAS"];
+ const p=places.find(x=>clean.toUpperCase().includes(x));if(p)$("lugar_nacimiento").value=p;
+ $("extractedText").textContent=clean.slice(0,8000);
 }
-
-async function extraerPDF(){
-const f=$("pdfFile").files[0];
-if(!f)return msg("pdfMsg","Selecciona un PDF.");
-const form=new FormData();form.append("archivo",f);load(true);
-try{
-const r=await fetch("/api/extraer-pdf",{method:"POST",body:form});
-const j=await r.json();
-if(!r.ok)throw Error(j.detail||"No se pudo leer el PDF.");
-datosExtraidos=[{nombre:f.name,texto:j.texto||""}];
-msg("pdfMsg","PDF revisado correctamente.",true)
-}catch(e){msg("pdfMsg",e.message)}finally{load(false)}
+function guardarDatos(){
+ ["primer_nombre","segundo_nombre","primer_apellido","segundo_apellido","fecha_nacimiento","lugar_nacimiento","direccion_usa","telefono","nacionalidad"].forEach(k=>datos[k]=$(k).value.trim());
+ datos.nacionalidad=datos.nacionalidad||"Mexicana";
 }
-
-function revision(){
-const tenidos=[...document.querySelectorAll("[data-doc]:checked")].map(x=>x.dataset.doc);
-const faltantes=[...document.querySelectorAll("[data-miss]:checked")].map(x=>x.dataset.miss);
-const f=val("fechaNacimiento");
-datos={
-categoria_tramite:tramiteActual,
-primer_nombre:val("primerNombre"),
-segundo_nombre:val("segundoNombre"),
-primer_apellido:val("primerApellido"),
-segundo_apellido:val("segundoApellido"),
-fecha_nacimiento:f?f.split("-").reverse().join("/"):f,
-lugar_nacimiento:val("lugarNacimiento"),
-direccion_usa:val("direccionUSA"),
-telefono:val("telefono"),
-nacionalidad:"Mexicana",
-consulado:val("consulado"),
-cita:val("cita"),
-documentos_tenidos:tenidos,
-documentos_faltantes:faltantes,
-datos_extraidos:datosExtraidos,
-estado_posterior:"pendiente",
-extra_1:val("extra1"),
-extra_2:val("extra2"),
-confirmado:false
-};
-let h="";
-const b=(a,v)=>`<div style="margin-bottom:13px"><b>${esc(a)}</b><div>${esc(v||"No indicado")}</div></div>`;
-h+=b("Trámite",datos.categoria_tramite);
-h+=b("Nombre",[datos.primer_nombre,datos.segundo_nombre,datos.primer_apellido,datos.segundo_apellido].filter(Boolean).join(" "));
-h+=b("Nacimiento",datos.fecha_nacimiento+" — "+datos.lugar_nacimiento);
-h+=b("Dirección",datos.direccion_usa);
-h+=b("Teléfono",datos.telefono);
-h+=b("Documentos que tienes",tenidos.join(", ")||"Ninguno indicado");
-h+=b("Documentos que faltan",faltantes.join(", ")||"Ninguno indicado");
-if(datos.consulado)h+=b("Consulado",datos.consulado);
-if(datos.cita)h+=b("Cita",datos.cita);
-if(datos.extra_1)h+=b("Información adicional",datos.extra_1);
-if(datos.extra_2)h+=b("Otra información",datos.extra_2);
-$("revisionBox").innerHTML=h;
-mostrarPaso(7)
+function cargarDatos(){Object.keys(datos).forEach(k=>{if($(k))$(k).value=datos[k]||""})}
+function buildReview(){
+ guardarDatos();
+ const falt=["primer_nombre","primer_apellido","fecha_nacimiento","lugar_nacimiento","direccion_usa","telefono"].filter(k=>!datos[k]);
+ if(falt.length){toast("Completa los datos que faltan.");go(5);return}
+ datos.documentos_tenidos=[...document.querySelectorAll("[data-doc]:checked")].map(x=>x.dataset.doc).join(", ");
+ datos.documentos_faltantes=[...document.querySelectorAll("[data-miss]:checked")].map(x=>x.dataset.miss).join(", ");
+ $("review").innerHTML=`
+ <div class="data-row"><div class="label">Trámite</div><div class="value">${esc(nombres[tramiteActual])}</div></div>
+ <div class="data-row"><div class="label">Persona</div><div class="value">${esc([datos.primer_nombre,datos.segundo_nombre,datos.primer_apellido,datos.segundo_apellido].filter(Boolean).join(" "))}</div></div>
+ <div class="data-row"><div class="label">Nacimiento</div><div class="value">${esc(datos.fecha_nacimiento)} — ${esc(datos.lugar_nacimiento)}</div></div>
+ <div class="data-row"><div class="label">Domicilio</div><div class="value">${esc(datos.direccion_usa)}</div></div>
+ <div class="data-row"><div class="label">Teléfono</div><div class="value">${esc(datos.telefono)}</div></div>
+ <div class="data-row"><div class="label">Tengo</div><div class="value">${esc(datos.documentos_tenidos||"Ninguno indicado")}</div></div>
+ <div class="data-row"><div class="label">Me falta</div><div class="value">${esc(datos.documentos_faltantes||"Ninguno indicado")}</div></div>`;
+ go(7);
 }
-
+function buildPreview(){
+ $("preview").innerHTML=`
+ <h3>SAVE MÉXICO AYUDAR</h3><div class="ptitle">MI PREPARACIÓN DE TRÁMITE</div>
+ <div class="preview-section"><strong>TRÁMITE</strong><div>${esc(nombres[tramiteActual])}</div></div>
+ <div class="preview-section"><strong>PERSONA</strong><div>${esc([datos.primer_nombre,datos.segundo_nombre,datos.primer_apellido,datos.segundo_apellido].filter(Boolean).join(" "))}</div></div>
+ <div class="preview-section"><strong>DATOS</strong>
+ <div class="preview-row"><span>Nacimiento</span><span>${esc(datos.fecha_nacimiento)}</span></div>
+ <div class="preview-row"><span>Lugar</span><span>${esc(datos.lugar_nacimiento)}</span></div>
+ <div class="preview-row"><span>Domicilio</span><span>${esc(datos.direccion_usa)}</span></div>
+ <div class="preview-row"><span>Teléfono</span><span>${esc(datos.telefono)}</span></div></div>
+ <div class="preview-section"><strong>DOCUMENTOS QUE TENGO</strong><div>${esc(datos.documentos_tenidos||"No indicado")}</div></div>
+ <div class="preview-section"><strong>DOCUMENTOS QUE ME FALTAN</strong><div>${esc(datos.documentos_faltantes||"Ninguno indicado")}</div></div>
+ <div class="preview-section"><strong>ANTES DE IR</strong><div>☐ Revisar mis datos<br>☐ Revisar mis documentos<br>☐ Confirmar los requisitos oficiales<br>☐ Confirmar mi cita</div></div>
+ <div class="legal">SAVE MÉXICO AYUDAR es un servicio privado e independiente de MAY ROGA LLC, Florida. No es una agencia del Gobierno de México ni representa a ningún Consulado de México. Los requisitos y resultados corresponden a la autoridad competente.</div>`;
+ go(8);
+}
 async function generar(){
-if(!datos)return alert("Primero revisa tus datos.");
-datos.confirmado=true;load(true);
-try{
-const r=await fetch("/api/generar-guia-consular",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(datos)});
-const j=await r.json();
-if(!r.ok)throw Error(j.detail||"No se pudo generar la guía.");
-archivo=j.archivo;$("resultado").classList.remove("hidden");$("resultado").scrollIntoView({behavior:"smooth"});
-}catch(e){alert(e.message)}finally{load(false)}
+ guardarDatos();datos.categoria_tramite=tramiteActual;
+ try{
+  const r=await fetch("/api/generar-guia-consular",{method:"POST",headers:headers(true),body:JSON.stringify(datos)}),j=await r.json();
+  if(!r.ok)throw Error(j.detail||"No se pudo generar el PDF.");
+  archivo=j.archivo||("/descargar/"+j.nombre);
+  $("pdfResult").innerHTML='<div class="success"><b>PDF preparado correctamente.</b><br>Tu documento ya está listo para revisar.</div>';go(9);
+ }catch(e){toast(e.message)}
 }
-
-async function abrirPDF(){
-if(!archivo)return;
-load(true);
-try{
-const r=await fetch(archivo);
-if(!r.ok)throw Error("No se pudo abrir el PDF.");
-const u=URL.createObjectURL(await r.blob());
-open(u,"_blank");setTimeout(()=>URL.revokeObjectURL(u),60000)
-}catch(e){alert(e.message)}finally{load(false)}
+function abrirPDF(){if(archivo)window.open(archivo,"_blank")}
+async function resultado(estado){
+ try{
+  const r=await fetch("/api/resultado-tramite",{method:"POST",headers:headers(true),body:JSON.stringify({categoria_tramite:tramiteActual,estado:estado,resultado:estado})}),j=await r.json();
+  toast(r.ok?(j.mensaje||"Resultado guardado."):j.detail||"No se pudo guardar.");
+ }catch(e){toast("No se pudo guardar el resultado.")}
 }
-
-async function guardarResultado(){
-const r0=val("resultadoTramite");
-if(!r0)return alert("Selecciona un resultado.");
-try{
-const r=await fetch("/api/resultado-tramite",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({categoria_tramite:tramiteActual,resultado:r0,comentario:val("comentarioResultado")})});
-const j=await r.json();if(!r.ok)throw Error(j.detail||"No se pudo guardar.");alert("Resultado guardado.")
-}catch(e){alert(e.message)}
+function openDoubt(){$("doubtModal").classList.add("open");$("question").focus()}
+function closeDoubt(){$("doubtModal").classList.remove("open")}
+async function ask(){
+ const q=$("question").value.trim();if(!q){toast("Escribe tu duda.");return}
+ $("answer").style.display="block";$("answer").textContent="Un momento...";
+ try{
+  const r=await fetch("/api/pregunta",{method:"POST",headers:headers(true),body:JSON.stringify({pregunta:q,categoria_tramite:tramiteActual||"general",contexto:pdfTexto||""})}),j=await r.json();
+  $("answer").textContent=r.ok?(j.respuesta||"No recibimos una respuesta."):(j.detail||"No pudimos responder.");
+ }catch(e){$("answer").textContent="No pudimos responder en este momento."}
 }
-
-async function preguntar(){
-const p=val("pregunta");
-if(!p)return alert("Escribe una pregunta.");
-load(true);
-try{
-const r=await fetch("/api/pregunta",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pregunta:p,contexto:JSON.stringify(datos||{})})});
-const j=await r.json();if(!r.ok)throw Error(j.detail||"No hubo respuesta.");
-$("respuesta").classList.remove("hidden");$("respuesta").textContent=j.respuesta||"No recibimos respuesta."
-}catch(e){alert(e.message)}finally{load(false)}
+function toast(t){
+ const x=$("toast");x.textContent=t;x.style.display="block";clearTimeout(window.tt);window.tt=setTimeout(()=>x.style.display="none",3500);
 }
-
-function nuevo(){
-archivo="";datos=null;datosExtraidos=[];$("resultado").classList.add("hidden");mostrarPaso(1)
-}
-
-window.addEventListener("load",async()=>{
-auth=sessionStorage.getItem("save_admin_auth")||"";
-if(await verificarPago())return;
-if(auth)iniciar();
-});
+document.addEventListener("DOMContentLoaded",restore);
 </script>
 </body>
 </html>
