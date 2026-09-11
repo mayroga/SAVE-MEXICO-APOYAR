@@ -255,7 +255,7 @@ function collectSpecific(){
  return out
 }
 function cargarFotos(){
- const files=[...$("photos").files];fotos=files;$("photoList").textContent=files.length?files.length+" fotografía(s) seleccionada(s).":"";
+ const files=[...$("photos"].files];fotos=files;$("photoList").textContent=files.length?files.length+" fotografía(s) seleccionada(s).":"";
  $("photoPreview").innerHTML="";
  files.forEach(f=>{const im=document.createElement("img");im.className="preview";im.alt=f.name;const rd=new FileReader();rd.onload=e=>im.src=e.target.result;rd.readAsDataURL(f);$("photoPreview").appendChild(im);const p=document.createElement("div");p.className="filelist";p.textContent=f.name;$("photoPreview").appendChild(p)})
 }
@@ -265,13 +265,7 @@ function extraerDatos(t){
  const find=rx=>{const x=lines.find(v=>rx.test(v));return x?x.split(":").slice(1).join(":").trim():""};
  const n=find(/Titular|Solicitante/i);
  if(n){const p=n.split(/\s+/);$("primer_nombre").value=p[0]||"";$("segundo_nombre").value=p.length>4?p.slice(1,-2).join(" "):"";$("primer_apellido").value=p.length>3?p[p.length-2]:"";$("segundo_apellido").value=p.length>3?p[p.length-1]:""}
- $("fecha_nacimiento").value=find(/Nacimiento/i);$("direccion_usa").value=find(/Domicilio USA|Domicilio en Estados Unidos/i);$("telefono").value=find(/Tel[eé]fono/i);$("pdfInfo").textContent=pdfTexto||"No se encontró texto.";
-}
-async function leerPDF(){
- const f=$("pdfFile")?.files[0];if(!f)return;
- $("pdfName").textContent="PDF seleccionado: "+f.name;
- const fd=new FormData();fd.append("file",f);
- try{const r=await fetch("/api/extraer-pdf",{method:"POST",headers:auth?{Authorization:auth}:{},body:fd}),j=await r.json();if(!r.ok)throw Error(j.detail||"No se pudo leer el PDF.");pdfTexto=j.texto||"";$("pdfExtract").style.display="block";$("pdfExtract").innerHTML="<b>Información encontrada:</b><br>"+esc(pdfTexto||"No se encontró texto legible.");extraerDatos(pdfTexto)}catch(e){$("pdfExtract").style.display="block";$("pdfExtract").textContent=e.message}
+ $("fecha_nacimiento").value=find(/Nacimiento/i);$("direccion_usa").value=find(/Domicilio USA|Domicilio en Estados Unidos/i);$("telefono").value=find(/Tel[eé]fono/i);
 }
 function guardarDatos(){
  datos={categoria_tramite:tramiteActual,modalidad:modalidadActual,primer_nombre:val("primer_nombre"),segundo_nombre:val("segundo_nombre"),primer_apellido:val("primer_apellido"),segundo_apellido:val("segundo_apellido"),fecha_nacimiento:val("fecha_nacimiento"),lugar_nacimiento:val("lugar_nacimiento"),direccion_usa:val("direccion_usa"),telefono:val("telefono"),correo:val("correo"),nacionalidad:val("nacionalidad")||"Mexicana",consulado:val("consulado"),cita:val("cita"),documentos_tenidos:val("docsHave"),documentos_faltantes:val("docsMissing"),fotografias:fotos.map(x=>x.name),datos_especificos:collectSpecific(),datos_extraidos:pdfTexto?[pdfTexto]:[],estado_posterior:"PENDIENTE",extra_1:val("extra1"),extra_2:val("extra2"),confirmado:$("confirm").checked}
