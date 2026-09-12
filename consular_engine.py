@@ -649,14 +649,9 @@ def situaciones_especiales(caso, res, p):
         if caso == "pasaporte_renovacion" and no(res.get("pasaporte_actual")): s.append("Si no tienes el pasaporte anterior, confirma los requisitos aplicables antes de acudir.")
         if caso == "pasaporte_perdido_robo_mutilado": s.append("La pérdida, robo o daño requiere un reporte formalizado ante las autoridades locales.")
     if caso in ["matricula_primera_vez", "credencial_ine_extranjero"] and res.get("domicilio") == "Está a nombre de otra persona":
-# TRAMO 6: INICIO
-
-    if caso in ["matricula_primera_vez", "credencial_ine_extranjero"] and res.get("domicilio") == "Está a nombre de otra persona":
         s.append("Si el comprobante de domicilio no está a tu nombre, consulta las alternativas válidas (cartas de renta, cuentas familiares o declaración de testigos).")
-    
-    if caso == "acta_nacimiento_certificada" and res.get("modalidad") == "En línea":
+    if caso == "acta_nacimiento_certificada" and res.get("modalidad") == "En línea": 
         s.append("Puedes realizar y descargar tu trámite directamente en la plataforma digital oficial del Gobierno Federal.")
-    
     return unicos(s)
 
 def acciones_del_caso(caso, res, p, falt, revisar):
@@ -669,6 +664,8 @@ def acciones_del_caso(caso, res, p, falt, revisar):
         acciones.append("Solicita o confirma tu cita.")
     if caso == "acta_nacimiento_certificada" and res.get("modalidad") == "En línea": 
         acciones.append("Consulta el portal oficial para realizar el trámite en línea.")
+    acciones.extend(["Revisa tus datos antes de confirmar.", "Revisa tu Hoja de Ruta antes de acudir a las sedes consulares.", "Confirma los horarios y regulaciones locales del consulado asignado."])
+    return unicos(acciones)
     
     acciones.extend([
         "Revisa tus datos antes de confirmar.", 
