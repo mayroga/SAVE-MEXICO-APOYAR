@@ -5,18 +5,22 @@ let respuestas = {};
 let resultadoFinal = null;
 let idTemporizador = null;
 
-// Reloj de Seguridad de 10 Minutos por Inactividad
+// Reloj de Inactividad de 10 Minutos para obligar a comenzar de nuevo de forma limpia
 function iniciarRelojInactividad() {
     clearTimeout(idTemporizador);
     idTemporizador = setTimeout(() => {
-        alert("Tu sesión de 10 minutos ha terminado por seguridad. Volvamos a comenzar.");
+        alert("Por tu seguridad, tu sesión de 10 minutos ha terminado. Vamos a comenzar de nuevo.");
         comenzarDeNuevoLimpio();
-    }, 600000); // 10 minutos en milisegundos
+    }, 600000);
 }
 
-// Escucha clics o teclas para resetear el reloj de inactividad
 document.addEventListener("click", iniciarRelojInactividad);
 document.addEventListener("keydown", iniciarRelojInactividad);
+
+function validarCheck() {
+    const chk = document.getElementById('check-legal');
+    document.getElementById('btn-comenzar').disabled = !chk.checked;
+}
 
 function comenzarDeNuevoLimpio() {
     casoActual = "";
@@ -25,7 +29,9 @@ function comenzarDeNuevoLimpio() {
     document.getElementById('input-nombre').value = "";
     document.getElementById('input-tel').value = "";
     document.getElementById('input-estado').value = "California";
-    irAPaso('paso-datos');
+    document.getElementById('check-legal').checked = false;
+    document.getElementById('btn-comenzar').disabled = true;
+    irAPaso('paso-legal');
 }
 
 function irAPaso(id) {
@@ -36,12 +42,25 @@ function irAPaso(id) {
 
 function guardarDatos() {
     const nombre = document.getElementById('input-nombre').value.trim();
+    const fecha = document.getElementById('input-fecha').value.trim();
+    const origen = document.getElementById('input-origen').value;
+    const direccion = document.getElementById('input-direccion').value.trim();
     const tel = document.getElementById('input-tel').value.trim();
     const edo = document.getElementById('input-estado').value;
 
     if (!nombre) { alert("Por favor escribe tu Nombre y Apellidos."); return; }
+    if (!fecha) { alert("Por favor escribe tu Fecha de Nacimiento."); return; }
+    if (!direccion) { alert("Por favor escribe tu Dirección en EE. UU."); return; }
     
-    perfil = { nombre_completo: nombre, telefono: tel, estado: edo, nacionalidad: "mexicana" };
+    perfil = { 
+        nombre_completo: nombre, 
+        fecha_nacimiento: fecha,
+        origen_mexico: origen,
+        direccion_usa: direccion,
+        telefono: tel, 
+        estado: edo, 
+        nacionalidad: "mexicana" 
+    };
     cargarCatalogo();
 }
 
@@ -143,7 +162,6 @@ function mostrarResultado(r) {
     
     inyectarLista('res-acciones', r.acciones_recomendadas);
 
-    // Activar botón dinámico para el sitio web del consulado
     let btnWeb = document.getElementById('lnk-consulado-oficial');
     if (r.url_consulado) {
         btnWeb.href = r.url_consulado;
@@ -176,8 +194,8 @@ async function verVistaPrevia() {
             let url = window.URL.createObjectURL(blob);
             document.getElementById('pdf-frame').src = url;
             document.getElementById('modal-pdf').classList.add('active');
-        } else { alert("No se pudo cargar la vista previa del documento."); }
-    } catch(e) { alert("Error de conexión al generar vista previa."); }
+        } else { alert("No se pudo abrir el cuadro de vista previa."); }
+    } catch(e) { alert("Error de comunicación para generar vista previa."); }
 }
 
 function cerrarVistaPrevia() {
@@ -202,12 +220,11 @@ async function descargarPDF() {
             document.body.appendChild(a);
             a.click();
             a.remove();
-        } else { alert("No se pudo descargar el archivo PDF."); }
-    } catch(e) { alert("Error al conectar para generar el PDF."); }
+        } else { alert("No se pudo guardar tu Hoja de Ruta."); }
+    } catch(e) { alert("Error de red al compilar tu PDF final."); }
 }
 
 function abortarCuestionario() { cargarCatalogo(); }
 function reiniciarTodo() { comenzarDeNuevoLimpio(); }
 
-// Inicializa el reloj cuando carga el archivo
 iniciarRelojInactividad();
