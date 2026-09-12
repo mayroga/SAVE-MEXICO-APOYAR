@@ -134,23 +134,27 @@ function procesarPaso(data) {
         document.getElementById('pregunta-titulo').innerText = data.servicio;
         document.getElementById('pregunta-texto').innerText = data.pregunta.pregunta;
         
-        // Mapeo e Inyección de tus Fotos Locales Propias (Sin enlaces externos rotos)
+        // Mapeo e Inyección de tus Fotos Locales Propias con Enlace de Clic
         const divVisual = document.getElementById('contenedor-ejemplo-visual');
         const imgVisual = document.getElementById('img-ejemplo');
+        const enlaceVisual = document.getElementById('enlace-ejemplo');
         
-        if (divVisual && imgVisual) {
+        if (divVisual && imgVisual && enlaceVisual) {
             if (data.pregunta.id === "acta_nacimiento") {
                 divVisual.style.display = "block";
-                // Llama directamente a tu foto del Acta de Nacimiento verde en tu servidor
-                imgVisual.src = "/static/acta.jpg";
+                // Forzamos la ruta estática relativa para Render
+                imgVisual.src = "static/acta.jpg";
+                enlaceVisual.href = "static/acta.jpg";
             } else if (data.pregunta.id === "identificacion") {
                 divVisual.style.display = "block";
-                // Llama directamente a tu foto de la Credencial INE en tu servidor
-                imgVisual.src = "/static/ine.jpg";
+                // Forzamos la ruta estática relativa para Render
+                imgVisual.src = "static/ine.jpg";
+                enlaceVisual.href = "static/ine.jpg";
             } else {
-                // Se esconde de forma automática para el comprobante de domicilio y demás preguntas
+                // Se oculta automáticamente si es comprobante de domicilio o cita
                 divVisual.style.display = "none";
                 imgVisual.src = "";
+                enlaceVisual.href = "#";
             }
         }
         
