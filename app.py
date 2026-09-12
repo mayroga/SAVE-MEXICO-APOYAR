@@ -76,7 +76,8 @@ def construir_pdf(r):
     c.drawString(55, 430, f"Oficina: {r.get('consulado_nombre', '')}")
     c.drawString(55, 410, f"Dirección: {r.get('consulado_direccion', '')}")
     c.drawString(55, 390, f"Teléfono central: {r.get('consulado_telefono', '')}")
-    c.drawString(55, 370, f"Página oficial de internet: {r.get('url_consulado', 'https://www.gob.mx')}")
+    # Vinculación del enlace específico de la circunscripción oficial
+    c.drawString(55, 370, f"Página oficial de internet: {r.get('url_consulado') or r.get('fuente') or 'https://www.gob.mx'}")
     
     # 5. Lista de Documentos Oficiales
     c.setFont("Helvetica-Bold", 12)
@@ -87,7 +88,7 @@ def construir_pdf(r):
         c.drawString(70, y, f"• {req}")
         y -= 20
         
-    # 6. Faltantes desglosados (Ajuste para que quepa el texto largo sin salirse del papel)
+    # 6. Faltantes desglosados (Ajuste preciso sin puntos huérfanos residuales)
     faltantes = r.get("faltantes", [])
     if faltantes:
         y -= 10
@@ -96,8 +97,8 @@ def construir_pdf(r):
         c.drawString(55, y, "6. ¡ATENCIÓN! TE FALTA CONSEGUIR ESTO EXACTAMENTE:")
         y -= 20
         for f in faltantes:
-            c.setFont("Helvetica", 10) # Letra un poquito más pequeña para textos explicativos
-            # Si el texto es muy largo, lo dividimos en dos líneas en el PDF
+            c.setFont("Helvetica", 10)
+            # Solo segmenta el renglón si excede los límites físicos horizontales del papel
             if len(f) > 85:
                 c.drawString(70, y, f"• {f[:85]}")
                 y -= 15
@@ -146,6 +147,21 @@ def api_continuar(x: Continuacion):
         return continuar(x.caso, res, perfil, x.pregunta_id, x.respuesta)
     except Exception as e:
         raise HTTPException(400, str(e))
+
+@app.post("/api/pdf-preview")
+def api_pdf_preview(r: Dict[str, Any]):
+    try:
+        pdf = construir_pdf(r)
+        return StreamingResponse(
+            pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'inline; filename="Hoja_de_Ruta_Preliminar.pdf"',
+                "Cache-Control": "no-store"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(400, f"Error al generar la vista previa: {e}")
 
 @app.post("/api/pdf")
 def api_pdf(r: Dict[str, Any]):
