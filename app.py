@@ -46,6 +46,7 @@ def construir_pdf(r):
     c = canvas.Canvas(out, pagesize=letter)
     c.setTitle("MEXICANO APOYA MEXICANO - Hoja de Ruta")
     
+    # Encabezado Limpio e Institucional
     c.setFont("Helvetica-Bold", 20)
     c.setFillColorRGB(0.07, 0.25, 0.40)
     c.drawString(55, 740, "MEXICANO APOYA MEXICANO")
@@ -57,59 +58,56 @@ def construir_pdf(r):
     c.setStrokeColorRGB(0.8, 0.8, 0.8)
     c.line(55, 700, 555, 700)
     
-    # 1. Datos del Ciudadano para Ventanilla
+    # 1. Datos del Ciudadano
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(55, 675, "1. TUS DATOS PARA DECLARAR EN VENTANILLA")
+    c.drawString(55, 675, "1. TUS DATOS")
     c.setFont("Helvetica", 11)
-    c.drawString(55, 655, f"Nombre Completo: {r.get('nombre_ciudadano', '')}")
-    c.drawString(55, 635, f"Fecha de Nacimiento: {r.get('fecha_nacimiento', '')}")
-    c.drawString(55, 615, f"Lugar de Origen (México): {r.get('origen_mexico', '')}")
-    c.drawString(55, 595, f"Dirección en EE. UU.: {r.get('direccion_usa', '')}")
-    c.drawString(55, 575, f"Teléfono Registrado: {r.get('telefono_ciudadano', '')}")
-    c.drawString(55, 555, f"Estado Actual de Residencia: {r.get('estado_residencia', '')}")
+    c.drawString(55, 655, f"Nombre completo: {r.get('nombre_ciudadano', 'Ciudadano Mexicano')}")
+    c.drawString(55, 635, f"Teléfono registrado: {r.get('telefono_ciudadano', 'No indicado')}")
     
     # 2. Tu Trámite
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(55, 520, f"2. TU TRÁMITE: {r.get('nombre_tramite', '').upper()}")
+    c.drawString(55, 600, f"2. TU TRÁMITE: {r.get('nombre_tramite', '').upper()}")
     c.setFont("Helvetica", 11)
-    c.drawString(55, 500, f"Estatus General: {r.get('estado', '')}")
-    c.drawString(55, 480, f"Mensaje: {r.get('mensaje_estado', '')}")
+    c.drawString(55, 580, f"Estatus General: {r.get('estado', '')}")
+    c.drawString(55, 560, f"Mensaje: {r.get('mensaje_estado', '')}")
     
     # 3. Costo y Cita
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(55, 445, "3. COSTO Y CITA OBLIGATORIA")
+    c.drawString(55, 525, "3. COSTO Y CITA OBLIGATORIA")
     c.setFont("Helvetica", 11)
-    c.drawString(55, 425, f"Costo estimado en ventanilla: {r.get('pago_estimado', '')}")
-    c.drawString(55, 405, f"Estado de tu cita: {r.get('cita_estatus', '')}")
+    c.drawString(55, 505, f"Costo estimado en ventanilla: {r.get('pago_estimado', '')}")
+    c.drawString(55, 485, f"Estado de la cita: {r.get('cita_estatus', '')}")
     
-    # 4. Tu Consulado
+    # 4. Tu Consulado y Página de Internet
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(55, 370, "4. TU SEDE CONSULAR ASIGNADA")
+    c.drawString(55, 450, "4. TU SEDE CONSULAR ASIGNADA")
     c.setFont("Helvetica", 11)
-    c.drawString(55, 350, f"Oficina: {r.get('consulado_nombre', '')}")
-    c.drawString(55, 330, f"Dirección: {r.get('consulado_direccion', '')}")
-    c.drawString(55, 310, f"Teléfono central: {r.get('consulado_telefono', '')}")
-    c.drawString(55, 290, f"Página oficial de internet: {r.get('url_consulado') or ''}")
+    c.drawString(55, 430, f"Oficina: {r.get('consulado_nombre', '')}")
+    c.drawString(55, 410, f"Dirección: {r.get('consulado_direccion', '')}")
+    c.drawString(55, 390, f"Teléfono central: {r.get('consulado_telefono', '')}")
+    c.drawString(55, 370, f"Página oficial de internet: {r.get('url_consulado', '')}")
     
     # 5. Lista de Documentos Oficiales
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(55, 255, "5. REQUISITOS OFICIALES QUE DEBES LLEVAR")
-    y = 235
+    c.drawString(55, 335, "5. REQUISITOS OFICIALES QUE DEBES LLEVAR")
+    y = 315
     for req in r.get("requisitos_oficiales", []):
         c.setFont("Helvetica", 11)
         c.drawString(70, y, f"• {req}")
         y -= 20
         
-    # 6. Faltantes desglosados (Limpieza contra puntos huérfanos)
+    # 6. Faltantes desglosados (Ajuste para que quepa el texto largo sin salirse del papel)
     faltantes = r.get("faltantes", [])
     if faltantes:
-        y -= 5
+        y -= 10
         c.setFont("Helvetica-Bold", 12)
         c.setFillColorRGB(0.7, 0.1, 0.1)
         c.drawString(55, y, "6. ¡ATENCIÓN! TE FALTA CONSEGUIR ESTO EXACTAMENTE:")
         y -= 20
         for f in faltantes:
-            c.setFont("Helvetica", 10)
+            c.setFont("Helvetica", 10) # Letra un poquito más pequeña para textos explicativos
+            # Si el texto es muy largo, lo dividimos en dos líneas en el PDF
             if len(f) > 85:
                 c.drawString(70, y, f"• {f[:85]}")
                 y -= 15
@@ -121,8 +119,8 @@ def construir_pdf(r):
     # Pie de página de Deslinde
     c.setFillColorRGB(0.5, 0.5, 0.5)
     c.setFont("Helvetica-Oblique", 8)
-    c.drawString(55, 45, "Aviso: Mexicano Apoya Mexicano es una herramienta de preparación ciudadana independiente propiedad de MAY ROGA LLC.")
-    c.drawString(55, 35, "No sustituye al Gobierno de México. Diseñada como soporte de datos para el ciudadano.")
+    c.drawString(55, 50, "Aviso: Mexicano Apoya Mexicano es una herramienta de preparación ciudadana independiente.")
+    c.drawString(55, 40, "No sustituye al Gobierno de México. Valida siempre tus documentos antes de salir.")
     
     c.save()
     out.seek(0)
