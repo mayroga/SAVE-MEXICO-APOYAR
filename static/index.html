@@ -105,16 +105,15 @@
  Al marcar la casilla de abajo, liberas de toda responsabilidad jurídica a MAY ROGA LLC y aceptas que usarás esta hoja como una guía informativa previa.
  </p>
  </div>
- <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+<div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
  <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; font-weight: bold;">
- <input type="checkbox" id="check-legal" onchange="validarCheck()" style="margin-top: 3px; width: auto; height: auto;">
+ <!-- CORREGIDO: Se añade validación directa por si el script tarda en cargar -->
+ <input type="checkbox" id="check-legal" onchange="if(typeof validarCheck === 'function') { validarCheck() } else { document.getElementById('btn-comenzar').disabled = !this.checked; }" style="margin-top: 3px; width: auto; height: auto;">
  <span>Acepto los términos de uso y el deslinde de responsabilidad de MAY ROGA LLC.</span>
  </label>
- </div>
- <button id="btn-comenzar" class="btn" onclick="irAPaso('paso-datos')" disabled>ENTENDIDO Y COMENZAR</button>
- </div>
+</div>
 
- <!-- PASO 1: TUS DATOS -->
+ <!-- PASO 1: TUS DATOS BÁSICOS -->
  <div id="paso-datos" class="step">
  <h2>Paso 1: Tus Datos Básicos de Ventanilla</h2>
  <p>Escribe tu información tal como viene en tus papeles. Esto se imprimirá en tu hoja para que la leas si te pones nervioso frente al cónsul.</p>
@@ -136,95 +135,155 @@
   <input type="number" id="input-edad" placeholder="Ej. 34">
  </div>
 
-<div class="form-group">
+ <div class="form-group">
   <label>Lugar de Origen (Estado de México):</label>
-  <select id="input-origen" class="form-control">
-    <option value="Michoacán">Michoacán</option>
-    <option value="Jalisco">Jalisco</option>
-    <option value="Guanajuato">Guanajuato</option>
-    <option value="Puebla">Puebla</option>
-    <option value="Guerrero">Guerrero</option>
-    <option value="Oaxaca">Oaxaca</option>
-    <option value="Veracruz">Veracruz</option>
-    <option value="Estado de México">Estado de México</option>
-    <option value="Ciudad de México">Ciudad de México</option>
-    <option value="Nací en USA">Nací en USA (Hijo de padres mexicanos)</option>
-    <option value="Otro Estado de México">Otro Estado de México</option>
+  <select id="input-origen">
+   <option value="Michoacán">Michoacán</option>
+   <option value="Jalisco">Jalisco</option>
+   <option value="Guanajuato">Guanajuato</option>
+   <option value="Puebla">Puebla</option>
+   <option value="Guerrero">Guerrero</option>
+   <option value="Oaxaca">Oaxaca</option>
+   <option value="Veracruz">Veracruz</option>
+   <option value="Estado de México">Estado de México</option>
+   <option value="Ciudad de México">Ciudad de México</option>
+   <option value="Nací en USA (Hijo de padres mexicanos)">Nací en USA (Hijo de padres mexicanos)</option>
+   <option value="Otro Estado de México">Otro Estado de México</option>
   </select>
-</div>
-
-<div class="form-group">
+ </div>
+ 
+ <div class="form-group">
   <label>Dirección Completa en Estados Unidos:</label>
-  <textarea class="form-control" rows="3"></textarea>
-  <button type="button" class="btn btn-secondary mt-2">🎙️ Dictar Dirección</button>
-</div>
-
-<div class="form-group">
+  <input type="text" id="input-direccion" placeholder="Calle, Número, Ciudad, Estado, Código Postal">
+  <button type="button" id="btn-voz-direccion" class="btn-voz" onclick="activarMicrofono('input-direccion')">🎙️ Dictar Dirección</button>
+ </div>
+ 
+ <div class="form-group">
   <label>Teléfono de Contacto de 10 dígitos:</label>
-  <input type="tel" class="form-control" maxlength="10">
-</div>
-
-<div class="form-group">
-  <label>Selecciona haciendo CLIC el Estado donde vives actualmente:</label>
-  <select id="input-estado-actual" class="form-control">
-    <option value="California">California</option>
-    <option value="Texas">Texas</option>
-    <option value="Florida">Florida</option>
-    <option value="Illinois">Illinois</option>
-    <option value="New York">New York</option>
-    <option value="Arizona">Arizona</option>
-    <option value="Otro Estado">Otro Estado</option>
+  <input type="tel" id="input-tel" placeholder="Ej. 786-647-1371">
+ </div>
+ 
+ <div class="form-group">
+  <label>Selecciona haciendo CLIC el Estado donde vives actualmente en USA:</label>
+  <select id="input-estado">
+   <option value="California">California</option>
+   <option value="Texas">Texas</option>
+   <option value="Florida">Florida</option>
+   <option value="Illinois">Illinois</option>
+   <option value="New York">New York</option>
+   <option value="Arizona">Arizona</option>
+   <option value="Otro">Otro Estado</option>
   </select>
+ </div>
+ <button class="btn" onclick="iniciarMecanismoRevision()">Siguiente: Revisar mis Datos</button>
+ </div>
+
+ <!-- PASO INTERMEDIO: CAJA DE DOBLE ALERTA Y TRIPLE CLIC OBLIGATORIO -->
+ <div id="paso-triple-revision" class="step">
+ <h2>🔒 Caja de Doble Alerta y Confirmación Obligatoria</h2>
+ <p>Por favor escucha con mucha atención y lee la advertencia en letras rojas antes de presionar el botón.</p>
+ 
+ <div id="texto-alerta-revision" class="alerta-roja-critica"></div>
+ <div id="resumen-visual-datos" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #cbd5e0; font-size: 14px;"></div>
+ 
+ <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+     <button id="btn-confirmar-revision" class="btn" style="background: var(--accent); margin:0;" onclick="avanzarClicRevision()">SÍ, YA REVISÉ (1/3)</button>
+     <button class="btn btn-danger" style="margin:0;" onclick="irAPaso('paso-datos')">📝 CORREGIR DATOS</button>
+ </div>
+ </div>
+
+ <!-- PASO 2: SELECCIONA TU TRÁMITE -->
+ <div id="paso-tramites" class="step">
+ <h2>Paso 2: Selecciona tu Trámite</h2>
+ <p>Presiona el documento oficial que necesitas gestionar:</p>
+ <div id="lista-tramites" class="grid-options"></div>
+ <button class="btn btn-secondary" onclick="irAPaso('paso-datos')">Atrás: Corregir mis Datos</button>
+ </div>
+
+ <!-- PASO 3: PREGUNTAS SÍ / NO ADAPTATIVAS -->
+ <div id="paso-preguntas" class="step">
+ <h2 id="pregunta-titulo">Revisión de Papeles</h2>
+ <p id="pregunta-texto" style="font-size: 16px; font-weight: bold; color: var(--primary-dark); margin-bottom: 20px;"></p>
+ <div id="contenedor-opciones" class="radio-group"></div>
+ <button class="btn btn-secondary" onclick="abortarCuestionario()">Atrás: Cambiar de Trámite</button>
+ </div>
+
+ <!-- PASO 4: VISTA DE RESULTADOS DE LA HOJA DE RUTA FINAL -->
+ <div id="paso-resultado" class="step">
+ <h2>Paso 3: Tu Hoja de Ruta Consular</h2>
+ <div id="res-caja-estado" class="box-info"></div>
+ 
+ <div class="box-info success" style="border-left-color: var(--primary); background: #e8f4fd; color: #1d4ed8;">
+ <strong>Tu Sede Consular Asignada:</strong>
+ <p id="res-consulado" style="font-weight: bold; margin-top: 5px; margin-bottom: 2px;"></p>
+ <p id="res-direccion" style="font-size: 13px; margin: 0;"></p>
+ <p id="res-telefono" style="font-size: 13px; margin: 0;"></p>
+ </div>
+
+ <div id="resultado-detalles" style="background: #fdfefe; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+ <div class="result-section">
+ <h3>Costo de Derechos Consulares:</h3>
+ <p id="res-pago" style="font-weight: bold; color: var(--accent); font-size: 16px;"></p>
+ </div>
+ <div class="result-section">
+ <h3>Estatus de tu Cita Obligatoria:</h3>
+ <p id="res-cita" style="font-weight: bold;"></p>
+ </div>
+ <div class="result-section">
+ <h3>Documentos Oficiales Requeridos:</h3>
+ <ul id="res-requisitos" class="result-list"></ul>
+ </div>
+ <div id="seccion-faltantes" class="result-section">
+ <h3 style="color: var(--danger);">¡Atención! Te hace falta conseguir esto exactamente:</h3>
+ <ul id="res-faltantes" class="result-list" style="color: var(--danger); font-weight: bold;"></ul>
+ </div>
+ <div class="result-section">
+ <h3>Pasos Recomendados:</h3>
+ <ul id="res-acciones" class="result-list"></ul>
+ </div>
+ </div>
+
+ <button class="btn" style="background: #117a65;" onclick="verVistaPrevia()">👁️ REVISAR ANTES (VISTA PREVIA EN PANTALLA)</button>
+ <button class="btn" onclick="descargarPDF()">📥 GUARDAR HOJA DE RUTA FINAL (PDF)</button>
+ <button class="btn btn-secondary" onclick="irAPaso('paso-datos')">📝 REESCRIBIR DATOS (CORREGIR ERROR)</button>
+ <a id="lnk-consulado-oficial" href="#" target="_blank" class="btn" style="background: #7d6608; color: white; display: none; text-align: center;">🌐 SITIO WEB OFICIAL DEL CONSULADO</a>
+ <button class="btn btn-danger" onclick="reiniciarTodo()">CERRAR SESIÓN Y SALIR</button>
+ </div>
+
+ <!-- VENTANA EMERGENTE: MODAL VISOR DE PDF -->
+ <div id="modal-pdf" class="pdf-modal">
+ <div class="pdf-box">
+ <div class="pdf-header">
+ <h3>Revisión de tu Guía Consular</h3>
+ <button onclick="cerrarVistaPrevia()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#aaa;">&times;</button>
+ </div>
+ <div class="pdf-body">
+ <iframe id="pdf-frame" src="" width="100%" height="100%" style="border:none;"></iframe>
+ </div>
+ <div class="pdf-footer">
+ <button class="btn btn-secondary" style="margin:0; padding:8px 15px; font-size:13px;" onclick="cerrarVistaPrevia()">CERRAR REVISIÓN</button>
+ </div>
+ </div>
+ </div>
+
+ <!-- NOTA LEGAL / TÉRMINOS EN EL PIE DE PÁGINA PARA BLINDAJE DE MAY ROGA LLC -->
+ <footer class="disclaimer">
+ <strong>Términos de Orientación:</strong> Esta herramienta de software es un desarrollo independiente propiedad de MAY ROGA LLC. No constituye un canal de emisión gubernamental y debe confirmarse la información con la autoridad correspondiente.
+ </footer>
 </div>
 
-<div class="form-group mt-3">
-  <button type="button" class="btn btn-primary">Siguiente: Revisar mis Datos</button>
-</div>
+<!-- FUNCIÓN COMPLEMENTARIA DE SEGURIDAD INTEGRADA -->
+<script>
+function validarCheck() {
+    const chk = document.getElementById('check-legal');
+    const btn = document.getElementById('btn-comenzar');
+    if (chk && btn) {
+        btn.disabled = !chk.checked;
+    }
+}
+</script>
 
-<div class="alert alert-danger mt-4">
-  <h4>🔒 Caja de Doble Alerta y Confirmación Obligatoria</h4>
-  <p>Por favor escucha con mucha atención y lee la advertencia en letras rojas antes de presionar el botón.</p>
-  <button type="button" class="btn btn-success">SÍ, YA REVISÉ (1/3)</button>
-  <button type="button" class="btn btn-warning">📝 CORREGIR DATOS</button>
-</div>
-
-<div class="step-container mt-4">
-  <h2>Paso 2: Selecciona tu Trámite</h2>
-  <p>Presiona el documento oficial que necesitas gestionar:</p>
-  <button type="button" class="btn btn-light">Atrás: Corregir mis Datos</button>
-  <button type="button" class="btn btn-info">Revisión de Papeles</button>
-  <button type="button" class="btn btn-light">Atrás: Cambiar de Trámite</button>
-</div>
-
-<div class="step-container mt-4">
-  <h2>Paso 3: Tu Hoja de Ruta Consular</h2>
-  <p><strong>Tu Sede Consular Asignada:</strong></p>
-  <p><strong>Costo de Derechos Consulares:</strong></p>
-  <p><strong>Estatus de tu Cita Obligatoria:</strong></p>
-  <p><strong>Documentos Oficiales Requeridos:</strong></p>
-  
-  <div class="alert alert-warning">
-    <strong>¡Atención!</strong> Te hace falta conseguir esto exactamente:
-  </div>
-  
-  <p><strong>Pasos Recomendados:</strong></p>
-</div>
-
-<div class="actions-container mt-3">
-  <button type="button" class="btn btn-outline-primary">👁️ REVISAR ANTES (VISTA PREVIA EN PANTALLA)</button>
-  <button type="button" class="btn btn-success">📥 GUARDAR HOJA DE RUTA FINAL (PDF)</button>
-  <button type="button" class="btn btn-danger">📝 REESCRIBIR DATOS (CORREGIR ERROR)</button>
-  <button type="button" class="btn btn-link">🌐 SITIO WEB OFICIAL DEL CONSULADO</button>
-  <button type="button" class="btn btn-dark">CERRAR SESIÓN Y SALIR</button>
-</div>
-
-<div class="modal-content mt-4">
-  <h3>Revisión de tu Guía Consular</h3>
-  <button type="button" class="close" aria-label="Close">
-    <span aria-hidden="true">&times;</span> CERRAR REVISIÓN
-  </button>
-</div>
-
-<footer class="mt-5 text-muted">
-  <small><strong>Términos de Orientación:</strong> Esta herramienta de software es un desarrollo independiente propiedad de MAY ROGA LLC. No constituye un canal de emisión gubernamental y debe confirmarse la información con la autoridad correspondiente.</small>
-</footer>
+<!-- Carga del archivo JavaScript externo optimizado con control de caché -->
+<script src="/static/app.js?v=10.0.2"></script>
+</body>
+</html>
