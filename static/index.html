@@ -173,15 +173,19 @@
         <button class="btn btn-secondary" onclick="irAPaso('paso-datos')">Atrás: Cambiar mis Datos</button>
     </div>
 
-    <!-- PASO 3: PREGUNTAS CON EJEMPLO VISUAL -->
+    <!-- PASO 3: PREGUNTAS CON EJEMPLO VISUAL CLICABLE -->
     <div id="paso-preguntas" class="step">
-        <h2 id="pregunta-titulo">Revisión de Papeles</h2>
+        <h2>Revisión de Papeles</h2>
         <p id="pregunta-texto" style="font-size: 16px; font-weight: bold; color: var(--primary-dark); margin-bottom: 15px;"></p>
         
-        <!-- CUADRO INTERACTIVO DE EJEMPLO VISUAL -->
-        <div id="contenedor-ejemplo-visual" style="display: none; margin-bottom: 20px; background: #f8f9fa; border: 1px dashed #bdc3c7; padding: 10px; border-radius: 8px; text-align: center;">
-            <span style="display: block; font-size: 11px; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-bottom: 5px;">📷 REVISA SI TU PAPEL SE VE COMO ESTE EJEMPLO:</span>
-            <img id="img-ejemplo" src="" alt="Ejemplo de documento" style="max-width: 100%; max-height: 180px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <!-- CUADRO INTERACTIVO DE EJEMPLO VISUAL LOCAL CORREGIDO -->
+        <div id="contenedor-ejemplo-visual" style="display: none; margin-bottom: 20px; background: #f8f9fa; border: 1px dashed #bdc3c7; padding: 15px; border-radius: 8px; text-align: center;">
+            <span style="display: block; font-size: 12px; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-bottom: 8px;">📷 REVISA TU DOCUMENTO (DA CLIC EN LA FOTO PARA ABRIRLA EN GRANDE):</span>
+            
+            <!-- Enlace dinámico que abre la foto local en pantalla completa -->
+            <a id="enlace-ejemplo" href="#" target="_blank" style="display: inline-block; width: 100%;">
+                <img id="img-ejemplo" src="" alt="Ejemplo de documento oficial" style="max-width: 100%; max-height: 220px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: pointer; border: 1px solid #ddd;">
+            </a>
         </div>
 
         <div id="contenedor-opciones" class="radio-group"></div>
@@ -259,4 +263,5 @@
 <script src="/static/app.js"></script>
 </body>
 </html>
+
 
