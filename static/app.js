@@ -106,7 +106,8 @@ function perfilNecesario(){
 async function cargarCatalogo(){
  try{
   const d=await api("/api/catalogo");
-  renderCatalogo(d.casos||d.tramites||d.catalogo||[]);
+  const lista=Array.isArray(d)?d:(d.casos||d.tramites||d.catalogo||[]);
+  renderCatalogo(lista);
  }catch(e){
   toast("No se pudo cargar la información.");
  }
