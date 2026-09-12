@@ -1,19 +1,17 @@
-# PARTE 1: INICIO
+# consular_engine.py
 import re, unicodedata
 
 APP = "MEXICANO APOYA MEXICANO"
 VERSION = "7.0.0"
 
-# Tarifas oficiales de derechos consulares para adultos (en USD)
 TARIFAS_SRE = {
     "pasaporte_3": 101,
     "pasaporte_6": 137,
     "pasaporte_10": 209,
     "matricula": 41,
-    "credencial_ine": 0  # Trámite gratuito por ley
+    "credencial_ine": 0
 }
 
-# Directorio de consulados por estado de residencia
 DIRECTORIO_SRE = {
     "California": {
         "consulado": "Consulado General de México en Los Ángeles",
@@ -51,7 +49,7 @@ DIRECTORIO_SRE = {
         "telefono": "202-736-1000"
     }
 }
-# PARTE 2: INICIO
+
 def normalizar(v):
     v = str(v or "").strip().lower()
     v = unicodedata.normalize("NFD", v)
@@ -107,9 +105,7 @@ def registrar(caso, nombre, descripcion, questions, **info):
         "caso": caso, "nombre": nombre, "descripcion": descripcion,
         "preguntas": questions, **info
     }
-# PARTE 2: FIN
 
-# PARTE 3: INICIO
 PASAPORTE_PREGUNTAS = [
     P("acta_nacimiento", "¿Tienes tu Acta de Nacimiento mexicana original?", tipo="opciones", opciones=["Sí", "No"], required=True),
     P("identificacion", "¿Tienes una identificación oficial con fotografía vigente (INE, Matrícula anterior, etc.)?", tipo="opciones", opciones=["Sí", "No"], required=True),
@@ -124,7 +120,6 @@ MATRICULA_PREGUNTAS = [
     P("cita", "¿Ya agendaste tu cita en MiConsulado?", tipo="opciones", opciones=["Sí", "No"], required=True)
 ]
 
-# Trámite del INE para adultos de 18 años o más
 INE_PREGUNTAS = [
     P("acta_nacimiento", "¿Tienes tu Acta de Nacimiento mexicana original?", tipo="opciones", opciones=["Sí", "No"], required=True),
     P("identificacion", "¿Tienes una identificación oficial con fotografía vigente?", tipo="opciones", opciones=["Sí", "No"], required=True),
@@ -155,9 +150,7 @@ registrar(
     documentos=["Acta de Nacimiento original", "Identificación oficial con foto", "Comprobante de domicilio"],
     pago="El trámite del INE es 100% gratuito. No dejes que nadie te cobre."
 )
-# PARTE 3: FIN
 
-# PARTE 4: INICIO
 def identificar_caso(t):
     n = normalizar(t)
     if "pasaporte" in n: return "pasaporte"
@@ -186,7 +179,8 @@ def pregunta_json(q, numero=0, total=0):
     if not q: return None
     return {
         "id": q["id"], "pregunta": q["pregunta"], "tipo": q.get("tipo", "texto"),
-        "opciones": q.get("opciones", []), "paso": numero, "total": total,
+        "options": q.get("opciones", []), "opciones": q.get("opciones", []), 
+        "paso": numero, "total": total,
         "progreso": round((numero - 1) / total * 100, 1) if total else 0
     }
 
@@ -250,10 +244,15 @@ def pantalla_resultado(caso, res, p):
         "telefono_ciudadano": p.get("telefono") or "No indicado",
         "origen_mexico": p.get("origen_mexico") or "No indicado",
         "estado_residencia": est_usuario,
-        "requisitos_oficiales": c["documentos"], "faltantes": faltantes,
-        "pago_estimado": calcular_pago(caso, res), "cita_estatus": "Cita agendada." if si(res.get("cita")) else "PENDIENTE: Debes agendar una cita obligatoriamente.",
-        "consulado_nombre": consulado_asig["consulado"], "consulado_direccion": consulado_asig["direccion"], "consulado_telefono": consulado_asig["telefono"],
-        "acciones_recomendadas": acciones, "url_consulado": url_oficial
+        "requisitos_oficiales": c["documentos"],
+        "faltantes": faltantes,
+        "pago_estimado": calcular_pago(caso, res),
+        "cita_estatus": "Cita agendada." if si(res.get("cita")) else "PENDIENTE: Debes agendar una cita obligatoriamente.",
+        "consulado_nombre": consulado_asig["consulado"],
+        "consulado_direccion": consulado_asig["direccion"],
+        "consulado_telefono": consulado_asig["telefono"],
+        "acciones_recomendadas": acciones,
+        "url_consulado": url_oficial
     }
 
 def iniciar(texto_inicial="", perfil=None):
@@ -270,8 +269,8 @@ def seleccionar_caso(caso, perfil=None, respuestas=None):
     if q:
         activos = preguntas_activas(caso, res)
         return {
-            "ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"], 
-            "perfil": p, "respuestas": res, 
+            "ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"],
+            "perfil": p, "respuestas": res,
             "pregunta": pregunta_json(q, activos.index(q) + 1, len(activos))
         }
     return {"ok": True, "caso": caso, "perfil": p, "respuestas": res, "resultado": pantalla_resultado(caso, res, p)}
@@ -280,18 +279,23 @@ def continuar(caso, respuestas=None, perfil=None, pregunta_id="", respuesta=""):
     res = dict(respuestas or {})
     if pregunta_id:
         q = pregunta_por_id(caso, pregunta_id)
-        if q: 
-            res[pregunta_id] = interpretar_respuesta(q, respuesta)
+        if q: res[pregunta_id] = interpretar_respuesta(q, respuesta)
     p = _perfil_desde(res, perfil)
     q = siguiente_pregunta(caso, res)
     if q:
         activos = preguntas_activas(caso, res)
-        return {"ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"], "perfil": p, "respuestas": res, "pregunta": pregunta_json(q, activos.index(q) + 1, len(activos))}
+        return {
+            "ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"],
+            "perfil": p, "respuestas": res,
+            "pregunta": pregunta_json(q, activos.index(q) + 1, len(activos))
+        }
     return {"ok": True, "caso": caso, "perfil": p, "respuestas": res, "resultado": pantalla_resultado(caso, res, p)}
 
 def catalogo():
-    return [{"caso": "pasaporte", "nombre": "Pasaporte Mexicano", "descripcion": "Saca o renueva tu pasaporte oficial para viajar o identificarte."}, {"caso": "matricula", "nombre": "Matrícula Consular", "descripcion": "Obtén tu certificado de nacionalidad y residencia en Estados Unidos."}, {"caso": "ine", "nombre": "Credencial para Votar (INE)", "descripcion": "Tramita gratis tu credencial electoral desde el extranjero para votar en México."}]
+    return [
+        {"caso": "pasaporte", "nombre": "Pasaporte Mexicano", "descripcion": "Saca o renueva tu pasaporte oficial para viajar o identificarte."},
+        {"caso": "matricula", "nombre": "Matrícula Consular", "descripcion": "Obtén tu certificado de nacionalidad y residencia en Estados Unidos."},
+        {"caso": "ine", "nombre": "Credencial para Votar (INE)", "descripcion": "Tramita gratis tu credencial electoral desde el extranjero para votar en México."}
+    ]
 
 __all__ = ["APP", "VERSION", "TARIFAS_SRE", "DIRECTORIO_SRE", "TRAMITES", "catalogo", "iniciar", "seleccionar_caso", "continuar"]
-
-# PARTE FINAL: FIN
