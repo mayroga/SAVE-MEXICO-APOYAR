@@ -15,8 +15,18 @@ from consular_engine import (
 app = FastAPI(title=APP, version=VERSION)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Solución definitiva al error de inicialización del trámite
+class ExpedientePerfil(BaseModel):
+    nombre_completo: Optional[str] = ""
+    fecha_nacimiento: Optional[str] = ""
+    origen_mexico: Optional[str] = ""
+    direccion_usa: Optional[str] = ""
+    telefono: Optional[str] = ""
+    estado: Optional[str] = "Otro"
+    nacionalidad: Optional[str] = "mexicana"
+
 class Inicio(BaseModel):
-    perfil: Dict[str, Any] = Field(default_factory=dict)
+    perfil: Optional[ExpedientePerfil] = None
     texto: str = ""
 
 class Continuacion(BaseModel):
@@ -24,11 +34,11 @@ class Continuacion(BaseModel):
     pregunta_id: str = ""
     respuesta: Any = ""
     respuestas: Dict[str, Any] = Field(default_factory=dict)
-    perfil: Dict[str, Any] = Field(...)
+    perfil: Optional[ExpedientePerfil] = None
 
 class Seleccion(BaseModel):
     caso: str
-    perfil: Dict[str, Any] = Field(default_factory=dict)
+    perfil: Optional[ExpedientePerfil] = None
     respuestas: Dict[str, Any] = Field(default_factory=dict)
 
 def construir_pdf(r):
@@ -47,10 +57,9 @@ def construir_pdf(r):
     c.setStrokeColorRGB(0.8, 0.8, 0.8)
     c.line(55, 700, 555, 700)
     
-    # 1. Datos para Declarar en Ventanilla (Formato de Apoyo Visual)
+    # 1. Datos del Ciudadano para Ventanilla
     c.setFont("Helvetica-Bold", 12)
     c.drawString(55, 675, "1. TUS DATOS PARA DECLARAR EN VENTANILLA")
-    
     c.setFont("Helvetica", 11)
     c.drawString(55, 655, f"Nombre Completo: {r.get('nombre_ciudadano', '')}")
     c.drawString(55, 635, f"Fecha de Nacimiento: {r.get('fecha_nacimiento', '')}")
@@ -64,13 +73,13 @@ def construir_pdf(r):
     c.drawString(55, 520, f"2. TU TRÁMITE: {r.get('nombre_tramite', '').upper()}")
     c.setFont("Helvetica", 11)
     c.drawString(55, 500, f"Estatus General: {r.get('estado', '')}")
-    c.drawString(55, 480, f"Mensaje del Sistema: {r.get('mensaje_estado', '')}")
+    c.drawString(55, 480, f"Mensaje: {r.get('mensaje_estado', '')}")
     
     # 3. Costo y Cita
     c.setFont("Helvetica-Bold", 12)
     c.drawString(55, 445, "3. COSTO Y CITA OBLIGATORIA")
     c.setFont("Helvetica", 11)
-    c.drawString(55, 425, f"Costo estimado en efectivo/tarjeta: {r.get('pago_estimado', '')}")
+    c.drawString(55, 425, f"Costo estimado en ventanilla: {r.get('pago_estimado', '')}")
     c.drawString(55, 405, f"Estado de tu cita: {r.get('cita_estatus', '')}")
     
     # 4. Tu Consulado
@@ -80,7 +89,7 @@ def construir_pdf(r):
     c.drawString(55, 350, f"Oficina: {r.get('consulado_nombre', '')}")
     c.drawString(55, 330, f"Dirección: {r.get('consulado_direccion', '')}")
     c.drawString(55, 310, f"Teléfono central: {r.get('consulado_telefono', '')}")
-    c.drawString(55, 290, f"Página oficial de internet: {r.get('url_consulado') or r.get('fuente') or ''}")
+    c.drawString(55, 290, f"Página oficial de internet: {r.get('url_consulado') or ''}")
     
     # 5. Lista de Documentos Oficiales
     c.setFont("Helvetica-Bold", 12)
@@ -91,7 +100,7 @@ def construir_pdf(r):
         c.drawString(70, y, f"• {req}")
         y -= 20
         
-    # 6. Faltantes desglosados
+    # 6. Faltantes desglosados (Limpieza contra puntos huérfanos)
     faltantes = r.get("faltantes", [])
     if faltantes:
         y -= 5
@@ -130,14 +139,16 @@ def api_catalogo():
 @app.post("/api/iniciar")
 def api_iniciar(x: Inicio):
     try:
-        return iniciar(x.texto, x.perfil)
+        p_dict = x.perfil.dict() if x.perfil else {}
+        return iniciar(x.texto, p_dict)
     except Exception as e:
         raise HTTPException(400, str(e))
 
 @app.post("/api/seleccionar-caso")
 def api_seleccionar(x: Seleccion):
     try:
-        return seleccionar_caso(x.caso, x.perfil, x.respuestas)
+        p_dict = x.perfil.dict() if x.perfil else {}
+        return seleccionar_caso(x.caso, p_dict, x.respuestas)
     except Exception as e:
         raise HTTPException(400, str(e))
 
@@ -145,8 +156,8 @@ def api_seleccionar(x: Seleccion):
 def api_continuar(x: Continuacion):
     try:
         res = dict(x.respuestas or {})
-        perfil = dict(x.perfil or {})
-        return continuar(x.caso, res, perfil, x.pregunta_id, x.respuesta)
+        p_dict = x.perfil.dict() if x.perfil else {}
+        return continuar(x.caso, res, p_dict, x.pregunta_id, x.respuesta)
     except Exception as e:
         raise HTTPException(400, str(e))
 
