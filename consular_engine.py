@@ -202,10 +202,14 @@ def evaluar_requisitos(caso, res):
     for q in c["preguntas"]:
         v = res.get(q["id"])
         if no(v) or not texto(v):
-            if q["id"] == "acta_nacimiento": falt.append("Te falta tu Acta de Nacimiento original mexicana.")
-            elif q["id"] == "identificacion": falt.append("Te falta una identificación oficial vigente con fotografía.")
-            elif q["id"] == "domicilio": falt.append("Te falta tu comprobante de domicilio original.")
-            elif q["id"] == "cita": falt.append("No has agendado tu cita oficial en el consulado.")
+            if q["id"] == "acta_nacimiento": 
+                falt.append("Llevar tu Acta de Nacimiento mexicana original (no copias, no rota, que se lean bien las letras).")
+            elif q["id"] == "identificacion": 
+                falt.append("Llevar UNA de estas identificaciones en original con foto: tu credencial del INE anterior, tu Matrícula anterior, tu Cartilla Militar o tu Cédula Profesional.")
+            elif q["id"] == "domicilio": 
+                falt.append("Llevar un recibo original que demuestre dónde vives (puede ser de luz, agua, un papel de tu banco o tu contrato de renta).")
+            elif q["id"] == "cita": 
+                falt.append("No tienes cita. Tienes que agendar una porque si vas sin cita no te van a dejar pasar.")
     return unicos(falt)
 
 def calcular_pago(caso, res):
@@ -225,10 +229,13 @@ def pantalla_resultado(caso, res, p):
     est_usuario = p.get("estado") or "Otro"
     consulado_asig = DIRECTORIO_SRE.get(est_usuario, DIRECTORIO_SRE["Otro"])
     
-    acciones = ["Revisa muy bien tus papeles antes de salir de casa."]
-    if faltantes: acciones.append("Consigue los documentos marcados en rojo antes de tu cita.")
-    if no(res.get("cita")): acciones.append("Llama o entra a internet para agendar tu cita oficial.")
-    acciones.append("Presenta tu Hoja de Ruta al llegar si te sirve de apoyo.")
+    # URL oficial directa para que el cliente no pase trabajo buscando
+    url_oficial = "https://sre.gob.mx" if est_usuario == "Florida" else "https://www.gob.mx"
+
+    acciones = ["Revisa muy bien tus papeles originales antes de salir de tu casa."]
+    if faltantes: acciones.append("Consigue los documentos exactos que te marcamos en la lista de arriba.")
+    if no(res.get("cita")): acciones.append("Llama por teléfono al número 1-424-309-0009 para que te den tu cita oficial.")
+    acciones.append("Lleva esta Hoja de Ruta impresa el día de tu cita para que te sirva de guía.")
 
     return {
         "caso": caso, "nombre_tramite": c["nombre"], "estado": estado,
@@ -238,7 +245,7 @@ def pantalla_resultado(caso, res, p):
         "requisitos_oficiales": c["documentos"], "faltantes": faltantes,
         "pago_estimado": calcular_pago(caso, res), "cita_estatus": "Cita agendada." if si(res.get("cita")) else "PENDIENTE: Debes agendar una cita obligatoriamente.",
         "consulado_nombre": consulado_asig["consulado"], "consulado_direccion": consulado_asig["direccion"], "consulado_telefono": consulado_asig["telefono"],
-        "acciones_recomendadas": acciones
+        "acciones_recomendadas": acciones, "url_consulado": url_oficial
     }
 
 def iniciar(texto_inicial="", perfil=None):
@@ -254,7 +261,11 @@ def seleccionar_caso(caso, perfil=None, respuestas=None):
     q = siguiente_pregunta(caso, res)
     if q:
         activos = preguntas_activas(caso, res)
-        return {"ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"], "perfil": p, "respuestas": res, "pregunta": pregunta_json(q, activos.index(q) + 1, len(activos))}
+        return {
+            "ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"], 
+            "perfil": p, "respuestas": res, 
+            "pregunta": pregunta_json(q, activos.index(q) + 1, len(activos))
+        }
     return {"ok": True, "caso": caso, "perfil": p, "respuestas": res, "resultado": pantalla_resultado(caso, res, p)}
 
 def continuar(caso, respuestas=None, perfil=None, pregunta_id="", respuesta=""):
@@ -263,10 +274,14 @@ def continuar(caso, respuestas=None, perfil=None, pregunta_id="", respuesta=""):
         q = pregunta_por_id(caso, pregunta_id)
         if q: res[pregunta_id] = interpretar_respuesta(q, respuesta)
     p = _perfil_desde(res, perfil)
-    q = siguiente_pregunta(caso, res)
+    q = Broad_q = siguiente_pregunta(caso, res)
     if q:
         activos = preguntas_activas(caso, res)
-        return {"ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"], "perfil": p, "respuestas": res, "pregunta": pregunta_json(q, activos.index(q) + 1, len(activos))}
+        return {
+            "ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"], 
+            "perfil": p, "respuestas": res, 
+            "pregunta": pregunta_json(q, activos.index(q) + 1, len(activos))
+        }
     return {"ok": True, "caso": caso, "perfil": p, "respuestas": res, "resultado": pantalla_resultado(caso, res, p)}
 
 def catalogo():
@@ -277,4 +292,4 @@ def catalogo():
     ]
 
 __all__ = ["APP", "VERSION", "TARIFAS_SRE", "DIRECTORIO_SRE", "TRAMITES", "catalogo", "iniciar", "seleccionar_caso", "continuar"]
-# PARTE 4: FIN
+# PARTE FINAL: FIN
