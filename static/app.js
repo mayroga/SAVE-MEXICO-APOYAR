@@ -5,6 +5,7 @@ let respuestas = {};
 let resultadoFinal = null;
 let idTemporizador = null;
 
+// Reloj de Inactividad de 10 Minutos para obligar a comenzar de nuevo de forma limpia
 function iniciarRelojInactividad() {
     clearTimeout(idTemporizador);
     idTemporizador = setTimeout(() => {
@@ -66,7 +67,6 @@ function guardarDatos() {
     if (!fecha) { alert("Por favor escribe tu Fecha de Nacimiento."); return; }
     if (!direccion) { alert("Por favor escribe tu Dirección en EE. UU."); return; }
     
-    // Empacado exacto compatible con la clase ExpedientePerfil de Python
     perfil = { 
         nombre_completo: nombre, 
         fecha_nacimiento: fecha,
@@ -113,7 +113,7 @@ async function iniciarTramite(caso) {
         let data = await res.json();
         procesarPaso(data);
     } catch(e) { 
-        alert("Error al iniciar el trámite. Verifica que el servidor de Python esté activo."); 
+        alert("Error al iniciar el trámite. Reconectando con el servidor..."); 
     }
 }
 
