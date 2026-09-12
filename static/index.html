@@ -114,19 +114,43 @@
 
     <!-- PASO 1: TUS DATOS -->
     <div id="paso-datos" class="step">
-        <h2>Paso 1: Tus Datos Básicos</h2>
-        <p>Ecribe tu información para buscar tu consulado y revisar tus costos correspondientes.</p>
+        <h2>Paso 1: Tus Datos Básicos de Ventanilla</h2>
+        <p>Escribe tu información tal como viene en tus papeles. Esto se imprimirá en tu hoja para que la leas si te pones nervioso frente al cónsul.</p>
         
         <div class="form-group">
-            <label>Nombre y Apellidos:</label>
+            <label>Nombre y Apellidos Completos:</label>
             <input type="text" id="input-nombre" placeholder="Ej. Juan Pérez López">
         </div>
         <div class="form-group">
-            <label>Teléfono de Contacto:</label>
-            <input type="tel" id="input-tel" placeholder="Ej. 123-456-7890">
+            <label>Fecha de Nacimiento:</label>
+            <input type="text" id="input-fecha" placeholder="Ej. 15 de Mayo de 1985">
         </div>
         <div class="form-group">
-            <label>Estado donde vives en USA:</label>
+            <label>Lugar de Origen (Estado de México):</label>
+            <select id="input-origen">
+                <option value="Michoacán">Michoacán</option>
+                <option value="Jalisco">Jalisco</option>
+                <option value="Guanajuato">Guanajuato</option>
+                <option value="Puebla">Puebla</option>
+                <option value="Guerrero">Guerrero</option>
+                <option value="Oaxaca">Oaxaca</option>
+                <option value="Veracruz">Veracruz</option>
+                <option value="Estado de México">Estado de México</option>
+                <option value="Ciudad de México">Ciudad de México</option>
+                <option value="Nací en USA (Hijo de padres mexicanos)">Nací en USA (Hijo de padres mexicanos)</option>
+                <option value="Otro Estado de México">Otro Estado de México</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Dirección Completa en Estados Unidos:</label>
+            <input type="text" id="input-direccion" placeholder="Calle, Número, Ciudad, Estado, Código Postal">
+        </div>
+        <div class="form-group">
+            <label>Teléfono de Contacto de 10 dígitos:</label>
+            <input type="tel" id="input-tel" placeholder="Ej. 786-647-1371">
+        </div>
+        <div class="form-group">
+            <label>Estado donde vives actualmente en USA:</label>
             <select id="input-estado">
                 <option value="California">California</option>
                 <option value="Texas">Texas</option>
@@ -149,11 +173,19 @@
         <button class="btn btn-secondary" onclick="irAPaso('paso-datos')">Atrás: Cambiar mis Datos</button>
     </div>
 
-    <!-- PASO 3: PREGUNTAS -->
+    <!-- PASO 3: PREGUNTAS CON EJEMPLO VISUAL -->
     <div id="paso-preguntas" class="step">
         <h2 id="pregunta-titulo">Revisión de Papeles</h2>
-        <p id="pregunta-texto" style="font-size: 16px; font-weight: bold; color: var(--primary-dark); margin-bottom: 20px;"></p>
+        <p id="pregunta-texto" style="font-size: 16px; font-weight: bold; color: var(--primary-dark); margin-bottom: 15px;"></p>
+        
+        <!-- CUADRO INTERACTIVO DE EJEMPLO VISUAL -->
+        <div id="contenedor-ejemplo-visual" style="display: none; margin-bottom: 20px; background: #f8f9fa; border: 1px dashed #bdc3c7; padding: 10px; border-radius: 8px; text-align: center;">
+            <span style="display: block; font-size: 11px; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-bottom: 5px;">📷 REVISA SI TU PAPEL SE VE COMO ESTE EJEMPLO:</span>
+            <img id="img-ejemplo" src="" alt="Ejemplo de documento" style="max-width: 100%; max-height: 180px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        </div>
+
         <div id="contenedor-opciones" class="radio-group"></div>
+        
         <button class="btn btn-secondary" onclick="abortarCuestionario()">Atrás: Cambiar de Trámite</button>
     </div>
 
