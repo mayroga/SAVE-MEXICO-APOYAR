@@ -601,13 +601,15 @@ def evaluar_requisitos(caso, res, p):
             elif q["id"] == "op7_disponible": falt.append("Se requiere la presencia de ambos padres o autorización legal equivalente mediante delegación de OP-7.")
         elif q.get("required") and no_se(v):
             revisar.append(q["pregunta"])
+            
     if caso in ["matricula_primera_vez", "credencial_ine_extranjero"] and res.get("domicilio") == "Está a nombre de otra persona":
         revisar.append("Confirma qué comprobantes acepta el Consulado cuando el domicilio está a nombre de otra persona.")
     if caso == "matricula_renovacion" and si(res.get("cambio_domicilio")) and no(res.get("domicilio")):
         falt.append("Te falta el comprobante del nuevo domicilio.")
     if caso.startswith("pasaporte"):
         falt.extend(validar_edad_fecha(p))
-    return unicos(falt), unicodedata.normalize("NFD", "").join(unicos(revisar))
+        
+    return unicos(falt), unicos(revisar)
 
 def calcular_estado(caso, res, p):
     falt, revisar = evaluar_requisitos(caso, res, p)
