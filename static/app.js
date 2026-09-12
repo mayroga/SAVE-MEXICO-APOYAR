@@ -27,7 +27,6 @@ function comenzarDeNuevoLimpio() {
     respuestas = {};
     resultadoFinal = null;
     
-    // Limpia los campos del formulario de forma segura
     const nombre = document.getElementById('input-nombre');
     const fecha = document.getElementById('input-fecha');
     const origen = document.getElementById('input-origen');
@@ -133,31 +132,6 @@ function procesarPaso(data) {
         irAPaso('paso-preguntas');
         document.getElementById('pregunta-titulo').innerText = data.servicio;
         document.getElementById('pregunta-texto').innerText = data.pregunta.pregunta;
-        
-        // Mapeo e Inyección Segura de las Fotos de Guía Consular Locales
-        const divVisual = document.getElementById('contenedor-ejemplo-visual');
-        const imgVisual = document.getElementById('img-ejemplo');
-        const enlaceVisual = document.getElementById('enlace-ejemplo');
-        
-        // Ponemos las fotos locales fijas de tu carpeta static
-        if (divVisual && imgVisual) {
-            if (data.pregunta.id === "acta_nacimiento") {
-                divVisual.style.display = "block";
-                imgVisual.src = "static/acta.jpg";
-                // Solo si la etiqueta de enlace existe en el HTML le ponemos el clic en grande
-                if (enlaceVisual) { enlaceVisual.href = "static/acta.jpg"; }
-            } else if (data.pregunta.id === "identificacion") {
-                divVisual.style.display = "block";
-                imgVisual.src = "static/ine.jpg";
-                // Solo si la etiqueta de enlace existe en el HTML le ponemos el clic en grande
-                if (enlaceVisual) { enlaceVisual.href = "static/ine.jpg"; }
-            } else {
-                // Se esconde solito para comprobantes de domicilio, vigencias o citas
-                divVisual.style.display = "none";
-                imgVisual.src = "";
-                if (enlaceVisual) { enlaceVisual.href = "#"; }
-            }
-        }
         
         let opcionesCont = document.getElementById('contenedor-opciones');
         if (opcionesCont) {
@@ -287,5 +261,5 @@ function reiniciarTodo() {
     comenzarDeNuevoLimpio(); 
 }
 
-// Inicializa el sistema protector desde el arranque del script
+// Inicializa el sistema protector
 iniciarRelojInactividad();
