@@ -1,452 +1,205 @@
 const $=id=>document.getElementById(id);
-let state={servicio:"",caso:"",pregunta_id:"",respuestas:{},perfil:{},resultado:null};
-
 const inicio=$("inicio"),servicios=$("servicios"),pregunta=$("pregunta"),resultado=$("resultado");
-const preguntaTexto=$("preguntaTexto"),opciones=$("opciones"),textoEntrada=$("textoEntrada");
-const textoUsuario=$("textoUsuario"),paso=$("paso"),respuesta=$("respuesta");
-const infoOficial=$("infoOficial"),salida=$("salida");
+const preguntaTexto=$("preguntaTexto"),opciones=$("opciones"),textoEntrada=$("textoEntrada"),textoUsuario=$("textoUsuario"),paso=$("paso");
+const respuesta=$("respuesta"),toastBox=$("toast"),infoOficial=$("infoOficial"),salida=$("salida");
+let state={servicio:"",caso:"",pregunta_id:"",pregunta:null,respuestas:{},perfil:{},resultado:null};
 
-function ocultarTodo(){
- [inicio,servicios,pregunta,resultado].forEach(x=>x?.classList.add("oculto"));
+const t=(x)=>String(x??"").trim();
+const esc=x=>t(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const arr=x=>Array.isArray(x)?x.filter(v=>t(v)):t(x)?[t(x)]:[];
+const mostrar=e=>e?.classList.remove("oculto");
+const ocultar=e=>e?.classList.add("oculto");
+
+function toast(m){
+ if(!toastBox)return;
+ toastBox.textContent=m;
+ toastBox.classList.add("show");
+ clearTimeout(window.__toast);
+ window.__toast=setTimeout(()=>toastBox.classList.remove("show"),2800);
 }
-function mostrar(x){
- ocultarTodo();
- x?.classList.remove("oculto");
+async function api(url,data){
+ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data||{})});
+ let j={};
+ try{j=await r.json()}catch{}
+ if(!r.ok)throw new Error(j.detail||"No se pudo completar la operación.");
+ return j;
+}
+function limpiar(){
+ state={servicio:"",caso:"",pregunta_id:"",pregunta:null,respuestas:{},perfil:{},resultado:null};
+ textoUsuario.value="";
+ opciones.innerHTML="";
+ respuesta.innerHTML="";
+ ocultar(servicios);ocultar(pregunta);ocultar(resultado);ocultar(infoOficial);ocultar(salida);
+ mostrar(inicio);
  window.scrollTo({top:0,behavior:"smooth"});
 }
-function toast(t){
- let x=$("toast");
- if(!x){
-  x=document.createElement("div");
-  x.id="toast";
-  x.className="toast";
-  document.body.appendChild(x);
- }
- x.textContent=t||"";
- x.classList.add("show");
- clearTimeout(window.__toast);
- window.__toast=setTimeout(()=>x.classList.remove("show"),2600);
+function comenzar(){
+ ocultar(inicio);mostrar(servicios);
+ window.scrollTo({top:0,behavior:"smooth"});
 }
-async function api(url,data={},method="POST"){
+function servicio(s){
+ state.servicio=s;
+ ocultar(servicios);mostrar(pregunta);
+ pedirInicio();
+}
+async function pedirInicio(){
  try{
-  const o={method,headers:{"Content-Type":"application/json"}};
-  if(method!=="GET")o.body=JSON.stringify(data);
-  const r=await fetch(url,o);
-  let j={};
-  try{j=await r.json()}catch(_){}
-  if(!r.ok)throw new Error(j.error||"No se pudo completar la operación.");
-  return j;
- }catch(e){
-  toast(e.message||"Error de conexión.");
-  throw e;
- }
-}
-function guardar(j){
- if(!j||typeof j!=="object")return;
- if(j.servicio)state.servicio=j.servicio;
- if(j.caso)state.caso=j.caso;
- if(j.pregunta_id!==undefined)state.pregunta_id=j.pregunta_id||"";
- if(j.respuestas)state.respuestas={...state.respuestas,...j.respuestas};
- if(j.perfil)state.perfil={...state.perfil,...j.perfil};
- if(j.resultado)state.resultado=j.resultado;
-}
-function esc(v){
- return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-}
-function rich(v){
- let s=esc(v);
- s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
-  '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
- const parts=s.split(/(<a\b[^>]*>.*?<\/a>)/gi);
- for(let i=0;i<parts.length;i++){
-  if(/^<a\b/i.test(parts[i]))continue;
-  parts[i]=parts[i].replace(/(https?:\/\/[^\s<]+)/g,
-   '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
- }
- return parts.join("");
-}
-function lista(a){
- return Array.isArray(a)?a.filter(x=>String(x??"").trim()):[];
-}
-function renderLista(a,vacio="No hay información pendiente."){
- a=lista(a);
- if(!a.length)return `<p class="vacio">${rich(vacio)}</p>`;
- return `<ul>${a.map(x=>`<li>${rich(x)}</li>`).join("")}</ul>`;
-}
-function renderDatos(p){
- p=p||{};
- const filas=[
-  ["Nombre",p.nombre],
-  ["Nacionalidad",p.nacionalidad],
-  ["Teléfono",p.telefono],
-  ["Dirección",p.direccion],
-  ["Estado",p.estado],
-  ["ZIP",p.zip],
-  ["Correo",p.email]
- ];
- const usadas=filas.filter(x=>x[1]);
- if(!usadas.length)return `<p class="vacio">No proporcionaste todavía datos personales para personalizar la hoja de ruta.</p>`;
- return `<div class="datos">${usadas.map(x=>`<div><strong>${esc(x[0])}</strong><span>${rich(x[1])}</span></div>`).join("")}</div>`;
-}
-function bloque(t,contenido){
- return `<div class="bloque"><h3>${esc(t)}</h3>${contenido}</div>`;
-}
-function renderPregunta(j){
- guardar(j);
- mostrar(pregunta);
- const q=j.pregunta||j.question||{};
- const total=j.total||j.preguntas_total||"";
- const actual=j.numero||j.paso||j.indice;
- paso.textContent=actual&&total?`PASO ${actual} DE ${total}`:"PREPARANDO TU CASO";
- preguntaTexto.textContent=q.texto||q.pregunta||j.texto||"¿Qué necesitas?";
- opciones.innerHTML="";
- textoEntrada.style.display="none";
- textoUsuario.value="";
- const ops=lista(q.opciones||j.opciones);
- if(ops.length){
-  ops.forEach(o=>{
-   const b=document.createElement("button");
-   b.type="button";
-   b.className="opcion";
-   b.textContent=o.label||o.texto||o.valor||o;
-   b.onclick=()=>responder(o.valor??o.value??o.label??o.texto??o);
-   opciones.appendChild(b);
-  });
- }else{
-  textoEntrada.style.display="block";
-  setTimeout(()=>textoUsuario.focus(),80);
- }
-}
-async function responder(valor){
- if(state.pregunta_id===undefined)return;
- const pid=state.pregunta_id;
- state.respuestas[pid]=valor;
- try{
-  const j=await api("/api/responder",{
-   servicio:state.servicio,
-   caso:state.caso,
-   pregunta_id:pid,
-   valor,
-   respuestas:state.respuestas,
-   perfil:state.perfil
-  });
-  guardar(j);
+  const j=await api("/api/iniciar",{servicio:state.servicio,respuestas:state.respuestas,texto:""});
   procesar(j);
- }catch(_){}
-}
-async function iniciarServicio(servicio){
- state={servicio,caso:"",pregunta_id:"",respuestas:{},perfil:{},resultado:null};
- try{
-  const j=await api(`/api/inicio/${encodeURIComponent(servicio)}`,{
-   respuestas:{},
-   texto:""
-  });
-  guardar(j);
-  if(j.seleccionar||j.casos||j.opciones_caso)renderSeleccion(j);
-  else procesar(j);
- }catch(_){}
-}
-function renderSeleccion(j){
- guardar(j);
- mostrar(servicios);
- let box=$("seleccionDinamica");
- if(!box){
-  box=document.createElement("div");
-  box.id="seleccionDinamica";
-  servicios.appendChild(box);
- }
- box.innerHTML="";
- const titulo=j.titulo||j.texto||"ELIGE EL TRÁMITE QUE MÁS SE PARECE A TU CASO";
- box.innerHTML=`<div class="tituloCaso">${rich(titulo)}</div>`;
- const arr=j.casos||j.opciones_caso||j.opciones||[];
- lista(arr).forEach(o=>{
-  const b=document.createElement("button");
-  b.type="button";
-  b.className="opcion";
-  b.textContent=o.nombre||o.label||o.texto||o;
-  b.onclick=()=>seleccionar(o.id||o.valor||o.value||o);
-  box.appendChild(b);
- });
-}
-async function seleccionar(caso){
- try{
-  const j=await api("/api/seleccionar",{
-   servicio:state.servicio,
-   caso,
-   respuestas:state.respuestas,
-   perfil:state.perfil
-  });
-  guardar(j);
-  procesar(j);
- }catch(_){}
+ }catch(e){toast(e.message)}
 }
 function procesar(j){
  if(!j)return;
- guardar(j);
- if(j.resultado||j.final||j.terminado||j.completo){
-  state.resultado=j.resultado||j;
-  renderResultado(state.resultado);
-  return;
+ if(j.error){toast(j.error);return}
+ if(j.tipo==="resultado"||j.estado||j.tiene||j.falta||j.confirmar){
+  mostrarResultado(j);return;
  }
- if(j.seleccionar||j.casos||j.opciones_caso){
-  renderSeleccion(j);
-  return;
- }
- if(j.pregunta||j.question||j.pregunta_id!==undefined){
-  renderPregunta(j);
-  return;
- }
- if(j.mensaje)toast(j.mensaje);
+ if(j.perfil)state.perfil=j.perfil;
+ if(j.caso)state.caso=j.caso;
+ if(j.pregunta_id)state.pregunta_id=j.pregunta_id;
+ if(j.pregunta)state.pregunta=j.pregunta;
+ else state.pregunta=j;
+ mostrarPregunta(j);
 }
-function seccionResultado(t,contenido){
- return bloque(t,contenido);
-}
-function renderResultado(r){
- r=r||state.resultado||{};
- guardar(r);
- mostrar(resultado);
-
- const estado=r.estado||r.nivel||"";
- let clase="estado-amarillo";
- if(/verde|listo/i.test(estado))clase="estado-verde";
- if(/rojo|atención|atencion|no vayas/i.test(estado))clase="estado-rojo";
-
- let html="";
- if(estado){
-  html+=`<div class="resultadoCabecera ${clase}">${rich(estado)}</div>`;
- }
-
- html+=seccionResultado("DATOS PERSONALES",renderDatos(r.perfil||state.perfil));
-
- const tramite=r.tramite||r.nombre_tramite||r.caso_nombre||r.titulo||"";
- html+=seccionResultado("TU TRÁMITE",
-  tramite?`<p>${rich(tramite)}</p>`:`<p class="vacio">No identificado.</p>`);
-
- const personas=r.personas||[];
- html+=seccionResultado("PERSONAS QUE DEBEN PRESENTARSE",
-  renderLista(personas,"Consulta la información oficial para confirmar quién debe presentarse."));
-
- const req=r.requisitos_obligatorios||r.requisitos||[];
- html+=seccionResultado("REQUISITOS OBLIGATORIOS",
-  renderLista(req,"No se identificaron requisitos en el caso seleccionado."));
-
- if(r.menor||r.informacion_menor){
-  html+=seccionResultado("INFORMACIÓN DEL MENOR",
-   renderLista(r.menor||r.informacion_menor,"No aplica o no fue proporcionada."));
- }
-
- if(r.padre_tutor||r.padre_madre_tutor){
-  html+=seccionResultado("PADRE, MADRE O TUTOR",
-   renderLista(r.padre_tutor||r.padre_madre_tutor,"No aplica o no fue proporcionada."));
- }
-
- const otros=r.otros||r.requisitos_adicionales||[];
- if(lista(otros).length)
-  html+=seccionResultado("OTROS",renderLista(otros));
-
- const tiene=r.tiene||r.lo_que_ya_tienes||r.confirmados||[];
- html+=seccionResultado("LO QUE YA TIENES",
-  renderLista(tiene,"Todavía no has confirmado documentos o información."));
-
- const falta=r.falta||r.lo_que_te_falta||r.faltantes||[];
- html+=seccionResultado("LO QUE TE FALTA",
-  renderLista(falta,"No se identificaron requisitos pendientes con la información proporcionada."));
-
- const confirmar=r.confirmar||r.revisar||r.lo_que_debes_confirmar||[];
- html+=seccionResultado("LO QUE DEBES CONFIRMAR",
-  renderLista(confirmar,"No hay puntos adicionales pendientes de confirmación."));
-
- const acciones=r.acciones||r.que_debes_hacer||r.pasos||[];
- html+=seccionResultado("¿QUÉ DEBES HACER?",
-  renderLista(acciones,"Sigue los requisitos oficiales y confirma cualquier punto que la autoridad pueda revisar según tu caso."));
-
- const cita=r.cita||r.citas||[];
- html+=seccionResultado("CITA",
-  renderLista(cita,"Confirma si tu trámite requiere cita y utiliza únicamente el sistema oficial indicado."));
-
- const originales=r.documentos_originales||r.originales||[];
- html+=seccionResultado("DOCUMENTOS ORIGINALES",
-  renderLista(originales,"No se identificaron instrucciones adicionales sobre originales."));
-
- const copias=r.copias||r.documentos_copias||[];
- html+=seccionResultado("COPIAS",
-  renderLista(copias,"No se identificaron copias obligatorias con la información disponible."));
-
- const pago=r.pago||r.pagos||[];
- html+=seccionResultado("PAGO",
-  renderLista(pago,"Confirma la tarifa vigente y la forma de pago oficial para tu trámite."));
-
- const antes=r.antes_de_firmar||r.antes||[];
- html+=seccionResultado("ANTES DE FIRMAR O IMPRIMIR",
-  renderLista(antes,"Revisa cuidadosamente tus datos antes de firmar o imprimir."));
-
- const vig=r.vigencia||[];
- if(lista(vig).length)
-  html+=seccionResultado("VIGENCIA",renderLista(vig));
-
- const entrega=r.entrega||[];
- if(lista(entrega).length)
-  html+=seccionResultado("ENTREGA",renderLista(entrega));
-
- const imp=r.importante||r.informacion_importante||[];
- html+=seccionResultado("INFORMACIÓN IMPORTANTE",
-  renderLista(imp,"Consulta la fuente oficial antes de acudir."));
-
- const fuente=r.fuente||r.url_oficial||r.enlace_oficial||"";
- if(fuente){
-  html+=seccionResultado("INFORMACIÓN OFICIAL",
-   `<p><a href="${esc(fuente)}" target="_blank" rel="noopener noreferrer">${rich(fuente)}</a></p>`);
- }
- respuesta.innerHTML=html;
- window.scrollTo({top:0,behavior:"smooth"});
-}
-async function enviarTexto(){
- const texto=textoUsuario.value.trim();
- if(!texto){
-  toast("Escribe o dicta tu respuesta.");
+function mostrarPregunta(j){
+ ocultar(resultado);mostrar(pregunta);
+ opciones.innerHTML="";
+ textoEntrada.style.display="none";
+ const q=j.pregunta||j;
+ state.pregunta=q;
+ state.pregunta_id=q.id||j.pregunta_id||"";
+ state.caso=j.caso||state.caso;
+ preguntaTexto.textContent=q.texto||q.pregunta||"¿Qué necesitas?";
+ paso.textContent=q.paso?`PASO ${q.paso}`:"";
+ const ops=q.opciones||j.opciones||[];
+ if(ops.length){
+  opciones.innerHTML=ops.map((o,i)=>{
+   const val=typeof o==="string"?o:(o.value??o.id??o.texto??o.label??"");
+   const lab=typeof o==="string"?o:(o.label??o.texto??o.nombre??val);
+   return `<button class="opcion" type="button" data-value="${esc(val)}">${esc(lab)}</button>`;
+  }).join("");
+  opciones.querySelectorAll("button").forEach(b=>b.onclick=()=>responder(b.dataset.value));
+ }else{
+  textoEntrada.style.display="block";
   textoUsuario.focus();
-  return;
  }
- if(!state.pregunta_id){
-  await entenderTextoInicial(texto);
-  return;
- }
- await responder(texto);
+ window.scrollTo({top:pregunta.offsetTop-10,behavior:"smooth"});
 }
-async function entenderTextoInicial(texto){
+async function responder(valor){
+ valor=t(valor);
+ if(!valor)return;
+ state.respuestas[state.pregunta_id]=valor;
  try{
-  const j=await api("/api/entender",{
-   servicio:state.servicio||"",
-   texto,
+  const j=await api("/api/continuar",{
+   servicio:state.servicio,
+   caso:state.caso,
+   pregunta_id:state.pregunta_id,
+   texto:"",
    respuestas:state.respuestas,
    perfil:state.perfil
   });
-  guardar(j);
-  if(j.pregunta||j.pregunta_id!==undefined||j.resultado||j.seleccionar||j.casos){
-   procesar(j);
-  }else if(j.mensaje){
-   toast(j.mensaje);
-  }
- }catch(_){}
+  procesar(j);
+ }catch(e){toast(e.message)}
 }
-async function descargarPDF(){
- const r=state.resultado||{};
+async function enviarTexto(){
+ const v=t(textoUsuario.value);
+ if(!v){toast("Escribe o habla antes de continuar.");return}
+ const id=state.pregunta_id;
  try{
-  const data={
-   ...r,
+  const j=await api("/api/interpretar",{
    servicio:state.servicio,
    caso:state.caso,
+   pregunta_id:id,
+   texto:v,
    respuestas:state.respuestas,
-   perfil:r.perfil||state.perfil
-  };
-  const res=await fetch("/api/pdf",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify(data)
+   perfil:state.perfil
   });
-  if(!res.ok){
-   let e={};
-   try{e=await res.json()}catch(_){}
-   throw new Error(e.error||"No se pudo generar el PDF.");
+  textoUsuario.value="";
+  procesar(j);
+ }catch(e){toast(e.message)}
+}
+function mostrarResultado(j){
+ state.resultado=j;
+ state.caso=j.caso||state.caso;
+ ocultar(inicio);ocultar(servicios);ocultar(pregunta);mostrar(resultado);
+ let codigo=j.estado_codigo||(j.estado||{}).codigo||"amarillo";
+ const titulo=codigo==="verde"?"PARECES LISTO":codigo==="rojo"?"ATENCIÓN: TODAVÍA NO VAYAS":"TE FALTA CONFIRMAR ALGO";
+ const cls=codigo==="verde"?"estado-verde":codigo==="rojo"?"estado-rojo":"estado-amarillo";
+ $("resultadoIcono").textContent=codigo==="verde"?"✓":codigo==="rojo"?"!":"?";
+ let h=`<div class="resultadoCabecera ${cls}">${titulo}</div>`;
+ if(j.mensaje)h+=`<p>${esc(j.mensaje)}</p>`;
+ h+=bloqueDatos("DATOS PERSONALES",j.datos_personales);
+ h+=bloqueLista("LO QUE YA TIENES",j.tiene,"No se registró todavía un documento como disponible.");
+ h+=bloqueLista("LO QUE TE FALTA",j.falta,"No aparece un requisito faltante con las respuestas proporcionadas.");
+ h+=bloqueLista("LO QUE DEBES CONFIRMAR",j.confirmar,"No aparece información pendiente de confirmación.");
+ h+=bloqueLista("REQUISITOS OBLIGATORIOS",j.obligatorios);
+ h+=bloqueLista("PERSONAS QUE DEBEN PRESENTARSE",j.personas);
+ if(j.datos_menor?.length)h+=bloqueDatos("INFORMACIÓN DEL MENOR",j.datos_menor);
+ if(j.datos_padre_madre_tutor?.length)h+=bloqueDatos("PADRE, MADRE O TUTOR",j.datos_padre_madre_tutor);
+ h+=bloqueLista("DOCUMENTOS ORIGINALES",j.documentos_originales);
+ if(j.copias?.length)h+=bloqueLista("COPIAS",j.copias);
+ if(j.especiales?.length)h+=bloqueLista("INFORMACIÓN IMPORTANTE",j.especiales);
+ if(j.instrucciones?.length)h+=bloqueLista("¿QUÉ DEBES HACER?",j.instrucciones);
+ if(j.cita?.necesaria)h+=`<div class="bloque"><h3>CITA</h3><p>${esc(j.cita.mensaje||"Debes confirmar la cita.")}</p>${j.cita.telefono?`<p><strong>Teléfono:</strong> ${esc(j.cita.telefono)}</p>`:""}</div>`;
+ if(j.pago?.necesario)h+=`<div class="bloque"><h3>PAGO</h3><p>${esc(j.pago.cantidad||"Confirma la tarifa vigente.")}</p><p>${esc(j.pago.mensaje||"")}</p></div>`;
+ respuesta.innerHTML=h;
+ const url=j.fuente_oficial||j.boton_oficial?.url||j.fuente||"";
+ $("fuenteOficial").href=url||"#";
+ $("oficial").disabled=!url;
+ window.scrollTo({top:resultado.offsetTop-10,behavior:"smooth"});
+}
+function bloqueDatos(titulo,d){
+ if(!Array.isArray(d)||!d.length)return"";
+ return `<div class="bloque"><h3>${esc(titulo)}</h3><div class="datos">${d.map(x=>`<div><strong>${esc(x[0])}</strong><span>${esc(x[1])}</span></div>`).join("")}</div></div>`;
+}
+function bloqueLista(titulo,d,empty=""){
+ const a=arr(d);
+ if(!a.length)return empty?`<div class="bloque"><h3>${esc(titulo)}</h3><p class="vacio">${esc(empty)}</p></div>`:"";
+ return `<div class="bloque"><h3>${esc(titulo)}</h3><ul>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+}
+async function descargarPDF(){
+ if(!state.resultado||!state.caso){toast("Primero completa el trámite.");return}
+ const b=$("pdf");b.disabled=true;b.textContent="PREPARANDO PDF...";
+ try{
+  const r=await fetch("/api/pdf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+   servicio:state.servicio,caso:state.caso,respuestas:state.respuestas,perfil:state.perfil
+  })});
+  if(!r.ok){
+   let x={};try{x=await r.json()}catch{}
+   throw new Error(x.detail||"No se pudo generar el PDF.");
   }
-  const blob=await res.blob();
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;
-  a.download="Hoja_de_Ruta_Mexicano_Apoya_Mexicano.pdf";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
- }catch(e){toast(e.message||"No se pudo generar el PDF.");}
+  const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="hoja_de_ruta_mexicano_apoya_mexicano.pdf";
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+ }catch(e){toast(e.message)}
+ finally{b.disabled=false;b.textContent="DESCARGAR HOJA DE RUTA PDF"}
 }
 function hablar(){
- if(!("webkitSpeechRecognition"in window||"SpeechRecognition"in window)){
-  toast("Tu navegador no permite reconocimiento de voz.");
-  return;
- }
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- const r=new SR();
- r.lang="es-MX";
- r.interimResults=false;
- r.maxAlternatives=1;
- const b=$("voz");
- if(b)b.disabled=true;
- r.onresult=e=>{
-  const t=e.results?.[0]?.[0]?.transcript||"";
-  textoUsuario.value=(textoUsuario.value+" "+t).trim();
- };
- r.onerror=()=>toast("No se pudo reconocer la voz.");
- r.onend=()=>{if(b)b.disabled=false;};
+ if(!("webkitSpeechRecognition"in window||"SpeechRecognition"in window)){toast("Tu navegador no permite entrada por voz.");return}
+ const R=window.SpeechRecognition||window.webkitSpeechRecognition,r=new R();
+ r.lang="es-MX";r.continuous=false;r.interimResults=false;
+ $("voz").disabled=true;$("voz").textContent="🎤 ESCUCHANDO...";
+ r.onresult=e=>{textoUsuario.value=e.results[0][0].transcript;textoEntrada.style.display="block"};
+ r.onerror=()=>toast("No se pudo reconocer la voz. Intenta nuevamente.");
+ r.onend=()=>{$("voz").disabled=false;$("voz").textContent="🎤 HABLAR"};
  r.start();
 }
-function cerrarModal(x){
- x?.classList.add("oculto");
-}
-function reiniciar(){
- state={servicio:"",caso:"",pregunta_id:"",respuestas:{},perfil:{},resultado:null};
- if(textoUsuario)textoUsuario.value="";
- if(respuesta)respuesta.innerHTML="";
- if($("seleccionDinamica"))$("seleccionDinamica").remove();
- mostrar(inicio);
-}
 function salir(){
- salida?.classList.remove("oculto");
+ ocultar(infoOficial);mostrar(salida);
 }
-function confirmarSalida(){
- cerrarModal(salida);
- reiniciar();
-}
-function cancelarSalida(){
- cerrarModal(salida);
-}
-async function despertar(){
- try{await fetch("/api/estado",{cache:"no-store"})}catch(_){}
-}
-
-document.addEventListener("DOMContentLoaded",async()=>{
- despertar();
-
- $("entrar")?.addEventListener("click",()=>mostrar(servicios));
-
- $("servicioCita")?.addEventListener("click",()=>iniciarServicio("cita"));
- $("servicioDocumento")?.addEventListener("click",()=>iniciarServicio("documento"));
-
- $("continuar")?.addEventListener("click",enviarTexto);
- $("voz")?.addEventListener("click",hablar);
-
- textoUsuario?.addEventListener("keydown",e=>{
-  if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){
-   e.preventDefault();
-   enviarTexto();
-  }
- });
-
- $("pdf")?.addEventListener("click",descargarPDF);
- $("nuevo")?.addEventListener("click",reiniciar);
- $("salir")?.addEventListener("click",salir);
-
- $("confirmarSalida")?.addEventListener("click",confirmarSalida);
- $("cancelarSalida")?.addEventListener("click",cancelarSalida);
-
- $("oficial")?.addEventListener("click",()=>{
-  const r=state.resultado||{};
-  const u=r.fuente||r.url_oficial||r.enlace_oficial||"";
-  if(!u){
-   toast("No hay una fuente oficial disponible para este caso.");
-   return;
-  }
-  $("fuenteOficial").href=u;
-  $("fuenteOficial").textContent=u;
-  infoOficial?.classList.remove("oculto");
- });
-
- $("cerrarOficial")?.addEventListener("click",()=>cerrarModal(infoOficial));
-
- infoOficial?.addEventListener("click",e=>{
-  if(e.target===infoOficial)cerrarModal(infoOficial);
- });
- salida?.addEventListener("click",e=>{
-  if(e.target===salida)cerrarModal(salida);
- });
+$("entrar").onclick=comenzar;
+$("servicioCita").onclick=()=>servicio("tramite");
+$("servicioDocumento").onclick=()=>servicio("documento");
+$("continuar").onclick=enviarTexto;
+$("voz").onclick=hablar;
+$("pdf").onclick=descargarPDF;
+$("oficial").onclick=()=>mostrar(infoOficial);
+$("cerrarOficial").onclick=()=>ocultar(infoOficial);
+$("nuevo").onclick=limpiar;
+$("salir").onclick=salir;
+$("cancelarSalida").onclick=()=>ocultar(salida);
+$("confirmarSalida").onclick=limpiar;
+textoUsuario.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.ctrlKey)enviarTexto()});
+window.addEventListener("load",async()=>{
+ try{await fetch("/api/estado")}catch{}
 });
