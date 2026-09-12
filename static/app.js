@@ -1,0 +1,155 @@
+// static/app.js
+let perfil = {};
+let casoActual = "";
+let respuestas = {};
+let resultadoFinal = null;
+
+function irAPaso(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+function guardarDatos() {
+    const nombre = document.getElementById('input-nombre').value.trim();
+    const tel = document.getElementById('input-tel').value.trim();
+    const edo = document.getElementById('input-estado').value;
+
+    if (!nombre) { alert("Por favor escribe tu Nombre y Apellidos."); return; }
+    
+    perfil = { nombre_completo: nombre, telefono: tel, estado: edo, nacionalidad: "mexicana" };
+    cargarCatalogo();
+}
+
+async function cargarCatalogo() {
+    try {
+        let res = await fetch('/api/catalogo');
+        let datos = await res.json();
+        let lista = document.getElementById('lista-tramites');
+        lista.innerHTML = "";
+        
+        datos.forEach(t => {
+            let btn = document.createElement('button');
+            btn.className = "option-btn";
+            btn.onclick = () => iniciarTramite(t.caso);
+            btn.innerHTML = `<strong>${t.nombre}</strong><span>${t.descripcion}</span>`;
+            lista.appendChild(btn);
+        });
+        irAPaso('paso-tramites');
+    } catch(e) {
+        alert("Error de conexión al cargar trámites.");
+    }
+}
+
+async function iniciarTramite(caso) {
+    casoActual = caso;
+    respuestas = {};
+    try {
+        let res = await fetch('/api/seleccionar-caso', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ caso: casoActual, perfil: perfil, respuestas: respuestas })
+        });
+        let data = await res.json();
+        procesarPaso(data);
+    } catch(e) { alert("Error al iniciar el trámite."); }
+}
+
+async function enviarRespuesta(idPregunta, valor) {
+    respuestas[idPregunta] = valor;
+    try {
+        let res = await fetch('/api/continuar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ caso: casoActual, pregunta_id: idPregunta, respuesta: valor, respuestas: respuestas, perfil: perfil })
+        });
+        let data = await res.json();
+        procesarPaso(data);
+    } catch(e) { alert("Error al registrar respuesta."); }
+}
+
+function procesarPaso(data) {
+    if (data.pregunta) {
+        irAPaso('paso-preguntas');
+        document.getElementById('pregunta-titulo').innerText = data.servicio;
+        document.getElementById('pregunta-texto').innerText = data.pregunta.pregunta;
+        
+        let opcionesCont = document.getElementById('contenedor-opciones');
+        opcionesCont.innerHTML = "";
+        
+        data.pregunta.opciones.forEach(o => {
+            let lbl = document.createElement('label');
+            lbl.className = "radio-label";
+            lbl.innerHTML = `<input type="radio" name="r_opt" value="${o}"> <span>${o}</span>`;
+            lbl.onclick = () => {
+                setTimeout(() => enviarRespuesta(data.pregunta.id, o), 150);
+            };
+            opcionesCont.appendChild(lbl);
+        });
+    } else if (data.resultado) {
+        mostrarResultado(data.resultado);
+    }
+}
+
+function mostrarResultado(r) {
+    resultadoFinal = r;
+    irAPaso('paso-resultado');
+    
+    let cajaEstado = document.getElementById('res-caja-estado');
+    cajaEstado.className = "box-info " + (r.estado === "LISTO PARA TU CITA" ? "success" : "danger");
+    cajaEstado.innerHTML = `<strong>ESTATUS: ${r.estado}</strong><br>${r.mensaje_estado}`;
+    
+    document.getElementById('res-consulado').innerText = r.consulado_nombre;
+    document.getElementById('res-direccion').innerText = "📍 " + r.consulado_direccion;
+    document.getElementById('res-telefono').innerText = "📞 Tel central: " + r.consulado_telefono;
+    
+    document.getElementById('res-pago').innerText = r.pago_estimado;
+    document.getElementById('res-cita').innerText = r.cita_estatus;
+    document.getElementById('res-cita').style.color = r.cita_estatus.includes("PENDIENTE") ? "var(--danger)" : "var(--accent)";
+
+    inyectarLista('res-requisitos', r.requisitos_oficiales);
+    
+    let secFaltantes = document.getElementById('seccion-faltantes');
+    if(r.faltantes.length > 0) {
+        secFaltantes.style.display = "block";
+        inyectarLista('res-faltantes', r.faltantes);
+    } else {
+        secFaltantes.style.display = "none";
+    }
+    
+    inyectarLista('res-acciones', r.acciones_recomendadas);
+}
+
+function inyectarLista(id, arreglo) {
+    let el = document.getElementById(id);
+    el.innerHTML = "";
+    (arreglo || []).forEach(x => {
+        let li = document.createElement('li');
+        li.innerText = x;
+        el.appendChild(li);
+    });
+}
+
+async function descargarPDF() {
+    if (!resultadoFinal) return;
+    try {
+        let res = await fetch('/api/pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(resultadoFinal)
+        });
+        if (res.ok) {
+            let blob = await res.blob();
+            let url = window.URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `Hoja_de_Ruta_${casoActual.toUpperCase()}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } else { alert("No se pudo descargar el archivo PDF."); }
+    } catch(e) { alert("Error al conectar para generar el PDF."); }
+}
+
+function abortarCuestionario() { cargarCatalogo(); }
+function reiniciarTodo() { irAPaso('paso-datos'); }
