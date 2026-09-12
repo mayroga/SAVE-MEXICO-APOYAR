@@ -347,4 +347,78 @@ async function descargarPDF() {
 function abortarCuestionario() { cargarCatalogo(); }
 function reiniciarTodo() { comenzarDeNuevoLimpio(); }
 iniciarRelojInactividad();
+
+// =========================================================================
+// AQUÍ PEGAS EL BLOQUE COMERCIAL DE STRIPE Y DESARROLLADOR AL FINAL DE APP.JS
+// =========================================================================
+
+// 1. CAPTURAR RESPUESTA DE STRIPE TRAS EL PAGO EXITOSO
+function capturarRespuestaStripe() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('stripe_success');
+    const sessionId = urlParams.get('session_id');
+
+    if (success === "true" && sessionId) {
+        // Guardamos el ID aprobado en las cookies para que el servidor FastAPI nos deje pasar
+        document.cookie = `token=${sessionId}; path=/; max-age=86400; samesite=lax`;
+        alert("¡Tu pago ha sido verificado con éxito! Bienvenido al sistema de Hoja de Ruta.");
+        window.location.href = "/"; // Limpiar variables de la barra de direcciones
+    }
+}
+
+// 2. DISPARADOR PARA RE-DIRECCIONAR AL CLIENTE AL CHECKOUT DE STRIPE
+async function solicitarAccesoStripe(tipoPlan) {
+    try {
+        let res = await fetch(`/api/checkout?plan=${tipoPlan}`, { method: 'POST' });
+        let data = await res.json();
+        if (data.url) {
+            window.location.href = data.url; // Abrir la pasarela de cobro de Stripe
+        } else {
+            alert("Ocurrió un problema con el enlace de pago de Stripe. Intenta de nuevo.");
+        }
+    } catch(e) { 
+        alert("Error de red al intentar conectar con Stripe."); 
+    }
+}
+
+// 3. FUNCIÓN DE BYPASS GRATUITO PARA EL DESARROLLADOR (USER Y PASSWORD)
+async function bypassDesarrollador(user, pass) {
+    if (!user || !pass) {
+        alert("Por favor escribe tu usuario y contraseña de desarrollador.");
+        return;
+    }
+    try {
+        let res = await fetch('/api/login-developer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        });
+        if (res.ok) {
+            alert("¡Acceso de desarrollador aprobado! El muro de pago ha sido desactivado para ti.");
+            window.location.reload(); // Recargar para activar la sesión gratis
+        } else { 
+            alert("Credenciales incorrectas. No se pudo saltar el muro de pago."); 
+        }
+    } catch(e) { 
+        alert("Error al intentar validar tus credenciales en el servidor."); 
+    }
+}
+
+// Escuchar de forma automática si venimos regresando de un pago exitoso en Stripe
+document.addEventListener("DOMContentLoaded", () => {
+    capturarRespuestaStripe();
+    
+    // Si la cookie token está activa, mostrar directo el formulario y ocultar los botones de cobro
+    if (document.cookie.includes("token=")) {
+        const muro = document.getElementById('muro-pago-stripe');
+        const btnComenzar = document.getElementById('btn-comenzar');
+        if (muro) muro.style.display = 'none';
+        if (btnComenzar) btnComenzar.style.display = 'block';
+    }
+});
+
+// =========================================================================
+// AQUÍ TERMINA EL BLOQUE COMERCIAL
+// =========================================================================
+
       
