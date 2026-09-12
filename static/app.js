@@ -3,6 +3,36 @@ let perfil = {};
 let casoActual = "";
 let respuestas = {};
 let resultadoFinal = null;
+let idTemporizador = null;
+
+// Reloj de Inactividad de 10 Minutos para obligar a comenzar de nuevo de forma limpia
+function iniciarRelojInactividad() {
+    clearTimeout(idTemporizador);
+    idTemporizador = setTimeout(() => {
+        alert("Por tu seguridad, tu sesión de 10 minutos ha terminado. Vamos a comenzar de nuevo.");
+        comenzarDeNuevoLimpio();
+    }, 600000);
+}
+
+document.addEventListener("click", iniciarRelojInactividad);
+document.addEventListener("keydown", iniciarRelojInactividad);
+
+function validarCheck() {
+    const chk = document.getElementById('check-legal');
+    document.getElementById('btn-comenzar').disabled = !chk.checked;
+}
+
+function comenzarDeNuevoLimpio() {
+    casoActual = "";
+    respuestas = {};
+    resultadoFinal = null;
+    document.getElementById('input-nombre').value = "";
+    document.getElementById('input-tel').value = "";
+    document.getElementById('input-estado').value = "California";
+    document.getElementById('check-legal').checked = false;
+    document.getElementById('btn-comenzar').disabled = true;
+    irAPaso('paso-legal');
+}
 
 function irAPaso(id) {
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -17,7 +47,8 @@ function guardarDatos() {
 
     if (!nombre) { alert("Por favor escribe tu Nombre y Apellidos."); return; }
     
-    perfil = { nombre_completo: nombre, telefono: tel, estado: edo, nacionalidad: "mexicana" };
+    perfil = { nombre_completo: nombre, telephone: tel, estado: edo, nacionalidad: "mexicana" };
+    perfil["telefono"] = tel; 
     cargarCatalogo();
 }
 
@@ -118,6 +149,14 @@ function mostrarResultado(r) {
     }
     
     inyectarLista('res-acciones', r.acciones_recomendadas);
+
+    let btnWeb = document.getElementById('lnk-consulado-oficial');
+    if (r.url_consulado) {
+        btnWeb.href = r.url_consulado;
+        btnWeb.style.display = "block";
+    } else {
+        btnWeb.style.display = "none";
+    }
 }
 
 function inyectarLista(id, arreglo) {
@@ -128,6 +167,28 @@ function inyectarLista(id, arreglo) {
         li.innerText = x;
         el.appendChild(li);
     });
+}
+
+async function verVistaPrevia() {
+    if (!resultadoFinal) return;
+    try {
+        let res = await fetch('/api/pdf-preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(resultadoFinal)
+        });
+        if (res.ok) {
+            let blob = await res.blob();
+            let url = window.URL.createObjectURL(blob);
+            document.getElementById('pdf-frame').src = url;
+            document.getElementById('modal-pdf').classList.add('active');
+        } else { alert("No se pudo abrir el cuadro de vista previa."); }
+    } catch(e) { alert("Error de comunicación para generar vista previa."); }
+}
+
+function cerrarVistaPrevia() {
+    document.getElementById('modal-pdf').classList.remove('active');
+    document.getElementById('pdf-frame').src = "";
 }
 
 async function descargarPDF() {
@@ -147,9 +208,11 @@ async function descargarPDF() {
             document.body.appendChild(a);
             a.click();
             a.remove();
-        } else { alert("No se pudo descargar el archivo PDF."); }
-    } catch(e) { alert("Error al conectar para generar el PDF."); }
+        } else { alert("No se pudo guardar tu Hoja de Ruta."); }
+    } catch(e) { alert("Error de red al compilar tu PDF final."); }
 }
 
 function abortarCuestionario() { cargarCatalogo(); }
-function reiniciarTodo() { irAPaso('paso-datos'); }
+function reiniciarTodo() { comenzarDeNuevoLimpio(); }
+
+iniciarRelojInactividad();
