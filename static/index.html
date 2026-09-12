@@ -33,6 +33,8 @@
         .btn:hover { background: var(--primary-dark); }
         .btn-secondary { background: #7f8c8d; }
         .btn-secondary:hover { background: #616a6b; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #b71c1c; }
         .grid-options { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 20px 0; }
         .option-btn { background: #f8f9fa; border: 2px solid #e2e8f0; padding: 18px; border-radius: 8px; text-align: left; width: 100%; cursor: pointer; transition: 0.2s; }
         .option-btn:hover { border-color: var(--primary); background: #edf2f7; }
@@ -50,6 +52,15 @@
         .result-list { list-style: none; padding-left: 0; }
         .result-list li { font-size: 14px; position: relative; padding-left: 15px; margin-bottom: 4px; }
         .result-list li::before { content: "•"; color: var(--primary); position: absolute; left: 0; font-weight: bold; }
+        
+        /* Modal Visor de PDF en Pantalla */
+        .pdf-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+        .pdf-modal.active { display: flex; }
+        .pdf-box { background: white; width: 100%; max-width: 550px; height: 80vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .pdf-header { background: #f8f9fa; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+        .pdf-header h3 { font-size: 15px; color: var(--primary-dark); }
+        .pdf-body { flex-grow: 1; background: #717d7e; }
+        .pdf-footer { background: #f8f9fa; padding: 10px 15px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; }
         .disclaimer { font-size: 11px; color: var(--muted); margin-top: 25px; text-align: justify; line-height: 1.4; border-top: 1px solid #e2e8f0; padding-top: 10px; }
     </style>
 </head>
@@ -97,7 +108,7 @@
         
         <div id="lista-tramites" class="grid-options"></div>
         
-        <button class="btn btn-secondary" onclick="irAPaso('paso-datos')">Atrás</button>
+        <button class="btn btn-secondary" onclick="irAPaso('paso-datos')">Atrás: Corregir mis Datos</button>
     </div>
 
     <!-- PASO 3: PREGUNTAS SÍ / NO -->
@@ -107,7 +118,7 @@
         
         <div id="contenedor-opciones" class="radio-group"></div>
         
-        <button class="btn btn-secondary" onclick="abortarCuestionario()">Cambiar de Trámite</button>
+        <button class="btn btn-secondary" onclick="abortarCuestionario()">Atrás: Cambiar de Trámite</button>
     </div>
 
     <!-- RESPUESTA FINAL: HOJA DE RUTA -->
@@ -130,14 +141,14 @@
             </div>
             <div class="result-section">
                 <h3>Estatus de tu Cita Obligatoria:</h3>
-                <p id="res-cita" style="font-weight: bold;"></p>
+                <p id="res-cita" style="font-weight: bold行业;"></p>
             </div>
             <div class="result-section">
                 <h3>Documentos Oficiales Requeridos:</h3>
                 <ul id="res-requisitos" class="result-list"></ul>
             </div>
             <div id="seccion-faltantes" class="result-section">
-                <h3 style="color: var(--danger);">¡Atención! Te hace falta esto:</h3>
+                <h3 style="color: var(--danger);">¡Atención! Te hace falta conseguir esto exactamente:</h3>
                 <ul id="res-faltantes" class="result-list" style="color: var(--danger); font-weight: bold;"></ul>
             </div>
             <div class="result-section">
@@ -146,9 +157,10 @@
             </div>
         </div>
 
-        <button class="btn" onclick="descargarPDF()">📥 GUARDAR HOJA DE RUTA EN TU CELULAR (PDF)</button>
-        <button class="btn btn-secondary" onclick="reiniciarTodo()">Hacer Otro Trámite</button>
-    </div>
+        <button class="btn" style="background: #117a65;" onclick="verVistaPrevia()">👁️ REVISAR EN PANTALLA (VISTA PREVIA)</button>
+        <button class="btn" onclick="descargarPDF()">📥 GUARDAR HOJA DE RUTA FINAL (PDF)</button>
+        <button class="btn btn-secondary" onclick="irAPaso('paso-datos')">📝 REESCRIBIR DATOS (CORREGIR ERROR)</button>
+        <a id="lnk-consulado-oficial" href="#" target="_blank" class="btn btn-secondary" style="background: #7d6608; color: white; display: none;">🌐 SITIO WEB OFICIAL DEL CONSULADO</a>
 
     <div class="disclaimer">
         <strong>Aviso Importante de Orientación:</strong> Esta aplicación es una herramienta ciudadana de apoyo independiente para la comunidad mexicana en USA. <strong>No somos el Gobierno de México ni la SRE.</strong> No guardamos tus datos personales. El trámite final se realiza en las oficinas consulares oficiales.
