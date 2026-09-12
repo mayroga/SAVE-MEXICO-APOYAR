@@ -67,6 +67,7 @@ function guardarDatos() {
     if (!fecha) { alert("Por favor escribe tu Fecha de Nacimiento."); return; }
     if (!direccion) { alert("Por favor escribe tu Dirección en EE. UU."); return; }
     
+    // Configuración idéntica a la clase ExpedientePerfil de Python
     perfil = { 
         nombre_completo: nombre, 
         fecha_nacimiento: fecha,
