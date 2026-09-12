@@ -134,27 +134,28 @@ function procesarPaso(data) {
         document.getElementById('pregunta-titulo').innerText = data.servicio;
         document.getElementById('pregunta-texto').innerText = data.pregunta.pregunta;
         
-        // Mapeo e Inyección de tus Fotos Locales Propias con Enlace de Clic
+        // Mapeo e Inyección Segura de las Fotos de Guía Consular Locales
         const divVisual = document.getElementById('contenedor-ejemplo-visual');
         const imgVisual = document.getElementById('img-ejemplo');
         const enlaceVisual = document.getElementById('enlace-ejemplo');
         
-        if (divVisual && imgVisual && enlaceVisual) {
+        // Ponemos las fotos locales fijas de tu carpeta static
+        if (divVisual && imgVisual) {
             if (data.pregunta.id === "acta_nacimiento") {
                 divVisual.style.display = "block";
-                // Forzamos la ruta estática relativa para Render
                 imgVisual.src = "static/acta.jpg";
-                enlaceVisual.href = "static/acta.jpg";
+                // Solo si la etiqueta de enlace existe en el HTML le ponemos el clic en grande
+                if (enlaceVisual) { enlaceVisual.href = "static/acta.jpg"; }
             } else if (data.pregunta.id === "identificacion") {
                 divVisual.style.display = "block";
-                // Forzamos la ruta estática relativa para Render
                 imgVisual.src = "static/ine.jpg";
-                enlaceVisual.href = "static/ine.jpg";
+                // Solo si la etiqueta de enlace existe en el HTML le ponemos el clic en grande
+                if (enlaceVisual) { enlaceVisual.href = "static/ine.jpg"; }
             } else {
-                // Se oculta automáticamente si es comprobante de domicilio o cita
+                // Se esconde solito para comprobantes de domicilio, vigencias o citas
                 divVisual.style.display = "none";
                 imgVisual.src = "";
-                enlaceVisual.href = "#";
+                if (enlaceVisual) { enlaceVisual.href = "#"; }
             }
         }
         
