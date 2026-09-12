@@ -274,7 +274,7 @@ def continuar(caso, respuestas=None, perfil=None, pregunta_id="", respuesta=""):
         q = pregunta_por_id(caso, pregunta_id)
         if q: res[pregunta_id] = interpretar_respuesta(q, respuesta)
     p = _perfil_desde(res, perfil)
-    q = Broad_q = siguiente_pregunta(caso, res)
+    q = siguiente_pregunta(caso, res)
     if q:
         activos = preguntas_activas(caso, res)
         return {
