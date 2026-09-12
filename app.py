@@ -76,7 +76,7 @@ def construir_pdf(r):
     c.drawString(55, 430, f"Oficina: {r.get('consulado_nombre', '')}")
     c.drawString(55, 410, f"Dirección: {r.get('consulado_direccion', '')}")
     c.drawString(55, 390, f"Teléfono central: {r.get('consulado_telefono', '')}")
-    c.drawString(55, 370, f"Página oficial de internet: {r.get('url_consulado', '')}")
+    c.drawString(55, 370, f"Página oficial de internet: {r.get('url_consulado', 'https://www.gob.mx')}")
     
     # 5. Lista de Documentos Oficiales
     c.setFont("Helvetica-Bold", 12)
