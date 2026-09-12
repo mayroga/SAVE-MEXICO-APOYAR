@@ -1,15 +1,15 @@
 import os,io,re
 from typing import Any,Dict,Optional
-from fastapi import FastAPI,HTTPException
-from fastapi.responses import FileResponse,StreamingResponse
+from fastapi import FastAPI,HTTPException,UploadFile,File
+from fastapi.responses import FileResponse,StreamingResponse,HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from consular_engine import (
- APP,VERSION,iniciar,seleccionar_caso,continuar,interpretar,
- resultado,catalogo,obtener_fuentes,obtener_contacto,obtener_tarifas,
- obtener_manual,tramite_oficial,caso_info,procesar
+ APP,VERSION,iniciar,seleccionar_caso,continuar,interpretar,resultado,
+ catalogo,obtener_fuentes,obtener_contacto,obtener_tarifas,obtener_manual,
+ tramite_oficial,caso_info,procesar
 )
 
 app=FastAPI(title=APP,version=VERSION)
@@ -51,9 +51,12 @@ def limpiar(x):
 
 def lista_pdf(x):
  if x is None:return []
- if isinstance(x,str):return [limpiar(x)] if limpiar(x) else []
- if isinstance(x,dict):return [f"{k}: {v}" for k,v in x.items() if limpiar(v)]
- if isinstance(x,(list,tuple)):return [limpiar(v) for v in x if limpiar(v)]
+ if isinstance(x,str):
+  return [limpiar(x)] if limpiar(x) else []
+ if isinstance(x,dict):
+  return [f"{k}: {v}" for k,v in x.items() if limpiar(v)]
+ if isinstance(x,(list,tuple)):
+  return [limpiar(v) for v in x if limpiar(v)]
  return [limpiar(x)]
 
 def texto_pdf(c,txt,y,size=10,bold=False,leading=14):
@@ -61,30 +64,42 @@ def texto_pdf(c,txt,y,size=10,bold=False,leading=14):
  if not txt:return y
  font="Helvetica-Bold" if bold else "Helvetica"
  c.setFont(font,size)
- words=txt.split()
  line=""
- for word in words:
+ for word in txt.split():
   test=(line+" "+word).strip()
   if c.stringWidth(test,font,size)<=500:
    line=test
   else:
-   if y<55:c.showPage();y=750;c.setFont(font,size)
-   c.drawString(55,y,line);y-=leading
+   if y<65:c.showPage();y=750
+   c.setFont(font,size);c.drawString(55,y,line);y-=leading
    line=word
  if line:
-  if y<55:c.showPage();y=750;c.setFont(font,size)
-  c.drawString(55,y,line);y-=leading
+  if y<65:c.showPage();y=750
+  c.setFont(font,size);c.drawString(55,y,line);y-=leading
  return y
 
-def seccion(c,titulo,y):
- if y<75:c.showPage();y=750
+def seccion(c,t,y):
+ if y<80:c.showPage();y=750
  c.setFillColorRGB(.07,.38,.63)
  c.setFont("Helvetica-Bold",12)
- c.drawString(55,y,titulo)
+ c.drawString(55,y,t)
  c.setFillColorRGB(0,0,0)
  return y-18
 
-def construir_pdf(r):
+def campo_pdf(c,nombre,valor,y):
+ if y<65:c.showPage();y=750
+ c.setFont("Helvetica-Bold",9)
+ c.drawString(55,y,nombre)
+ c.acroform.textfield(
+  name="campo_"+re.sub(r"\W+","_",nombre.lower()),
+  value=limpiar(valor),
+  x=175,y=y-4,width=340,height=17,
+  borderWidth=1,borderStyle="underlined",
+  forceBorder=True,fontName="Helvetica",fontSize=9
+ )
+ return y-25
+
+def construir_pdf(r,editable=True):
  out=io.BytesIO()
  c=canvas.Canvas(out,pagesize=letter)
  c.setTitle("MEXICANO APOYA MEXICANO - Hoja de Ruta")
@@ -96,85 +111,80 @@ def construir_pdf(r):
  c.setFont("Helvetica-Bold",14)
  c.drawString(55,y,"HOJA DE RUTA / CHECKLIST")
  y-=22
- y=texto_pdf(c,"Prepara tu trámite antes de acudir. Confirma siempre la información oficial vigente.",y,9)-8
+ y=texto_pdf(c,"DOCUMENTO PREVIO — REVISA Y CORRIGE TUS DATOS ANTES DE CONFIRMAR.",y,9,True)-8
 
- datos=r.get("perfil",{}) or {}
- if isinstance(datos,dict):
-  y=seccion(c,"1. DATOS PERSONALES",y)
-  nombres=[
-   ("Nombre",datos.get("nombre_completo")),
-   ("Fecha de nacimiento",datos.get("fecha_nacimiento")),
-   ("Edad",datos.get("edad")),
-   ("Dirección",datos.get("direccion")),
-   ("Estado",datos.get("estado")),
-   ("Código postal",datos.get("codigo_postal")),
-   ("Teléfono",datos.get("telefono")),
-   ("Trabajo / ocupación",datos.get("trabajo") or datos.get("ocupacion"))
-  ]
-  for nombre,valor in nombres:
-   if valor not in (None,"","-"):
-    y=texto_pdf(c,f"{nombre}: {valor}",y)
+ p=r.get("perfil",{}) or {}
+ y=seccion(c,"1. TUS DATOS",y)
 
- y-=5
- y=seccion(c,"2. TU TRÁMITE",y)
- y=texto_pdf(c,r.get("nombre_tramite",""),y,11,True)
-
- secciones=[
-  ("3. PERSONAS QUE DEBEN PRESENTARSE",r.get("personas")),
-  ("4. REQUISITOS OBLIGATORIOS",r.get("requisitos")),
-  ("5. DOCUMENTOS ORIGINALES",r.get("originales")),
-  ("6. COPIAS",r.get("copias")),
-  ("7. LO QUE TE FALTA",r.get("faltantes")),
-  ("8. LO QUE DEBES CONFIRMAR",r.get("confirmar"))
+ datos=[
+  ("Nombre y apellidos",p.get("nombre_completo","")),
+  ("Fecha de nacimiento",p.get("fecha_nacimiento","")),
+  ("Edad",p.get("edad","")),
+  ("Dirección",p.get("direccion","")),
+  ("Estado",p.get("estado","")),
+  ("Código postal",p.get("codigo_postal","")),
+  ("Teléfono",p.get("telefono","")),
+  ("Trabajo / ocupación",p.get("trabajo") or p.get("ocupacion",""))
  ]
 
- for titulo,datos_sec in secciones:
-  vals=lista_pdf(datos_sec)
+ if editable:
+  for n,v in datos:y=campo_pdf(c,n,v,y)
+ else:
+  for n,v in datos:
+   if v:y=texto_pdf(c,f"{n}: {v}",y)
+
+ y-=6
+ y=seccion(c,"2. TRÁMITE",y)
+ y=texto_pdf(c,r.get("nombre_tramite",""),y,11,True)
+
+ bloques=[
+  ("3. QUIÉN DEBE PRESENTARSE",r.get("personas")),
+  ("4. REQUISITOS",r.get("requisitos")),
+  ("5. DOCUMENTOS ORIGINALES",r.get("originales")),
+  ("6. COPIAS",r.get("copias")),
+  ("7. TE FALTA",r.get("faltantes")),
+  ("8. INFORMACIÓN ESPECIAL",r.get("especial")),
+  ("9. QUÉ DEBES HACER",r.get("acciones")),
+  ("10. PAGO",r.get("pago")),
+  ("11. CITA",r.get("cita")),
+  ("12. VIGENCIA",r.get("vigencia")),
+  ("13. ENTREGA",r.get("entrega"))
+ ]
+
+ for titulo,val in bloques:
+  vals=lista_pdf(val)
   if not vals:continue
-  y-=5
-  y=seccion(c,titulo,y)
+  y-=5;y=seccion(c,titulo,y)
   for v in vals:y=texto_pdf(c,"• "+v,y)
-
- for titulo,valor in [
-  ("9. PAGO",r.get("pago")),
-  ("10. CITA",r.get("cita")),
-  ("11. VIGENCIA",r.get("vigencia")),
-  ("12. ENTREGA",r.get("entrega"))
- ]:
-  vals=lista_pdf(valor)
-  if not vals:continue
-  y-=5
-  y=seccion(c,titulo,y)
-  for v in vals:y=texto_pdf(c,"• "+v,y)
-
- vals=lista_pdf(r.get("especial"))
- if vals:
-  y-=5
-  y=seccion(c,"13. INFORMACIÓN ESPECIAL",y)
-  for v in vals:y=texto_pdf(c,"• "+v,y)
-
- vals=lista_pdf(r.get("acciones"))
- if vals:
-  y-=5
-  y=seccion(c,"14. QUÉ DEBES HACER",y)
-  for i,v in enumerate(vals,1):y=texto_pdf(c,f"{i}. {v}",y)
 
  y-=5
- y=seccion(c,"15. INFORMACIÓN OFICIAL",y)
- y=texto_pdf(c,r.get("fuente",""),y)
+ y=seccion(c,"14. INFORMACIÓN OFICIAL",y)
+ y=texto_pdf(c,r.get("fuente",""),y,8)
 
- contacto=r.get("contacto",{}) or {}
- if isinstance(contacto,dict):
-  for k,v in contacto.items():
-   if v:y=texto_pdf(c,f"{k}: {v}",y)
+ y-=5
+ y=texto_pdf(
+  c,
+  "IMPORTANTE: Este documento es una herramienta de preparación. "
+  "No es un documento oficial del Gobierno de México. "
+  "Confirma siempre los requisitos vigentes con el Consulado correspondiente.",
+  y,7
+ )
 
- if y<55:c.showPage();y=750
+ if y<65:c.showPage();y=750
  c.setFont("Helvetica",7)
  c.setFillColorRGB(.35,.35,.35)
- c.drawString(55,38,"MEXICANO APOYA MEXICANO no es el Gobierno de México ni sustituye la información oficial.")
+ c.drawString(55,38,"MEXICANO APOYA MEXICANO — DOCUMENTO DE PREPARACIÓN")
  c.save()
  out.seek(0)
  return out
+
+def extraer_pdf_bytes(data):
+ try:
+  from pypdf import PdfReader
+  reader=PdfReader(io.BytesIO(data))
+  return "\n".join((p.extract_text() or "") for p in reader.pages).strip()
+ except Exception:
+  return ""
 
 @app.get("/")
 def home():
@@ -210,10 +220,8 @@ def api_manual():
 
 @app.post("/api/iniciar")
 def api_iniciar(x:Inicio):
- try:
-  return iniciar(x.texto,x.perfil)
- except Exception as e:
-  raise HTTPException(400,str(e))
+ try:return iniciar(x.texto,x.perfil)
+ except Exception as e:raise HTTPException(400,str(e))
 
 @app.post("/api/start")
 def api_start(x:Inicio):
@@ -221,17 +229,13 @@ def api_start(x:Inicio):
 
 @app.post("/api/interpretar")
 def api_interpretar(x:Interpretacion):
- try:
-  return interpretar(x.caso,x.texto,x.respuestas,x.perfil)
- except Exception as e:
-  raise HTTPException(400,str(e))
+ try:return interpretar(x.caso,x.texto,x.respuestas,x.perfil)
+ except Exception as e:raise HTTPException(400,str(e))
 
 @app.post("/api/seleccionar-caso")
 def api_seleccionar(x:Seleccion):
- try:
-  return seleccionar_caso(x.caso,x.perfil,x.respuestas)
- except Exception as e:
-  raise HTTPException(400,str(e))
+ try:return seleccionar_caso(x.caso,x.perfil,x.respuestas)
+ except Exception as e:raise HTTPException(400,str(e))
 
 @app.post("/api/seleccionar_caso")
 def api_seleccionar_2(x:Seleccion):
@@ -242,22 +246,15 @@ def api_continuar(x:Continuacion):
  try:
   res=dict(x.respuestas or {})
   perfil=dict(x.perfil or {})
-  return continuar(
-   x.caso,
-   res,
-   perfil,
-   x.pregunta_id,
-   x.respuesta if x.respuesta not in ("",None) else x.texto
-  )
+  res["texto"]=x.texto or x.respuesta or ""
+  return continuar(x.caso,res,perfil,x.pregunta_id,x.respuesta or x.texto)
  except Exception as e:
   raise HTTPException(400,str(e))
 
 @app.post("/api/resultado")
 def api_resultado(x:ResultadoRequest):
- try:
-  return resultado(x.caso,x.respuestas,x.perfil)
- except Exception as e:
-  raise HTTPException(400,str(e))
+ try:return resultado(x.caso,x.respuestas,x.perfil)
+ except Exception as e:raise HTTPException(400,str(e))
 
 @app.get("/api/tramite/{caso}")
 def api_tramite(caso:str):
@@ -273,27 +270,50 @@ def api_caso(caso:str):
 
 @app.post("/api/procesar")
 def api_procesar(data:Dict[str,Any]):
- try:
-  return procesar(
-   data.get("caso",""),
-   data.get("respuestas",{}),
-   data.get("perfil",{})
-  )
- except Exception as e:
-  raise HTTPException(400,str(e))
+ try:return procesar(data.get("caso",""),data.get("respuestas",{}),data.get("perfil",{}))
+ except Exception as e:raise HTTPException(400,str(e))
+
+@app.post("/api/documento")
+async def api_documento(file:UploadFile=File(...)):
+ if not file.filename.lower().endswith(".pdf"):
+  raise HTTPException(400,"Solo se permite un archivo PDF.")
+ data=await file.read()
+ if len(data)>15*1024*1024:
+  raise HTTPException(400,"El PDF no puede superar 15 MB.")
+ texto=extraer_pdf_bytes(data)
+ return {
+  "ok":True,
+  "nombre":file.filename,
+  "texto":texto,
+  "tiene_texto":bool(texto),
+  "mensaje":"PDF leído. Revisa la información antes de utilizarla."
+ }
 
 @app.post("/api/pdf")
 def api_pdf(x:ResultadoRequest):
  try:
   r=resultado(x.caso,x.respuestas,x.perfil)
-  pdf=construir_pdf(r)
+  pdf=construir_pdf(r,True)
   return StreamingResponse(
    pdf,
    media_type="application/pdf",
-   headers={"Content-Disposition":'attachment; filename="hoja_de_ruta.pdf"'}
+   headers={"Content-Disposition":'attachment; filename="Hoja_de_Ruta_EDITABLE.pdf"'}
   )
  except Exception as e:
   raise HTTPException(400,f"No se pudo generar el PDF: {e}")
+
+@app.post("/api/pdf-preview")
+def api_pdf_preview(x:ResultadoRequest):
+ try:
+  r=resultado(x.caso,x.respuestas,x.perfil)
+  pdf=construir_pdf(r,True)
+  return StreamingResponse(
+   pdf,
+   media_type="application/pdf",
+   headers={"Content-Disposition":'inline; filename="Hoja_de_Ruta_PREVIA.pdf"'}
+  )
+ except Exception as e:
+  raise HTTPException(400,f"No se pudo preparar la vista previa: {e}")
 
 @app.post("/api/generar-pdf")
 def api_generar_pdf(x:ResultadoRequest):
