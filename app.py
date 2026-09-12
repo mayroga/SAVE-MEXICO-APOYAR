@@ -58,7 +58,6 @@ def construir_pdf(r):
     # 2. Tu Trámite
     c.setFont("Helvetica-Bold", 12)
     c.drawString(55, 600, f"2. TU TRÁMITE: {r.get('nombre_tramite', '').upper()}")
-    
     c.setFont("Helvetica", 11)
     c.drawString(55, 580, f"Estatus General: {r.get('estado', '')}")
     c.drawString(55, 560, f"Mensaje: {r.get('mensaje_estado', '')}")
@@ -70,34 +69,41 @@ def construir_pdf(r):
     c.drawString(55, 505, f"Costo estimado en ventanilla: {r.get('pago_estimado', '')}")
     c.drawString(55, 485, f"Estado de la cita: {r.get('cita_estatus', '')}")
     
-    # 4. Tu Consulado
+    # 4. Tu Consulado y Página de Internet
     c.setFont("Helvetica-Bold", 12)
     c.drawString(55, 450, "4. TU SEDE CONSULAR ASIGNADA")
     c.setFont("Helvetica", 11)
     c.drawString(55, 430, f"Oficina: {r.get('consulado_nombre', '')}")
     c.drawString(55, 410, f"Dirección: {r.get('consulado_direccion', '')}")
     c.drawString(55, 390, f"Teléfono central: {r.get('consulado_telefono', '')}")
+    c.drawString(55, 370, f"Página oficial de internet: {r.get('url_consulado', '')}")
     
     # 5. Lista de Documentos Oficiales
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(55, 355, "5. REQUISITOS OFICIALES")
-    y = 335
+    c.drawString(55, 335, "5. REQUISITOS OFICIALES QUE DEBES LLEVAR")
+    y = 315
     for req in r.get("requisitos_oficiales", []):
         c.setFont("Helvetica", 11)
         c.drawString(70, y, f"• {req}")
         y -= 20
         
-    # 6. Faltantes (Si existen)
+    # 6. Faltantes desglosados (Ajuste para que quepa el texto largo sin salirse del papel)
     faltantes = r.get("faltantes", [])
     if faltantes:
         y -= 10
         c.setFont("Helvetica-Bold", 12)
         c.setFillColorRGB(0.7, 0.1, 0.1)
-        c.drawString(55, y, "6. ¡ATENCIÓN! TE FALTA ESTO:")
+        c.drawString(55, y, "6. ¡ATENCIÓN! TE FALTA CONSEGUIR ESTO EXACTAMENTE:")
         y -= 20
         for f in faltantes:
-            c.setFont("Helvetica", 11)
-            c.drawString(70, y, f"• {f}")
+            c.setFont("Helvetica", 10) # Letra un poquito más pequeña para textos explicativos
+            # Si el texto es muy largo, lo dividimos en dos líneas en el PDF
+            if len(f) > 85:
+                c.drawString(70, y, f"• {f[:85]}")
+                y -= 15
+                c.drawString(80, y, f"{f[85:]}")
+            else:
+                c.drawString(70, y, f"• {f}")
             y -= 20
     
     # Pie de página de Deslinde
