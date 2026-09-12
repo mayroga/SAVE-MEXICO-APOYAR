@@ -5,150 +5,168 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEXICANO APOYA MEXICANO - Autoservicio Consular</title>
-    <!-- Vinculación al archivo de estilos externo -->
-    <link rel="stylesheet" href="/static/style.css">
-    <style>
-        /* Toques de elegancia para la pantalla de inicio */
-        .hero-banner {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 6px;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .hero-banner h1 {
-            color: white !important;
-            border-bottom: none !important;
-            margin-bottom: 5px;
-        }
-        .legal-footer {
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
-            font-size: 11px;
-            color: #666;
-            text-align: justify;
-        }
-    </style>
+    <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
+    <!-- Elemento Toast global para notificaciones del sistema -->
+    <div id="toast" class="toast"></div>
+
     <div class="container">
         
-        <!-- PANTALLA DE BIENVENIDA Y BLINDAJE LEGAL -->
-        <div id="step-consent" class="step active">
+        <!-- PANTALLA 1: INICIO Y DESLINDE DE RESPONSABILIDAD LEGAL -->
+        <div id="inicio" class="pantalla active">
             <div class="hero-banner">
                 <h1>MEXICANO APOYA MEXICANO</h1>
-                <p style="font-size: 14px; opacity: 0.9; margin: 0;">Plataforma Autónoma de Autoservicio y Preparación Consular</p>
+                <p style="font-size: 13px; opacity: 0.95; margin: 0; font-weight: bold; letter-spacing: 0.5px;">Plataforma Autónoma de Autoservicio y Preparación Consular</p>
             </div>
 
             <h2>¿Para qué sirve esta aplicación?</h2>
-            <p>Esta herramienta permite a los ciudadanos mexicanos en la Unión Americana estructurar de forma clara y automatizada su expediente antes de acudir a una sede consular. El sistema evalúa tu perfil para precalcular tarifas oficiales, validar la demarcación geográfica de tu consulado y prevenir rechazos en trámites críticos.</p>
+            <p>Esta herramienta automatizada permite a los ciudadanos mexicanos en la Unión Americana estructurar su expediente de manera óptima antes de acudir a una sede consular. El sistema evalúa tu perfil para mapear tu circunscripción consular, precalcular tarifas oficiales y prevenir rechazos en ventanilla.</p>
             
-            <h2>Novedades de la Versión</h2>
-            <p>✨ Mapeo automático de consulados, expedición de la credencial **INE desde el extranjero** sin costo y blindaje para menores de edad mediante validación del permiso federal **OP-7**.</p>
+            <h2>Novedades de la Versión 6.0.0</h2>
+            <p>✨ Mapeo automatizado de sedes consulares en EE. UU., trámite de la credencial <strong>INE desde el extranjero</strong> con gratuidad parametrizada y validación federal preventiva de permisos <strong>OP-7</strong> para menores de edad.</p>
 
-            <!-- AVISO DE PROTECCIÓN LEGAL OBLIGATORIO -->
+            <!-- AVISO DE PROTECCIÓN LEGAL OBLIGATORIO PARA EVITAR SUPLANTACIÓN -->
             <div class="warning-box" style="margin-top: 25px;">
-                <strong style="color: #b78100; font-size: 14px; display: block; margin-bottom: 5px;">⚠️ AVISO DE PROTECCIÓN LEGAL Y DESLINDE</strong>
-                <p style="font-size: 12px; margin-bottom: 8px; line-height: 1.4;">
-                    <strong>1. No Suplantación:</strong> Esta aplicación es una iniciativa ciudadana independiente de orientación técnica. <strong>No está vinculada, gestionada ni avalada por la Secretaría de Relaciones Exteriores (SRE)</strong> ni por el Gobierno de México. No gestiona citas directamente en el sistema MiConsulado.
+                <strong style="color: #b78100; font-size: 13px; display: block; margin-bottom: 6px;">⚠️ AVISO DE PROTECCIÓN LEGAL Y DESLINDE DE RESPONSABILIDADES</strong>
+                <p style="font-size: 12px; margin-bottom: 8px; line-height: 1.45; text-align: justify;">
+                    <strong>1. No Suplantación:</strong> Esta aplicación es una iniciativa ciudadana independiente de orientación técnica. <strong>No está vinculada, gestionada, respaldada ni avalada por la Secretaría de Relaciones Exteriores (SRE)</strong>, el Instituto Nacional Electoral (INE) ni ninguna entidad gubernamental de los Estados Unidos Mexicanos. Este sistema no gestiona citas ni interfiere con la plataforma MiConsulado.
                 </p>
-                <p style="font-size: 12px; margin-bottom: 8px; line-height: 1.4;">
-                    <strong>2. Privacidad Absoluta:</strong> Cumpliendo con estándares de seguridad, este sistema procesa tus datos únicamente en tiempo de ejecución para compilar el archivo PDF. <strong>No almacenamos, guardamos ni vendemos tu información personal</strong> en bases de datos externas; todo permanece en la memoria local de tu navegador.
+                <p style="font-size: 12px; margin-bottom: 8px; line-height: 1.45; text-align: justify;">
+                    <strong>2. Privacidad Absoluta de Datos:</strong> Los datos se procesan en memoria volátil de ejecución únicamente para la compilación de tu archivo PDF interactivo. <strong>No almacenamos, guardamos, compartimos ni vendemos tu información personal</strong> en servidores ni bases de datos externas; tu privacidad se respeta localmente en tu dispositivo.
                 </p>
-                <p style="font-size: 12px; margin-bottom: 0; line-height: 1.4;">
-                    <strong>3. Verificación Obligatoria:</strong> Los criterios consulares pueden cambiar sin previo aviso por instrucciones de cada representación de la Unión Americana. El usuario tiene la responsabilidad de contrastar los resultados de esta Hoja de Ruta con los canales informativos oficiales correspondientes.
+                <p style="font-size: 12px; margin-bottom: 0; line-height: 1.45; text-align: justify;">
+                    <strong>3. Criterios Oficiales:</strong> Las regulaciones consulares pueden variar según la circunscripción geográfica y directrices federales. El ciudadano mantiene la responsabilidad exclusiva de contrastar los resultados de esta Hoja de Ruta con los canales oficiales vigentes de su sede asignada.
                 </p>
             </div>
 
-            <button class="btn" style="margin-top: 15px; font-size: 15px; padding: 12px;" onclick="nextStep('step-datos')">ENTENDIDO, ACEPTAR Y EMPEZAR</button>
+            <div style="margin-top: 20px; background: #fafafa; padding: 12px; border-radius: 4px; border: 1px solid #ddd;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; font-weight: bold;">
+                    <input type="checkbox" id="aceptarLegal" style="margin-top: 3px; width: auto;">
+                    <span>He leído, comprendo los alcances de la herramienta y acepto el Deslinde Legal y Aviso de Privacidad.</span>
+                </label>
+            </div>
+
+            <button id="comenzar" class="btn" style="margin-top: 15px; font-size: 15px; padding: 12px;" disabled>ACEPTAR Y EMPEZAR</button>
         </div>
 
-        <!-- PASO 2: PERFIL DEL CIUDADANO -->
-        <div id="step-datos" class="step">
-            <h2>1. Identificación y Perfil del Ciudadano</h2>
-            <p>Ingresa tus datos para mapear tu circunscripción consular y calcular vigencias:</p>
+        <!-- PANTALLA 2: SELECCIÓN DE TRÁMITES -->
+        <div id="tramites" class="pantalla">
+            <h2>Selecciona tu trámite</h2>
+            <p>Elige la gestión consular que deseas preparar:</p>
             
-            <div class="input-group"><label>Nombre y apellidos completos:</label><input type="text" id="p-nombre" placeholder="Como aparece en tu acta de nacimiento"></div>
-            <div class="input-group"><label>Fecha de nacimiento:</label><input type="text" id="p-fecha" placeholder="DD/MM/AAAA"></div>
-            <div class="input-group"><label>Edad:</label><input type="number" id="p-edad" placeholder="Ej. 25"></div>
+            <!-- Herramienta de lectura de PDF adjunto -->
+            <div style="margin: 15px 0; background: #f0f4f8; padding: 15px; border-radius: 6px; border: 1px solid #d0dbe5;">
+                <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">¿Tienes un documento previo en PDF? Escanéalo para agilizar el llenado:</label>
+                <input type="file" id="archivoPdf" accept="application/pdf" style="font-size:12px; margin-bottom:8px;">
+                <div style="display:flex; gap:10px;">
+                    <button id="leerPdf" class="btn btn-secondary" style="font-size:11px; padding:6px 12px;">📂 Cargar y Leer PDF</button>
+                    <button id="usarPdf" class="btn oculto" style="font-size:11px; padding:6px 12px; background:var(--accent);">⚡ Usar Información Extraída</button>
+                </div>
+                <p id="pdfMensaje" style="font-size:11px; color:#555; margin-top:5px; font-style:italic;"></p>
+                <textarea id="pdfTexto" class="oculto" style="width:100%; height:80px; font-size:11px; margin-top:5px;" readonly></textarea>
+            </div>
+
+            <div id="listaTramites" class="grid-options"></div>
+            
+            <div style="margin-top: 20px;">
+                <button id="volverInicio" class="btn btn-secondary">Atrás al Inicio</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 3: REGISTRO DE IDENTIFICACIÓN -->
+        <div id="identificacion" class="pantalla">
+            <h2>1. Perfil e Identificación del Ciudadano</h2>
+            <p>Completa tus datos para calcular la vigencia de tus documentos y asignar tu sede consular oficial:</p>
+            
+            <div style="margin-bottom:15px; display:flex; gap:10px;">
+                <button id="vozPerfil" class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">🎙️ Dictar por Voz</button>
+                <button id="pegarPerfil" class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">📋 Pegar Portapapeles</button>
+            </div>
+
+            <div id="identificacionCampos"></div>
+
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button id="volverTramites" class="btn btn-secondary">Atrás</button>
+                <button id="guardarPerfil" class="btn">EVALUAR REQUISITOS</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 4: PREGUNTAS DINÁMICAS -->
+        <div id="preguntas" class="pantalla">
+            <h2 id="tramiteTitulo">Evaluación de Requisitos</h2>
+            <div id="progreso-barra-contenedor"><div id="progreso-barra" id="progresoBarra"></div></div>
+            <p id="paso" style="font-size: 11px; color: #666; font-weight: bold; margin-bottom: 15px;"></p>
+            
             <div class="input-group">
-                <label>Estado de residencia en EE. UU.:</label>
-                <select id="p-estado">
-                    <option value="Otro">Otro / Fuera de cobertura principal</option>
-                    <option value="California">California</option><option value="Texas">Texas</option><option value="Florida">Florida</option>
-                    <option value="New Mexico">New Mexico</option><option value="Arizona">Arizona</option><option value="Nevada">Nevada</option>
-                    <option value="North Carolina">North Carolina</option><option value="South Carolina">South Carolina</option>
-                    <option value="New York">New York</option><option value="Illinois">Illinois</option><option value="Georgia">Georgia</option>
-                    <option value="Colorado">Colorado</option>
-                </select>
+                <label id="preguntaTexto" style="font-size: 16px; margin-bottom: 15px; color: var(--primary-dark); font-weight: bold; display:block;"></label>
+                <div id="opciones" style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;"></div>
+                
+                <textarea id="textoEntrada" style="width:100%; height:60px; margin-top:10px;" placeholder="Escribe tu respuesta..."></textarea>
+                
+                <div style="margin-top:8px; display:flex; gap:8px;">
+                    <button id="voz" class="btn btn-secondary" style="font-size:11px; padding:4px 10px;">🎙️ Dictar</button>
+                    <button id="pegar" class="btn btn-secondary" style="font-size:11px; padding:4px 10px;">📋 Pegar</button>
+                    <button id="subirPdfPregunta" class="btn btn-secondary" style="font-size:11px; padding:4px 10px;">📄 Adjuntar Doc</button>
+                    <input type="file" id="pdfPregunta" accept="application/pdf" style="display:none;">
+                </div>
+                <p id="pdfPreguntaMensaje" style="font-size:11px; color:#555; font-style:italic; margin-top:4px;"></p>
             </div>
-            <div class="input-group"><label>Dirección completa:</label><input type="text" id="p-direccion" placeholder="Calle, Número, Ciudad"></div>
-            <div class="input-group"><label>Código Postal:</label><input type="text" id="p-cp" placeholder="5 dígitos"></div>
-            <div class="input-group"><label>Teléfono de contacto:</label><input type="text" id="p-tel" placeholder="10 dígitos"></div>
-            <div class="input-group"><label>Trabajo / Ocupación (Opcional):</label><input type="text" id="p-trabajo" placeholder="Ej. Construcción, Estudiante"></div>
 
-            <div style="margin-top: 20px; display: flex; gap: 10px;">
-                <button class="btn btn-secondary" onclick="prevStep('step-consent')">Atrás</button>
-                <button class="btn" onclick="cargarCatalogo()">CONTINUAR</button>
+            <div style="margin-top: 30px; display:flex; gap:10px;">
+                <button id="volverPregunta" class="btn btn-secondary">Pregunta Anterior</button>
+                <button id="continuar" class="btn">Responder y Continuar</button>
             </div>
         </div>
 
-        <!-- PASO 3: CATÁLOGO -->
-        <div id="step-catalogo" class="step">
-            <h2>2. Selecciona tu trámite</h2>
-            <p>Elige el trámite oficial que deseas estructurar:</p>
-            <div id="lista-tramites" class="grid-options"></div>
-            <div style="margin-top: 20px;"><button class="btn btn-secondary" onclick="prevStep('step-datos')">Atrás</button></div>
-        </div>
-
-        <!-- PASO 4: CUESTIONARIO -->
-        <div id="step-pregunta" class="step">
-            <h2 id="pregunta-servicio-titulo">Evaluación de Requisitos</h2>
-            <div id="progreso-barra-contenedor"><div id="progreso-barra"></div></div>
-            <p id="progreso-texto"></p>
-            <div class="input-group" style="margin-top: 20px;">
-                <label id="pregunta-texto" style="font-size: 16px; margin-bottom: 15px; color: var(--primary-dark);"></label>
-                <div id="contenedor-respuestas"></div>
-            </div>
-            <div style="margin-top: 30px;"><button class="btn btn-secondary" onclick="abortarCuestionario()">Cancelar</button></div>
-        </div>
-
-        <!-- PASO 5: RESULTADO -->
-        <div id="step-resultado" class="step">
-            <h2>3. Tu Hoja de Ruta Consular</h2>
-            <div id="alerta-menor-op7" class="alert-box" style="display: none;">
-                <strong>ALERTA DE PROTECCIÓN - MENOR DE EDAD:</strong> Trámite detectado para menor de 18 años. Es obligatoria la comparecencia de ambos padres o tutores con identificaciones vigentes para firmar el formato de autorización federal <strong>OP-7</strong>.
+        <!-- PANTALLA 5: HOJA DE RUTA / EXPEDIENTE FINAL -->
+        <div id="resultado" class="pantalla">
+            <h2 id="nombreResultado">Tu Hoja de Ruta Consular</h2>
+            
+            <div class="success-box" style="margin: 15px 0; border-left-color: var(--primary);">
+                <span style="font-weight:bold; font-size:12px; color:var(--primary-dark); display:block; text-transform:uppercase;">Estatus del Expediente:</span>
+                <span id="estadoResultado" style="font-weight: bold; font-size: 15px;"></span>
+                <p id="mensajeResultado" style="font-size: 13px; margin: 4px 0 0 0; color:#444;"></p>
             </div>
 
-            <div class="success-box">
-                <strong>Sede Consular Asignada:</strong>
-                <p id="r-consulado-nombre" style="font-weight: bold; color: var(--primary-dark); margin: 3px 0;"></p>
-                <p id="r-consulado-dir" style="font-size: 12px; margin: 0;"></p>
-                <p id="r-consulado-tel" style="font-size: 12px; margin: 0;"></p>
-                <p id="r-consulado-emergencia" style="font-size: 12px; color: var(--danger); font-weight: bold; margin: 0;"></p>
-            </div>
-
-            <div id="hoja-detalles">
-                <div class="route-section"><h4>Estatus General</h4><p id="r-estatus" style="font-weight: bold;"></p></div>
-                <div class="route-section"><h4>Cita y Logística</h4><p id="r-cita"></p></div>
-                <div class="route-section"><h4>Esquema de Pago</h4><p id="r-pago" style="font-weight: bold; color: var(--accent);"></p></div>
-                <div class="route-section"><h4>Quién debe acudir</h4><ul id="r-personas"></ul></div>
-                <div class="route-section"><h4>Documentos Faltantes</h4><ul id="r-faltantes" style="color: var(--danger); font-weight: bold;"></ul></div>
-                <div class="route-section"><h4>Por Confirmar</h4><ul id="r-revisar" style="color: var(--warning);"></ul></div>
-                <div class="route-section"><h4>Notas Especiales</h4><ul id="r-especial"></ul></div>
-                <div class="route-section"><h4>Acciones Recomendadas</h4><ul id="r-acciones"></ul></div>
+            <div id="resultadoDetalles" style="background: #fafafa; border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; display:flex; flex-direction:column; gap:15px;">
+                <div id="resultadoDatos" class="route-section"></div>
+                <div id="resultadoNecesitas" class="route-section"></div>
+                <div id="resultadoFaltantes" class="route-section"></div>
+                <div id="resultadoAcciones" class="route-section"></div>
             </div>
 
             <div class="flex-buttons">
-                <button class="btn" onclick="descargarPDF()">📄 GENERAR HOJA DE RUTA EN PDF</button>
-                <a id="lnk-oficial" href="#" target="_blank" class="btn btn-secondary">🌐 VER SITIO WEB OFICIAL SRE</a>
-                <button class="btn btn-danger" onclick="reiniciarFlujo()">EVALUAR OTRO TRÁMITE</button>
+                <button id="pdf" class="btn">📄 DESCARGAR HOJA DE RUTA EN PDF (EDITABLE)</button>
+                <button id="pdfPreview" class="btn btn-secondary">👁️ Vista Previa en Pantalla</button>
+            <!-- CONTENEDOR DE BOTONES DE ACCIÓN PRINCIPALES -->
+            <div class="flex-buttons">
+                <button id="pdf" class="btn">📄 DESCARGAR HOJA DE RUTA EN PDF (EDITABLE)</button>
+                <button id="pdfPreview" class="btn btn-secondary">👁️ Vista Previa en Pantalla</button>          
+                <a id="oficial" href="https://sre.gob.mx" target="_blank" class="btn btn-secondary">🌐 Ir al Portal de la SRE</a>
+                <button id="nuevo" class="btn btn-muted">PREPARAR NUEVO TRÁMITE</button>
+                <button id="salir" class="btn btn-danger">Salir al Menu de Inicio</button>
             </div>
         </div>
 
-        <!-- NOTA LEGAL EN PIE DE PÁGINA CORREGIDA -->
-        <footer class="nota-legal" style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-top: 1px solid #dee2e6; font-size: 0.85em; color: #6c757d; text-align: justify;">
-            <strong>Aviso legal:</strong> Mexicano Apoya Mexicano es un motor de software abierto y de libre uso para fines de orientación social migratoria. El procesamiento automatizado de los requisitos no constituye una garantía de expedición del documento por parte de la autoridad consular soberana de los Estados Unidos Mexicanos.
+        <!-- VENTANA FLOTANTE / MODAL DE VISTA PREVIA (VISOR PDF) -->
+        <div id="visorPdf" class="modal-visor">
+            <div class="modal-contenido">
+                <div class="modal-encabezado">
+                    <h3>Vista Previa Documental</h3>
+                    <button id="cerrarPdf" class="btn-cerrar">&times;</button>
+                </div>
+                <div class="modal-cuerpo">
+                    <iframe id="pdfFrame" src="" width="100%" height="500px" style="border: none;"></iframe>
+                </div>
+                <div class="modal-pie">
+                    <button id="guardarDesdePdf" class="btn">💾 Descargar Archivo</button>
+                    <button id="cerrarPdf2" class="btn btn-secondary">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AVISO DE EXENCIÓN TERRITORIAL EN EL PIE DE PÁGINA -->
+        <footer class="aviso-exencion" style="margin-top: 25px; padding: 15px; background-color: #fcf8e3; border: 1px solid #faebcc; border-radius: 4px; font-size: 0.85em; color: #8a6d3b; text-align: justify;">
+            <strong>Aviso de Exención Territorial:</strong> El procesamiento y precalculo automatizado ejecutado por este software no constituye un acto administrativo emitido por consulados, secciones de embajadas o agencias consulares oficiales mexicanas. El usuario conserva la total responsabilidad de agendar su cita por canales federales oficiales autorizados.
         </footer>
