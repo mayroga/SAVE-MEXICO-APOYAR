@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b0f19">
+<meta name="theme-color" content="#1261a0">
 <title>MEXICANO APOYA MEXICANO</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -21,39 +21,26 @@
 <section id="inicio" class="pantalla active">
  <div class="card hero">
   <h2>ANTES DE EMPEZAR</h2>
-  <p class="mensaje">Esta aplicación está hecha para mexicanos que viven en Estados Unidos y necesitan prepararse para un trámite consular.</p>
+  <p class="mensaje">Te ayudamos a preparar tu trámite consular para que llegues sabiendo qué necesitas, qué tienes, qué te falta y qué debes confirmar.</p>
 
   <div class="bloqueInfo">
-   <h3>¿PARA QUÉ SIRVE?</h3>
-   <p>Te ayuda a saber qué necesitas, qué documentos tienes, qué te falta y qué debes confirmar antes de ir.</p>
+   <h3>¿PARA QUIÉN ES?</h3>
+   <p>Para mexicanos que viven en Estados Unidos: niños, jóvenes y adultos.</p>
   </div>
 
   <div class="bloqueInfo">
    <h3>¿CÓMO FUNCIONA?</h3>
-   <p>Primero identificamos tus datos. Después eliges el trámite. La aplicación trabaja con los requisitos del trámite y prepara una Hoja de Ruta para que la revises.</p>
+   <p>Primero identificamos tus datos. Después eliges el trámite. Luego revisamos los requisitos contigo, detectamos faltantes y preparamos tu Hoja de Ruta.</p>
   </div>
 
   <div class="bloqueInfo">
-   <h3>¿QUÉ SERVICIOS TIENE?</h3>
-   <p>Actualmente puedes preparar:</p>
-   <ul class="lista-simple">
-    <li>Pasaporte mexicano — primera vez</li>
-    <li>Pasaporte mexicano — renovación</li>
-    <li>Pasaporte mexicano — perdido, robado o dañado</li>
-    <li>Matrícula consular — primera vez</li>
-    <li>Matrícula consular — renovación</li>
-    <li>Acta de nacimiento mexicana — copia certificada</li>
-   </ul>
-  </div>
-
-  <div class="bloqueInfo">
-   <h3>¿QUÉ RESUELVE?</h3>
-   <p>El problema de llegar al Consulado sin saber qué llevar, olvidar un documento, confundir información o descubrir demasiado tarde que falta algo.</p>
+   <h3>PUEDES USAR INFORMACIÓN QUE YA TIENES</h3>
+   <p>Escribe, habla, pega información o sube un PDF. La aplicación puede leer el texto de un PDF y utilizarlo para evitar que tengas que escribir nuevamente toda la información.</p>
   </div>
 
   <div class="aviso">
    <strong>IMPORTANTE</strong>
-   <p>Esta aplicación no es el Gobierno de México ni sustituye al Consulado. Los requisitos oficiales pueden cambiar. La aplicación te ayuda a prepararte y a recordar qué debes confirmar.</p>
+   <p>Esta aplicación no es el Gobierno de México ni sustituye al Consulado. Los requisitos pueden cambiar. Siempre debes confirmar la información oficial correspondiente a tu Consulado.</p>
   </div>
 
   <label class="aceptacion">
@@ -63,34 +50,29 @@
 
   <button id="comenzar" class="primary" disabled>ACEPTAR Y EMPEZAR</button>
  </div>
-
- <div class="card">
-  <h3>PUEDES USAR</h3>
-  <div class="acciones">
-   <span>⌨️ Escribir</span>
-   <span>🎤 Hablar</span>
-   <span>📋 Copiar y pegar</span>
-   <span>📄 Revisar documentos PDF</span>
-   <span>✅ Revisar tus datos</span>
-   <span>📝 Corregir antes de confirmar</span>
-  </div>
- </div>
 </section>
 
 <section id="tramites" class="pantalla">
  <div class="card">
   <button id="volverInicio" class="back">← ATRÁS</button>
   <h2>¿QUÉ NECESITAS?</h2>
-  <p class="muted">Elige solamente el trámite que necesitas preparar.</p>
+  <p class="muted">Elige el trámite que quieres preparar.</p>
   <div id="listaTramites" class="tramites"></div>
 
   <div class="documentoEntrada">
-   <h3>¿TIENES UN PDF?</h3>
-   <p class="muted">Puedes subir un PDF para que la aplicación lea su texto y te ayude a organizar la información.</p>
-   <input id="archivoPdf" type="file" accept="application/pdf">
-   <button id="leerPdf" class="secondary">📄 LEER PDF</button>
+   <h3>¿YA TIENES UN PDF?</h3>
+   <p class="muted">Puedes subirlo aquí. La aplicación leerá el texto que pueda extraer y después podrás revisarlo.</p>
+
+   <label class="subirPdf">
+    <input id="archivoPdf" type="file" accept=".pdf,application/pdf">
+    <span>📄 SELECCIONAR PDF</span>
+   </label>
+
    <div id="pdfMensaje"></div>
-   <textarea id="pdfTexto" class="oculto" readonly></textarea>
+
+   <textarea id="pdfTexto" class="oculto" rows="8" readonly placeholder="Aquí aparecerá la información encontrada en el PDF."></textarea>
+
+   <button id="usarPdf" class="secondary oculto">USAR ESTA INFORMACIÓN</button>
   </div>
  </div>
 </section>
@@ -98,15 +80,20 @@
 <section id="identificacion" class="pantalla">
  <div class="card">
   <button id="volverTramites" class="back">← ATRÁS</button>
-  <h2>PRIMERO, TUS DATOS</h2>
-  <p class="muted">Los revisaremos contigo antes de preparar tu trámite.</p>
+  <h2>TUS DATOS</h2>
+  <p class="muted">Primero necesitamos identificarte para preparar correctamente la información.</p>
 
   <div class="recordatorio">
-   <strong>REVISA BIEN</strong>
-   <p>Tu nombre, fecha de nacimiento, edad, dirección, estado, código postal y teléfono deben estar correctos.</p>
+   <strong>REVISA ESTOS DATOS</strong>
+   <p>Nombre, fecha de nacimiento, edad, dirección, estado, código postal y teléfono.</p>
   </div>
 
   <div id="identificacionCampos"></div>
+
+  <div class="accionesEntrada">
+   <button id="vozPerfil" class="secondary">🎤 HABLAR</button>
+   <button id="pegarPerfil" class="secondary">📋 PEGAR</button>
+  </div>
 
   <button id="guardarPerfil" class="primary">REVISAR Y CONTINUAR</button>
  </div>
@@ -124,19 +111,24 @@
   <div class="barra"><div id="progresoBarra"></div></div>
 
   <div class="recordatorio">
-   <strong>REVISA ANTES DE RESPONDER</strong>
-   <p>La información que das aquí se utilizará para preparar tu Hoja de Ruta.</p>
+   <strong>UNA PREGUNTA A LA VEZ</strong>
+   <p>Responde según tu situación real. Si no sabes algo, puedes indicarlo.</p>
   </div>
 
   <h2 id="preguntaTexto"></h2>
+
   <div id="opciones"></div>
 
-  <textarea id="textoEntrada" rows="4" placeholder="Escribe o pega aquí..."></textarea>
+  <textarea id="textoEntrada" rows="5" placeholder="Escribe, pega o agrega información aquí..."></textarea>
 
   <div class="accionesEntrada">
    <button id="voz" class="secondary">🎤 HABLAR</button>
    <button id="pegar" class="secondary">📋 PEGAR</button>
+   <button id="subirPdfPregunta" class="secondary">📄 PDF</button>
+   <input id="pdfPregunta" type="file" accept=".pdf,application/pdf" class="oculto">
   </div>
+
+  <div id="pdfPreguntaMensaje"></div>
 
   <button id="continuar" class="primary">CONTINUAR</button>
  </div>
@@ -151,8 +143,8 @@
  </div>
 
  <div class="card recordatorio grande">
-  <strong>ANTES DE TERMINAR</strong>
-  <p>Revisa tus datos. Si algo está mal, corrígelo. Esta Hoja de Ruta es para ayudarte a llegar preparado.</p>
+  <strong>NO TERMINES SIN REVISAR</strong>
+  <p>Comprueba que tus datos estén correctos. Si algo está mal, vuelve atrás y corrígelo.</p>
  </div>
 
  <div id="resultadoDatos" class="card seccion"></div>
@@ -167,6 +159,20 @@
   <button id="nuevo" class="secondary">OTRO TRÁMITE</button>
  </div>
 </section>
+
+<div id="visorPdf" class="visor">
+ <div class="visorBox">
+  <div class="visorTop">
+   <strong>HOJA DE RUTA — REVISIÓN</strong>
+   <button id="cerrarPdf" class="close">×</button>
+  </div>
+  <iframe id="pdfFrame" title="Vista previa de la Hoja de Ruta"></iframe>
+  <div class="visorAcciones">
+   <button id="guardarDesdePdf" class="primary">📄 GUARDAR PDF</button>
+   <button id="cerrarPdf2" class="secondary">CERRAR</button>
+  </div>
+ </div>
+</div>
 
 <div id="modal" class="modal">
  <div class="modalBox">
