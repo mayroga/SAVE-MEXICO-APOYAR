@@ -134,20 +134,23 @@ function procesarPaso(data) {
         document.getElementById('pregunta-titulo').innerText = data.servicio;
         document.getElementById('pregunta-texto').innerText = data.pregunta.pregunta;
         
-        // Mapeo e Inyección de Ejemplos Visuales Oficiales para el Cliente
+        // Mapeo e Inyección de las 3 Fotos de Ejemplo Estables de Wikimedia
         const divVisual = document.getElementById('contenedor-ejemplo-visual');
         const imgVisual = document.getElementById('img-ejemplo');
         
         if (divVisual && imgVisual) {
             if (data.pregunta.id === "acta_nacimiento") {
                 divVisual.style.display = "block";
-                imgVisual.src = "https://www.gob.mx";
+                // Ejemplo permanente del Formato Único de Acta de Nacimiento Mexicana
+                imgVisual.src = "https://wikimedia.org";
             } else if (data.pregunta.id === "identificacion") {
                 divVisual.style.display = "block";
-                imgVisual.src = "https://ine.mx";
+                // Ejemplo permanente de una Credencial oficial mexicana (INE / IFE)
+                imgVisual.src = "https://wikimedia.org";
             } else if (data.pregunta.id === "domicilio") {
                 divVisual.style.display = "block";
-                imgVisual.src = "https://sre.gob.mx";
+                // Ejemplo permanente de una Factura de Servicios / Bill de USA (Luz, agua, gas)
+                imgVisual.src = "https://wikimedia.org";
             } else {
                 divVisual.style.display = "none";
                 imgVisual.src = "";
