@@ -20,12 +20,16 @@ document.addEventListener("keydown", iniciarRelojInactividad);
 
 function validarCheck() {
     const chk = document.getElementById('check-legal');
-    const btn = document.getElementById('btn-comenzar');
-    if (chk && btn) {
-        btn.disabled = !chk.checked;
+    const btnDiario = document.getElementById('btn-plan-diario');
+    const btnMensual = document.getElementById('btn-plan-mensual');
+    const btnComenzar = document.getElementById('btn-comenzar');
+    
+    if (chk) {
+        if (btnDiario) btnDiario.disabled = !chk.checked;
+        if (btnMensual) btnMensual.disabled = !chk.checked;
+        if (btnComenzar) btnComenzar.disabled = !chk.checked;
     }
 }
-
 
 function comenzarDeNuevoLimpio() {
     casoActual = "";
