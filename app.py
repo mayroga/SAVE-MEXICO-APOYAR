@@ -1,7 +1,6 @@
-import os,io,html
-from copy import deepcopy
+import io,html
 from fastapi import FastAPI,HTTPException
-from fastapi.responses import JSONResponse,StreamingResponse
+from fastapi.responses import HTMLResponse,JSONResponse,StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel,Field
 from reportlab.lib.pagesizes import LETTER
@@ -9,9 +8,6 @@ from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer,Table,TableSty
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfbase import pdfmetrics
-
 from consular_engine import (
     iniciar,interpretar,continuar,seleccionar_caso,
     resultado,pantalla_resultado,obtener_catalogo,
@@ -20,574 +16,214 @@ from consular_engine import (
 )
 
 APP="MEXICANO APOYA MEXICANO"
-VERSION="3.0.0"
+VERSION="4.0.0"
 
 app=FastAPI(title=APP,version=VERSION)
-
 app.mount("/static",StaticFiles(directory="static"),name="static")
 
-# ============================================================
-# MODELOS
-# ============================================================
-
 class Inicio(BaseModel):
-    servicio:str=""
-    respuestas:dict=Field(default_factory=dict)
     texto:str=""
+    servicio:str=""
 
 class Interpretacion(BaseModel):
+    texto:str=""
     servicio:str=""
     caso:str=""
-    pregunta_id:str=""
-    texto:str=""
-    respuestas:dict=Field(default_factory=dict)
-    perfil:dict=Field(default_factory=dict)
+    respuestas:dict={}
+    perfil:dict={}
 
 class Continuacion(BaseModel):
     servicio:str=""
     caso:str=""
     pregunta_id:str=""
     texto:str=""
-    respuestas:dict=Field(default_factory=dict)
-    perfil:dict=Field(default_factory=dict)
+    respuestas:dict={}
+    perfil:dict={}
 
 class Seleccion(BaseModel):
     servicio:str=""
     caso:str=""
-    respuestas:dict=Field(default_factory=dict)
-    perfil:dict=Field(default_factory=dict)
+    respuestas:dict={}
+    perfil:dict={}
 
 class ResultadoRequest(BaseModel):
     servicio:str=""
     caso:str=""
-    respuestas:dict=Field(default_factory=dict)
-    perfil:dict=Field(default_factory=dict)
+    respuestas:dict={}
+    perfil:dict={}
 
-# ============================================================
-# UTILIDADES
-# ============================================================
+def limpiar(v):
+    if v is None:return ""
+    return html.escape(str(v))
 
-def limpio(v):
-    return str(v or "").strip()
-
-def lista(v):
-    if not v:return []
-    if isinstance(v,list):return [limpio(x) for x in v if limpio(x)]
-    return [limpio(v)]
-
-def esc(v):
-    return html.escape(limpio(v))
-
-def fila(label,value):
-    return [Paragraph(f"<b>{esc(label)}</b>",S["small"]),
-            Paragraph(esc(value),S["small"])]
-
-def seccion(story,titulo):
-    story.append(Spacer(1,10))
-    story.append(Paragraph(esc(titulo),S["h2"]))
-    story.append(Spacer(1,4))
-
-def lista_pdf(story,valores):
-    vals=lista(valores)
-    if not vals:
-        story.append(Paragraph("PENDIENTE DE COMPLETAR",S["muted"]))
-        return
-    for x in vals:
-        story.append(Paragraph("• "+esc(x),S["body"]))
+def lista_pdf(story,titulo,items,styles):
+    if not items:return
+    story.append(Paragraph(titulo,styles["H2"]))
+    for x in items:
+        story.append(Paragraph("• "+limpiar(x),styles["Body"]))
         story.append(Spacer(1,3))
+    story.append(Spacer(1,7))
 
-# ============================================================
-# ESTILOS PDF
-# ============================================================
-
-styles=getSampleStyleSheet()
-
-S={
-    "title":ParagraphStyle(
-        "TitleMX",
-        parent=styles["Title"],
-        fontName="Helvetica-Bold",
-        fontSize=18,
-        leading=22,
-        alignment=TA_CENTER,
-        spaceAfter=12
-    ),
-    "sub":ParagraphStyle(
-        "SubMX",
-        parent=styles["Normal"],
-        fontName="Helvetica",
-        fontSize=9,
-        leading=12,
-        alignment=TA_CENTER,
-        textColor=colors.HexColor("#555555"),
-        spaceAfter=12
-    ),
-    "h2":ParagraphStyle(
-        "H2MX",
-        parent=styles["Heading2"],
-        fontName="Helvetica-Bold",
-        fontSize=12,
-        leading=15,
-        textColor=colors.HexColor("#17324d"),
-        spaceBefore=5,
-        spaceAfter=7
-    ),
-    "h3":ParagraphStyle(
-        "H3MX",
-        parent=styles["Heading3"],
-        fontName="Helvetica-Bold",
-        fontSize=10,
-        leading=13,
-        textColor=colors.HexColor("#222222"),
-        spaceBefore=5,
-        spaceAfter=4
-    ),
-    "body":ParagraphStyle(
-        "BodyMX",
-        parent=styles["BodyText"],
-        fontName="Helvetica",
-        fontSize=9.2,
-        leading=13,
-        spaceAfter=4
-    ),
-    "small":ParagraphStyle(
-        "SmallMX",
-        parent=styles["BodyText"],
-        fontName="Helvetica",
-        fontSize=8.5,
-        leading=11
-    ),
-    "muted":ParagraphStyle(
-        "MutedMX",
-        parent=styles["BodyText"],
-        fontName="Helvetica-Oblique",
-        fontSize=8.5,
-        leading=11,
-        textColor=colors.HexColor("#666666"),
-        spaceAfter=5
-    ),
-    "estado":ParagraphStyle(
-        "EstadoMX",
-        parent=styles["BodyText"],
-        fontName="Helvetica-Bold",
-        fontSize=11,
-        leading=14,
-        alignment=TA_CENTER,
-        spaceAfter=9
-    )
-}
-
-# ============================================================
-# PDF
-# ============================================================
+def datos_pdf(story,titulo,datos,styles):
+    vals=[]
+    for k,v in datos.items():
+        if isinstance(v,(dict,list)):continue
+        v=str(v or "").strip()
+        if not v:v="PENDIENTE DE COMPLETAR"
+        vals.append([limpiar(k),limpiar(v)])
+    if not vals:return
+    story.append(Paragraph(titulo,styles["H2"]))
+    t=Table(vals,colWidths=[145,350],hAlign="LEFT")
+    t.setStyle(TableStyle([
+        ("GRID",(0,0),(-1,-1),0.35,colors.HexColor("#cbd5e1")),
+        ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#eef2f7")),
+        ("VALIGN",(0,0),(-1,-1),"TOP"),
+        ("FONTNAME",(0,0),(0,-1),"Helvetica-Bold"),
+        ("FONTNAME",(1,0),(1,-1),"Helvetica"),
+        ("FONTSIZE",(0,0),(-1,-1),9),
+        ("LEFTPADDING",(0,0),(-1,-1),7),
+        ("RIGHTPADDING",(0,0),(-1,-1),7),
+        ("TOPPADDING",(0,0),(-1,-1),6),
+        ("BOTTOMPADDING",(0,0),(-1,-1),6)
+    ]))
+    story.extend([t,Spacer(1,12)])
 
 def construir_pdf(data):
-    b=io.BytesIO()
+    buf=io.BytesIO()
+    styles=getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name="TituloMAM",parent=styles["Title"],fontSize=17,
+        leading=21,alignment=TA_CENTER,spaceAfter=14
+    ))
+    styles.add(ParagraphStyle(
+        name="H2",parent=styles["Heading2"],fontSize=11,
+        leading=14,spaceBefore=8,spaceAfter=6,textColor=colors.HexColor("#17324d")
+    ))
+    styles.add(ParagraphStyle(
+        name="Body",parent=styles["BodyText"],fontSize=9.5,
+        leading=13,spaceAfter=2
+    ))
+    styles.add(ParagraphStyle(
+        name="Small",parent=styles["BodyText"],fontSize=7.5,
+        leading=10,textColor=colors.HexColor("#475569")
+    ))
 
     doc=SimpleDocTemplate(
-        b,
-        pagesize=LETTER,
-        rightMargin=42,
-        leftMargin=42,
-        topMargin=40,
-        bottomMargin=42,
-        title="Hoja de Ruta - MEXICANO APOYA MEXICANO",
-        author=APP
+        buf,pagesize=LETTER,
+        rightMargin=42,leftMargin=42,
+        topMargin=40,bottomMargin=40
     )
-
     story=[]
 
-    caso=limpio(data.get("caso_nombre") or data.get("caso"))
-    estado=data.get("estado") or {}
-    codigo=limpio(
-        data.get("estado_codigo") or
-        estado.get("codigo")
-    )
-
-    story.append(
-        Paragraph(
-            "MEXICANO APOYA MEXICANO",
-            S["title"]
-        )
-    )
-
-    story.append(
-        Paragraph(
-            "HOJA DE RUTA PERSONAL DE TU TRÁMITE",
-            S["title"]
-        )
-    )
-
-    story.append(
-        Paragraph(
-            "Preparación previa para ayudarte a evitar "
-            "un viaje innecesario, gastos o pérdida de tiempo.",
-            S["sub"]
-        )
-    )
-
-    # ESTADO
-    if codigo=="rojo":
-        color="#9b2424"
-        titulo="ATENCIÓN: TODAVÍA NO VAYAS"
-    elif codigo=="amarillo":
-        color="#8a6500"
-        titulo="TE FALTA CONFIRMAR ALGO"
-    else:
-        color="#126b42"
-        titulo="PARECES LISTO"
-
-    story.append(
-        Paragraph(
-            f'<font color="{color}">{esc(titulo)}</font>',
-            S["estado"]
-        )
-    )
-
-    if data.get("mensaje"):
-        story.append(
-            Paragraph(
-                esc(data["mensaje"]),
-                S["body"]
-            )
-        )
-
-    # DATOS PERSONALES
-    seccion(story,"1. DATOS PERSONALES")
-
-    datos=data.get("datos_personales") or []
-
-    if datos:
-        tabla=Table(
-            [fila(a,b) for a,b in datos],
-            colWidths=[145,350]
-        )
-        tabla.setStyle(TableStyle([
-            ("GRID",(0,0),(-1,-1),.35,colors.HexColor("#cccccc")),
-            ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#f1f4f7")),
-            ("VALIGN",(0,0),(-1,-1),"TOP"),
-            ("LEFTPADDING",(0,0),(-1,-1),7),
-            ("RIGHTPADDING",(0,0),(-1,-1),7),
-            ("TOPPADDING",(0,0),(-1,-1),6),
-            ("BOTTOMPADDING",(0,0),(-1,-1),6)
-        ]))
-        story.append(tabla)
-
-    # TRÁMITE
-    seccion(story,"2. TU TRÁMITE")
-
-    story.append(
-        Paragraph(
-            f"<b>Trámite:</b> {esc(caso)}",
-            S["body"]
-        )
-    )
-
-    if data.get("descripcion"):
-        story.append(
-            Paragraph(
-                esc(data["descripcion"]),
-                S["body"]
-            )
-        )
-
-    # PERSONAS
-    seccion(story,"3. PERSONAS QUE DEBEN PRESENTARSE")
-    lista_pdf(story,data.get("personas"))
-
-    # REQUISITOS
-    seccion(story,"4. REQUISITOS OBLIGATORIOS")
-    lista_pdf(story,data.get("obligatorios"))
-
-    # MENOR
-    menor=data.get("datos_menor") or []
-
-    if menor:
-        seccion(story,"5. INFORMACIÓN DEL MENOR")
-
-        tabla=Table(
-            [fila(a,b) for a,b in menor],
-            colWidths=[145,350]
-        )
-
-        tabla.setStyle(TableStyle([
-            ("GRID",(0,0),(-1,-1),.35,colors.HexColor("#cccccc")),
-            ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#f1f4f7")),
-            ("VALIGN",(0,0),(-1,-1),"TOP"),
-            ("LEFTPADDING",(0,0),(-1,-1),7),
-            ("RIGHTPADDING",(0,0),(-1,-1),7),
-            ("TOPPADDING",(0,0),(-1,-1),6),
-            ("BOTTOMPADDING",(0,0),(-1,-1),6)
-        ]))
-
-        story.append(tabla)
-
-    # PADRE / MADRE / TUTOR
-    pmt=data.get("datos_padre_madre_tutor") or []
-
-    if pmt:
-        seccion(story,"6. PADRE, MADRE O TUTOR")
-
-        tabla=Table(
-            [fila(a,b) for a,b in pmt],
-            colWidths=[145,350]
-        )
-
-        tabla.setStyle(TableStyle([
-            ("GRID",(0,0),(-1,-1),.35,colors.HexColor("#cccccc")),
-            ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#f1f4f7")),
-            ("VALIGN",(0,0),(-1,-1),"TOP"),
-            ("LEFTPADDING",(0,0),(-1,-1),7),
-            ("RIGHTPADDING",(0,0),(-1,-1),7),
-            ("TOPPADDING",(0,0),(-1,-1),6),
-            ("BOTTOMPADDING",(0,0),(-1,-1),6)
-        ]))
-
-        story.append(tabla)
-
-    # TIENE
-    seccion(story,"7. LO QUE YA TIENES")
-
-    tiene=data.get("tiene") or []
-
-    if tiene:
-        lista_pdf(story,tiene)
-    else:
-        story.append(
-            Paragraph(
-                "No se registró todavía un documento como disponible.",
-                S["muted"]
-            )
-        )
-
-    # FALTA
-    seccion(story,"8. LO QUE TE FALTA")
-
-    falta=data.get("falta") or []
-
-    if falta:
-        lista_pdf(story,falta)
-    else:
-        story.append(
-            Paragraph(
-                "No aparece un requisito faltante con las respuestas proporcionadas.",
-                S["body"]
-            )
-        )
-
-    # CONFIRMAR
-    seccion(story,"9. LO QUE DEBES CONFIRMAR")
-
-    confirmar=data.get("confirmar") or []
-
-    if confirmar:
-        lista_pdf(story,confirmar)
-    else:
-        story.append(
-            Paragraph(
-                "No aparece información pendiente de confirmación.",
-                S["body"]
-            )
-        )
-
-    # QUÉ HACER
-    seccion(story,"10. ¿QUÉ DEBES HACER?")
-
-    instrucciones=data.get("instrucciones") or []
-
-    if instrucciones:
-        lista_pdf(story,instrucciones)
-    else:
-        acciones=data.get("acciones") or []
-
-        for a in acciones:
-            titulo=limpio(a.get("titulo"))
-            txt=limpio(a.get("texto"))
-
-            if titulo:
-                story.append(
-                    Paragraph(
-                        f"<b>{esc(titulo)}</b>",
-                        S["body"]
-                    )
-                )
-
-            if txt:
-                story.append(
-                    Paragraph(
-                        esc(txt),
-                        S["body"]
-                    )
-                )
-
-    # CITA
-    cita=data.get("cita") or {}
-
-    if cita:
-        seccion(story,"11. CITA")
-
-        if cita.get("necesaria"):
-            story.append(
-                Paragraph(
-                    "<b>Este trámite requiere cita según la información del caso.</b>",
-                    S["body"]
-                )
-            )
-
-            if cita.get("telefono"):
-                story.append(
-                    Paragraph(
-                        f"<b>Teléfono:</b> {esc(cita['telefono'])}",
-                        S["body"]
-                    )
-                )
-
-            if cita.get("url"):
-                story.append(
-                    Paragraph(
-                        f"<b>Sitio:</b> {esc(cita['url'])}",
-                        S["body"]
-                    )
-                )
-        else:
-            story.append(
-                Paragraph(
-                    "La necesidad de cita depende del procedimiento seleccionado.",
-                    S["body"]
-                )
-            )
-
-    # ORIGINALES
-    seccion(story,"12. DOCUMENTOS ORIGINALES")
-    lista_pdf(
-        story,
-        data.get("documentos_originales")
-    )
-
-    # COPIAS
-    seccion(story,"13. COPIAS")
-
-    copias=data.get("copias") or []
-
-    if copias:
-        lista_pdf(story,copias)
-    else:
-        story.append(
-            Paragraph(
-                "No se agregan copias generales. Lleva copias únicamente "
-                "cuando el procedimiento oficial las solicite.",
-                S["body"]
-            )
-        )
-
-    # PAGO
-    seccion(story,"14. PAGO")
-
-    pago=data.get("pago") or {}
-
-    if pago:
-        if pago.get("necesario"):
-            story.append(
-                Paragraph(
-                    "<b>Puede existir un pago para este trámite.</b>",
-                    S["body"]
-                )
-            )
-
-            if pago.get("cantidad"):
-                story.append(
-                    Paragraph(
-                        f"<b>Referencia:</b> {esc(pago['cantidad'])}",
-                        S["body"]
-                    )
-                )
-
-        story.append(
-            Paragraph(
-                esc(
-                    pago.get(
-                        "mensaje",
-                        "Confirma la tarifa vigente."
-                    )
-                ),
-                S["body"]
-            )
-        )
-
-    # ANTES DE FIRMAR
-    seccion(story,"15. ANTES DE FIRMAR O IMPRIMIR")
-
-    story.append(
-        Paragraph(
-            "Revisa cuidadosamente nombres, apellidos, fechas, "
-            "datos personales y cualquier documento que el Consulado "
-            "te presente antes de firmarlo o imprimirlo.",
-            S["body"]
-        )
-    )
-
-    # VIGENCIA
-    vigencia=data.get("vigencia") or []
-
-    if vigencia:
-        seccion(story,"16. VIGENCIA")
-        lista_pdf(story,vigencia)
-
-    # ENTREGA
-    entrega=data.get("entrega") or []
-
-    if entrega:
-        seccion(story,"17. ENTREGA")
-        lista_pdf(story,entrega)
-
-    # ESPECIALES
-    especiales=data.get("especiales") or []
-
-    if especiales:
-        seccion(story,"18. INFORMACIÓN IMPORTANTE")
-        lista_pdf(story,especiales)
-
-    # FUENTE
-    seccion(story,"19. INFORMACIÓN OFICIAL")
-
-    fuente=limpio(data.get("fuente_oficial"))
-
-    if fuente:
-        story.append(
-            Paragraph(
-                f"<b>Fuente oficial:</b> {esc(fuente)}",
-                S["body"]
-            )
-        )
-
-    story.append(
-        Spacer(1,12)
-    )
-
-    story.append(
-        Paragraph(
-            "IMPORTANTE: MEXICANO APOYA MEXICANO es una aplicación "
-            "independiente. No es el Gobierno de México, no pertenece "
-            "a la Secretaría de Relaciones Exteriores y no representa "
-            "al Consulado de México. Los requisitos, tarifas, citas, "
-            "horarios y procedimientos pueden cambiar. Antes de acudir, "
-            "confirma siempre la información directamente con la fuente oficial.",
-            S["muted"]
-        )
-    )
+    nombre=data.get("nombre_tramite","Trámite consular")
+    estado=data.get("titulo","")
+    story.append(Paragraph("MEXICANO APOYA MEXICANO",styles["TituloMAM"]))
+    story.append(Paragraph(limpiar(nombre),styles["H2"]))
+    story.append(Paragraph(
+        "Hoja de Ruta / Checklist personal para preparar tu trámite antes de acudir.",
+        styles["Body"]
+    ))
+    story.append(Spacer(1,8))
+
+    if estado:
+        story.append(Paragraph(limpiar(estado),styles["H2"]))
+        story.append(Paragraph(limpiar(data.get("mensaje","")),styles["Body"]))
+        story.append(Spacer(1,8))
+
+    perfil=data.get("datos_personales") or data.get("perfil") or {}
+    perfil_legible={
+        "Nombre completo":perfil.get("nombre_completo"),
+        "Nacionalidad":perfil.get("nacionalidad"),
+        "Teléfono":perfil.get("telefono"),
+        "Dirección":perfil.get("direccion"),
+        "Estado":perfil.get("estado"),
+        "ZIP Code":perfil.get("zip"),
+        "Correo electrónico":perfil.get("email")
+    }
+    datos_pdf(story,"1. DATOS PERSONALES",perfil_legible,styles)
+
+    datos_pdf(story,"2. TU TRÁMITE",{
+        "Trámite":data.get("nombre_tramite"),
+        "Descripción":data.get("descripcion")
+    },styles)
+
+    lista_pdf(story,"3. PERSONAS QUE DEBEN PRESENTARSE",
+              data.get("personas",[]),styles)
+
+    lista_pdf(story,"4. REQUISITOS OBLIGATORIOS",
+              data.get("requisitos",[]),styles)
+
+    if data.get("originales"):
+        lista_pdf(story,"5. DOCUMENTOS ORIGINALES",
+                  data["originales"],styles)
+
+    if data.get("copias"):
+        lista_pdf(story,"6. COPIAS",
+                  data["copias"],styles)
+
+    if data.get("faltan"):
+        lista_pdf(story,"7. LO QUE TE FALTA",
+                  data["faltan"],styles)
+
+    if data.get("confirmar"):
+        lista_pdf(story,"8. LO QUE DEBES CONFIRMAR",
+                  data["confirmar"],styles)
+
+    if data.get("pago"):
+        lista_pdf(story,"9. PAGO", [data["pago"]],styles)
+
+    if data.get("cita"):
+        lista_pdf(story,"10. CITA",[data["cita"]],styles)
+
+    if data.get("vigencia"):
+        lista_pdf(story,"11. VIGENCIA",[data["vigencia"]],styles)
+
+    if data.get("entrega"):
+        lista_pdf(story,"12. ENTREGA",[data["entrega"]],styles)
+
+    if data.get("especiales"):
+        lista_pdf(story,"13. INFORMACIÓN ESPECIAL",
+                  data["especiales"],styles)
+
+    if data.get("acciones"):
+        lista_pdf(story,"14. ¿QUÉ DEBES HACER?",
+                  data["acciones"],styles)
+
+    story.append(Paragraph("15. INFORMACIÓN OFICIAL",styles["H2"]))
+    story.append(Paragraph(
+        limpiar(data.get("fuente_oficial") or data.get("fuente") or ""),
+        styles["Body"]
+    ))
+    story.append(Spacer(1,7))
+
+    contacto=data.get("contacto") or {}
+    lista_pdf(story,"16. CONTACTO",[
+        "Teléfono de citas/documentos: "+str(contacto.get("telefono","")),
+        "Conmutador: "+str(contacto.get("conmutador","")),
+        "Dirección de referencia: "+str(contacto.get("direccion",""))
+    ],styles)
+
+    story.append(Spacer(1,10))
+    story.append(Paragraph(
+        "IMPORTANTE: esta aplicación ayuda a preparar la visita. "
+        "No es el Gobierno de México ni sustituye las instrucciones "
+        "del consulado. Los requisitos, tarifas, citas y disponibilidad "
+        "pueden cambiar. Confirma siempre la información oficial del "
+        "consulado que atiende tu lugar de residencia.",
+        styles["Small"]
+    ))
 
     doc.build(story)
-    b.seek(0)
-    return b
+    buf.seek(0)
+    return buf
 
-# ============================================================
-# RUTAS
-# ============================================================
-
-@app.get("/")
-def inicio_web():
-    from fastapi.responses import FileResponse
-    return FileResponse("static/index.html")
+@app.get("/",response_class=HTMLResponse)
+def inicio():
+    try:
+        with open("static/index.html","r",encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<h1>MEXICANO APOYA MEXICANO</h1><p>Archivo de aplicación no encontrado.</p>"
 
 @app.get("/api/estado")
 def estado():
@@ -595,220 +231,130 @@ def estado():
         "ok":True,
         "app":APP,
         "version":VERSION,
-        "motor":"determinístico",
-        "ia":False
+        "ia":False,
+        "tramites":6,
+        "mensaje":"Sistema disponible"
     }
-
-@app.get("/api/catalogo")
-def api_catalogo():
-    return JSONResponse(
-        content=obtener_catalogo()
-    )
-
-@app.get("/api/fuentes")
-def api_fuentes():
-    return JSONResponse(
-        content=obtener_fuentes()
-    )
-
-@app.get("/api/contacto")
-def api_contacto():
-    return JSONResponse(
-        content=obtener_contacto()
-    )
-
-@app.get("/api/tarifas")
-def api_tarifas():
-    return JSONResponse(
-        content=obtener_tarifas()
-    )
-
-@app.get("/api/manual")
-def api_manual():
-    return JSONResponse(
-        content=obtener_manual()
-    )
-
-# ============================================================
-# INICIAR
-# ============================================================
-
-@app.post("/api/iniciar")
-def api_iniciar(data:Inicio):
-    try:
-        r=iniciar(
-            data.servicio,
-            data.respuestas,
-            data.texto
-        )
-        return JSONResponse(content=r)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al iniciar: {e}"
-        )
-
-# Alias para compatibilidad
-@app.post("/api/start")
-def api_start(data:Inicio):
-    return api_iniciar(data)
-
-# ============================================================
-# INTERPRETAR TEXTO
-# ============================================================
-
-@app.post("/api/interpretar")
-def api_interpretar(data:Interpretacion):
-    try:
-        r=interpretar(
-            data.servicio,
-            data.caso,
-            data.pregunta_id,
-            data.texto,
-            data.respuestas,
-            data.perfil
-        )
-        return JSONResponse(content=r)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al interpretar: {e}"
-        )
-
-# ============================================================
-# CONTINUAR
-# ============================================================
-
-@app.post("/api/continuar")
-def api_continuar(data:Continuacion):
-    try:
-        r=continuar(
-            data.servicio,
-            data.caso,
-            data.pregunta_id,
-            data.texto,
-            data.respuestas,
-            data.perfil
-        )
-        return JSONResponse(content=r)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al continuar: {e}"
-        )
-
-# ============================================================
-# SELECCIONAR CASO
-# ============================================================
-
-@app.post("/api/seleccionar-caso")
-def api_seleccionar(data:Seleccion):
-    try:
-        r=seleccionar_caso(
-            data.servicio,
-            data.caso,
-            data.respuestas,
-            data.perfil
-        )
-        return JSONResponse(content=r)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al seleccionar el caso: {e}"
-        )
-
-@app.post("/api/seleccionar_caso")
-def api_seleccionar_alias(data:Seleccion):
-    return api_seleccionar(data)
-
-# ============================================================
-# RESULTADO
-# ============================================================
-
-@app.post("/api/resultado")
-def api_resultado(data:ResultadoRequest):
-    try:
-        r=pantalla_resultado(
-            data.servicio,
-            data.caso,
-            data.respuestas,
-            data.perfil
-        )
-        return JSONResponse(content=r)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al crear resultado: {e}"
-        )
-
-# ============================================================
-# PDF
-# ============================================================
-
-@app.post("/api/pdf")
-def api_pdf(data:ResultadoRequest):
-    try:
-        r=pantalla_resultado(
-            data.servicio,
-            data.caso,
-            data.respuestas,
-            data.perfil
-        )
-
-        if r.get("tipo")=="error":
-            raise HTTPException(
-                status_code=400,
-                detail=r.get("error","Caso inválido")
-            )
-
-        pdf=construir_pdf(r)
-
-        nombre="hoja_de_ruta_mexicano_apoya_mexicano.pdf"
-
-        return StreamingResponse(
-            pdf,
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition":
-                f'attachment; filename="{nombre}"'
-            }
-        )
-
-    except HTTPException:
-        raise
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al generar PDF: {e}"
-        )
-
-# Alias
-@app.post("/api/generar-pdf")
-def api_generar_pdf(data:ResultadoRequest):
-    return api_pdf(data)
-
-# ============================================================
-# HEALTH CHECK
-# ============================================================
 
 @app.get("/health")
 def health():
+    return {"ok":True,"app":APP,"version":VERSION}
+
+@app.get("/api/catalogo")
+def catalogo():
     return {
-        "status":"ok",
-        "app":APP,
-        "version":VERSION
+        "ok":True,
+        "tramites":obtener_catalogo()
     }
 
-# ============================================================
-# EJECUCIÓN LOCAL
-# ============================================================
+@app.get("/api/fuentes")
+def fuentes():
+    return {
+        "ok":True,
+        "fuentes":obtener_fuentes()
+    }
+
+@app.get("/api/contacto")
+def contacto():
+    return {
+        "ok":True,
+        "contacto":obtener_contacto()
+    }
+
+@app.get("/api/tarifas")
+def tarifas():
+    return {
+        "ok":True,
+        "tarifas":obtener_tarifas()
+    }
+
+@app.get("/api/manual")
+def manual():
+    return {
+        "ok":True,
+        "manual":obtener_manual()
+    }
+
+@app.post("/api/iniciar")
+@app.post("/api/start")
+def api_iniciar(x:Inicio):
+    return iniciar(x.texto,x.servicio)
+
+@app.post("/api/interpretar")
+def api_interpretar(x:Interpretacion):
+    return interpretar(
+        x.servicio,x.texto,x.caso,
+        x.respuestas,x.perfil
+    )
+
+@app.post("/api/continuar")
+def api_continuar(x:Continuacion):
+    return continuar(
+        x.servicio,
+        x.caso,
+        x.pregunta_id,
+        x.texto,
+        x.respuestas,
+        x.perfil
+    )
+
+@app.post("/api/seleccionar-caso")
+@app.post("/api/seleccionar_caso")
+def api_seleccionar(x:Seleccion):
+    return seleccionar_caso(
+        x.servicio,
+        x.caso,
+        x.perfil,
+        x.respuestas
+    )
+
+@app.post("/api/resultado")
+def api_resultado(x:ResultadoRequest):
+    if not x.caso:
+        raise HTTPException(400,"Falta el trámite.")
+    return resultado(
+        x.servicio,
+        x.caso,
+        x.respuestas,
+        x.perfil
+    )
+
+@app.post("/api/pdf")
+@app.post("/api/generar-pdf")
+def api_pdf(x:ResultadoRequest):
+    if not x.caso:
+        raise HTTPException(400,"Falta el trámite.")
+    data=resultado(
+        x.servicio,
+        x.caso,
+        x.respuestas,
+        x.perfil
+    )
+    if data.get("tipo")!="resultado":
+        raise HTTPException(400,"No se pudo preparar el resultado.")
+    pdf=construir_pdf(data)
+    nombre=x.caso.replace("_","-")+".pdf"
+    return StreamingResponse(
+        pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition":f'attachment; filename="{nombre}"'
+        }
+    )
+
+@app.get("/api/tramite/{caso}")
+def api_tramite(caso:str):
+    catalogo=obtener_catalogo()
+    for x in catalogo:
+        if x.get("id")==caso:
+            return {"ok":True,"tramite":x}
+    raise HTTPException(404,"Trámite no disponible.")
 
 if __name__=="__main__":
     import uvicorn
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
-        port=int(os.getenv("PORT","8000")),
+        port=8000,
         reload=False
     )
