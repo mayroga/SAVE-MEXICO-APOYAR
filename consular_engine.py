@@ -3,1083 +3,659 @@ import re,unicodedata
 from copy import deepcopy
 
 APP="MEXICANO APOYA MEXICANO"
-CONSULADO="Consulado de México en Miami"
+VERSION="5.0.0"
+
+CONSULADO={
+ "nombre":"Consulado de México",
+ "ciudad":"Miami",
+ "direccion":"2555 Ponce de Leon Blvd., 4th Floor, Coral Gables, FL 33134",
+ "telefono":"786-268-4900",
+ "citas":"1-424-309-0009",
+ "emergencia":"305-979-1534"
+}
+
 FUENTES={
-"pasaporte":"https://consulmex.sre.gob.mx/miami/index.php/documentos-de-identidad/pasaporte",
-"matricula":"https://consulmex.sre.gob.mx/miami/index.php/matricula-consular",
-"acta":"https://consulmex.sre.gob.mx/miami/index.php/registro-civil-y-poderes-notariales/acta-de-nacimient0",
-"tarifas":"https://consulmex.sre.gob.mx/miami/index.php/tarifas-consulares",
-"citas":"https://citas.sre.gob.mx"
+ "pasaporte":"https://consulmex.sre.gob.mx/miami/index.php/documentos-de-identidad/pasaporte",
+ "matricula":"https://consulmex.sre.gob.mx/miami/index.php/matricula-consular",
+ "acta":"https://consulmex.sre.gob.mx/miami/index.php/registro-civil-y-poderes-notariales/acta-de-nacimient0",
+ "tarifas":"https://consulmex.sre.gob.mx/miami/index.php/tarifas-consulares",
+ "citas":"https://citas.sre.gob.mx"
 }
+
 CONTACTO={
-"citas":"https://citas.sre.gob.mx",
-"telefono":"1-424-309-0009",
-"conmutador":"786-268-4900",
-"direccion":"2555 Ponce de Leon Blvd., 4th Floor, Coral Gables, FL 33134",
-"emergencia":"305-979-1534"
+ "telefono":"786-268-4900",
+ "citas":"1-424-309-0009",
+ "emergencia":"305-979-1534",
+ "direccion":CONSULADO["direccion"]
 }
+
 TARIFAS={
-"pasaporte_1":"$44 USD",
-"pasaporte_3":"$101 USD",
-"pasaporte_6":"$137 USD",
-"pasaporte_10":"$209 USD",
-"matricula":"$41 USD",
-"acta":"$20 USD"
+ "pasaporte_1":44,"pasaporte_3":101,"pasaporte_6":137,"pasaporte_10":209,
+ "matricula":41,"acta":20
 }
-
-def normalizar(v):
-    v=unicodedata.normalize("NFD",str(v or ""))
-    return "".join(c for c in v if unicodedata.category(c)!="Mn").lower().strip()
-
-def texto(v):
-    return str(v or "").strip()
-
-def vacio(v):
-    return not texto(v)
-
-def si(v):
-    return normalizar(v) in {"si","sí","yes","true","1","tengo","tiene","ya"}
-
-def no(v):
-    return normalizar(v) in {"no","false","0","ninguno","ninguna","no tengo"}
-
-def unicos(a):
-    r=[]
-    for x in a or []:
-        x=texto(x)
-        if x and x not in r:r.append(x)
-    return r
-
-def fusionar(a,b):
-    r=deepcopy(a or {})
-    for k,v in (b or {}).items():
-        if isinstance(v,dict) and isinstance(r.get(k),dict):
-            r[k]=fusionar(r[k],v)
-        elif not vacio(v):
-            r[k]=v
-    return r
-
-def perfil_vacio():
-    return {
-        "nombre":"","apellido":"","nombre_completo":"",
-        "nacionalidad":"","telefono":"","email":"",
-        "direccion":"","ciudad":"","estado":"","zip":"",
-        "fecha_nacimiento":""
-    }
-
-def extraer_email(s):
-    m=re.search(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}",s or "")
-    return m.group(0) if m else ""
-
-def extraer_telefono(s):
-    m=re.search(r"(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}",s or "")
-    return m.group(0) if m else ""
-
-def extraer_zip(s):
-    m=re.search(r"\b\d{5}(?:-\d{4})?\b",s or "")
-    return m.group(0) if m else ""
 
 ESTADOS_USA=[
-"Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut",
-"Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa",
-"Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan",
-"Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire",
-"New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio",
-"Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota",
-"Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia",
-"Wisconsin","Wyoming","District of Columbia"
+ "alabama","alaska","arizona","arkansas","california","carolina del norte",
+ "carolina del sur","colorado","connecticut","dakota del norte","dakota del sur",
+ "delaware","florida","georgia","hawaii","idaho","illinois","indiana","iowa",
+ "kansas","kentucky","louisiana","maine","maryland","massachusetts","michigan",
+ "minnesota","mississippi","missouri","montana","nebraska","nevada",
+ "new hampshire","new jersey","nuevo mexico","new mexico","nueva york","new york",
+ "north carolina","ohio","oklahoma","oregon","pennsylvania","rhode island",
+ "tennessee","texas","utah","vermont","virginia","washington","west virginia",
+ "wisconsin","wyoming"
 ]
 
-def extraer_estado(s):
-    n=normalizar(s)
-    for e in ESTADOS_USA:
-        if normalizar(e) in n:return e
-    return ""
+def normalizar(v):
+ v=str(v or "").strip().lower()
+ v=unicodedata.normalize("NFD",v)
+ return "".join(c for c in v if unicodedata.category(c)!="Mn")
 
-def extraer_nombre(s):
-    s=texto(s)
-    patrones=[
-        r"(?:mi nombre es|me llamo)\s+([A-Za-zÁÉÍÓÚÜÑáéíóúüñ .'-]{3,80})",
-        r"(?:nombre completo)\s*[:\-]?\s*([A-Za-zÁÉÍÓÚÜÑáéíóúüñ .'-]{3,80})"
-    ]
-    for p in patrones:
-        m=re.search(p,s,re.I)
-        if m:
-            x=m.group(1).strip(" .,-")
-            return x
-    return ""
+def texto(v):
+ return str(v or "").strip()
 
-def extraer_direccion(s):
-    patrones=[
-        r"(?:vivo en|mi direccion es|mi dirección es|direccion|dirección)\s*[:\-]?\s*([^.;\n]{5,120})"
-    ]
-    for p in patrones:
-        m=re.search(p,s,re.I)
-        if m:return m.group(1).strip()
-    return ""
+def vacio(v):
+ return not texto(v)
 
-def extraer_nacionalidad(s):
-    n=normalizar(s)
-    if "naturalizado" in n:return "mexicano naturalizado"
-    if "mexicano" in n:return "mexicano"
-    if "mexicana" in n:return "mexicana"
-    return ""
+def si(v):
+ return normalizar(v) in {"si","sí","s","yes","y","verdadero","true","1"}
 
-def extraer_perfil(s,perfil=None):
-    p=fusionar(perfil_vacio(),perfil or {})
-    s=texto(s)
-    if not s:return p
-    nom=extraer_nombre(s)
-    if nom:
-        p["nombre_completo"]=nom
-    em=extraer_email(s)
-    if em:p["email"]=em
-    tel=extraer_telefono(s)
-    if tel:p["telefono"]=tel
-    z=extraer_zip(s)
-    if z:p["zip"]=z
-    e=extraer_estado(s)
-    if e:p["estado"]=e
-    d=extraer_direccion(s)
-    if d:p["direccion"]=d
-    n=extraer_nacionalidad(s)
-    if n:p["nacionalidad"]=n
-    return p
+def no(v):
+ return normalizar(v) in {"no","n","false","0"}
 
-def P(id,texto,tipo="texto",**kw):
-    d={"id":id,"texto":texto,"tipo":tipo}
-    d.update(kw)
-    return d
+def unicos(xs):
+ r=[]
+ for x in xs or []:
+  x=texto(x)
+  if x and x not in r:r.append(x)
+ return r
+
+def fusionar(a,b):
+ r=dict(a or {})
+ r.update({k:v for k,v in (b or {}).items() if v not in ("",None,[])})
+ return r
+
+def perfil_vacio():
+ return {
+  "nombre":"","apellidos":"","nombre_completo":"",
+  "fecha_nacimiento":"","edad":"","ano_nacimiento":"",
+  "direccion":"","ciudad":"","estado":"","codigo_postal":"",
+  "telefono":"","email":"","trabajo":"","ocupacion":"",
+  "nacionalidad":"mexicana"
+ }
+
+def entero(v):
+ try:return int(re.search(r"\d{1,3}",texto(v)).group())
+ except:return None
+
+def extraer_email(t):
+ m=re.search(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}",t or "")
+ return m.group(0) if m else ""
+
+def extraer_telefono(t):
+ m=re.search(r"(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}",t or "")
+ return m.group(0) if m else ""
+
+def extraer_zip(t):
+ m=re.search(r"\b\d{5}(?:-\d{4})?\b",t or "")
+ return m.group(0) if m else ""
+
+def extraer_edad(t):
+ m=re.search(r"(?:tengo|edad(?: de)?|años?|anos?)\s*[:\-]?\s*(\d{1,3})",normalizar(t))
+ return int(m.group(1)) if m else None
+
+def extraer_ano(t):
+ m=re.search(r"\b(19\d{2}|20\d{2})\b",t or "")
+ return m.group(1) if m else ""
+
+def extraer_estado(t):
+ n=normalizar(t)
+ aliases={"california":"California","texas":"Texas","florida":"Florida",
+          "new mexico":"New Mexico","nuevo mexico":"New Mexico",
+          "arizona":"Arizona","nevada":"Nevada","carolina del norte":"North Carolina",
+          "carolina del sur":"South Carolina","new york":"New York","nueva york":"New York"}
+ for k,v in aliases.items():
+  if k in n:return v
+ return ""
+
+def extraer_nombre(t):
+ patterns=[
+  r"(?:me llamo|mi nombre es|nombre completo es)\s+([A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]{3,})",
+  r"(?:nombre)\s*[:\-]\s*([A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]{3,})"
+ ]
+ for p in patterns:
+  m=re.search(p,t or "",re.I)
+  if m:
+   x=re.split(r"\b(?:nací|naci|vivo|tengo|trabajo|teléfono|telefono|email|correo|código|codigo)\b",m.group(1),flags=re.I)[0]
+   return texto(x)
+ return ""
+
+def extraer_direccion(t):
+ m=re.search(r"(?:vivo en|dirección|direccion|domicilio)\s*[:\-]?\s*(.+)",t or "",re.I)
+ if not m:return ""
+ x=re.split(r"\b(?:mi teléfono|mi telefono|teléfono|telefono|mi correo|correo|email|trabajo|tengo \d+ años?)\b",m.group(1),flags=re.I)[0]
+ return texto(x).strip(" ,.")
+
+def extraer_perfil(t,perfil=None):
+ t=texto(t);p=fusionar(perfil_vacio(),perfil)
+ if not t:return p
+ nombre=extraer_nombre(t)
+ if nombre and not p["nombre_completo"]:p["nombre_completo"]=nombre
+ e=extraer_edad(t)
+ if e is not None:p["edad"]=e
+ z=extraer_zip(t)
+ if z:p["codigo_postal"]=z
+ tel=extraer_telefono(t)
+ if tel:p["telefono"]=tel
+ em=extraer_email(t)
+ if em:p["email"]=em
+ est=extraer_estado(t)
+ if est:p["estado"]=est
+ ano=extraer_ano(t)
+ if ano:p["ano_nacimiento"]=ano
+ dire=extraer_direccion(t)
+ if dire:p["direccion"]=dire
+ m=re.search(r"(?:trabajo|ocupación|ocupacion|soy)\s*[:\-]?\s*([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 ,.-]{2,})",t,re.I)
+ if m:p["trabajo"]=texto(m.group(1))
+ if p["nombre_completo"] and not p["nombre"] and not p["apellidos"]:
+  partes=p["nombre_completo"].split()
+  if len(partes)>=2:
+   p["nombre"]=" ".join(partes[:-2]) if len(partes)>3 else partes[0]
+   p["apellidos"]=" ".join(partes[-2:]) if len(partes)>2 else partes[1]
+ return p
+
+def P(id,texto_,**kw):
+ d={"id":id,"pregunta":texto_}
+ d.update(kw)
+ return d
 
 TRAMITES={}
 
-def registrar(id,nombre,descripcion,fuente,categoria,preguntas,
-              requisitos=None,personas=None,originales=None,copias=None,
-              pago="",cita=True,vigencia="",entrega="",acciones=None,
-              especiales=None):
-    TRAMITES[id]={
-        "id":id,"nombre":nombre,"descripcion":descripcion,
-        "fuente":fuente,"categoria":categoria,
-        "preguntas":preguntas or [],
-        "requisitos":requisitos or [],
-        "personas":personas or [],
-        "originales":originales or [],
-        "copias":copias or [],
-        "pago":pago,"cita":cita,"vigencia":vigencia,
-        "entrega":entrega,"acciones":acciones or [],
-        "especiales":especiales or []
-    }
+def registrar(caso,nombre,descripcion,edad,questions,**info):
+ TRAMITES[caso]={
+  "caso":caso,"nombre":nombre,"descripcion":descripcion,"edad":edad,
+  "preguntas":questions,**info
+ }
 
-# ============================================================
-# 1. PASAPORTE - PRIMERA VEZ
-# ============================================================
+IDENTIFICACION=[
+ P("nombre_completo","¿Cuál es tu nombre y apellidos completos?",tipo="texto",required=True,grupo="identificacion"),
+ P("fecha_nacimiento","¿Cuál es tu fecha de nacimiento?",tipo="texto",required=True,grupo="identificacion",placeholder="Día / mes / año"),
+ P("edad","¿Qué edad tienes?",tipo="texto",required=True,grupo="identificacion",placeholder="Escribe tu edad"),
+ P("direccion","¿Cuál es tu dirección donde vives?",tipo="texto",required=True,grupo="identificacion"),
+ P("estado","¿En qué estado de Estados Unidos vives?",tipo="opciones",opciones=["California","New Mexico","Texas","Florida","Otro"],required=True,grupo="identificacion"),
+ P("codigo_postal","¿Cuál es tu código postal?",tipo="texto",required=True,grupo="identificacion"),
+ P("telefono","¿Cuál es tu número de teléfono?",tipo="texto",required=True,grupo="identificacion"),
+ P("trabajo","¿Cuál es tu trabajo u ocupación?",tipo="texto",required=False,grupo="identificacion"),
+]
+
+PASAPORTE_BASE=[
+ P("situacion","¿Qué necesitas hacer con tu pasaporte?",tipo="opciones",
+   opciones=["Primera vez","Renovarlo","Se perdió, fue robado o está dañado"],required=True),
+ P("pasaporte_actual","¿Tienes tu pasaporte anterior?",tipo="opciones",opciones=["Sí","No"],required=False,
+   aplica=lambda r:not no(r.get("situacion")) and "primera" not in normalizar(r.get("situacion"))),
+ P("reporte","¿Tienes el reporte de la autoridad sobre la pérdida, robo o daño?",tipo="opciones",
+   opciones=["Sí","No"],required=True,
+   aplica=lambda r:"perdio" in normalizar(r.get("situacion")) or "robo" in normalizar(r.get("situacion")) or "dañado" in normalizar(r.get("situacion"))),
+ P("nacionalidad","¿Tienes un documento original que pruebe tu nacionalidad mexicana?",tipo="opciones",opciones=["Sí","No"],required=True),
+ P("identificacion","¿Tienes una identificación original con fotografía?",tipo="opciones",opciones=["Sí","No"],required=True),
+ P("vigencia_pasaporte","¿Qué vigencia necesitas?",tipo="opciones",
+   opciones=["1 año","3 años","6 años","10 años"],required=True,
+   aplica=lambda r:(entero(r.get("edad")) or 18)>=18 or (entero(r.get("edad")) or 0)>=3),
+ P("cita","¿Ya tienes cita?",tipo="opciones",opciones=["Sí","No"],required=True),
+]
 
 registrar(
-"pasaporte_primera_vez",
-"Pasaporte mexicano — primera vez",
-"Preparación para solicitar por primera vez un pasaporte mexicano en el Consulado de México en Miami.",
-FUENTES["pasaporte"],"Pasaporte",
-[
- P("nacionalidad","¿Puedes demostrar que eres mexicano o mexicana con un documento original?","opciones",
-   opciones=["Sí","No"]),
- P("identidad","¿Tienes un documento original con fotografía que permita comprobar tu identidad?","opciones",
-   opciones=["Sí","No"]),
- P("documento_nacionalidad","¿Qué documento mexicano tienes para demostrar tu nacionalidad?","opciones",
-   opciones=[
-       "Acta de nacimiento mexicana",
-       "Certificado de nacionalidad mexicana",
-       "Declaración de nacionalidad mexicana",
-       "Carta de naturalización",
-       "Matrícula consular de alta seguridad",
-       "Otro"
-   ]),
- P("documento_identidad","¿Qué identificación con fotografía tienes?","opciones",
-   opciones=[
-       "INE",
-       "Matrícula consular",
-       "Licencia de conducir mexicana",
-       "Licencia de conducir de Estados Unidos",
-       "Identificación del gobierno de Estados Unidos",
-       "Tarjeta de residente permanente",
-       "Pasaporte",
-       "Otra"
-   ]),
- P("nombre","¿Cuál es tu nombre completo?"),
- P("telefono","¿Cuál es tu número de teléfono?"),
- P("direccion","¿Cuál es tu dirección actual?"),
- P("estado","¿En qué estado de Estados Unidos vives?"),
- P("zip","¿Cuál es tu ZIP Code?"),
- P("email","¿Cuál es tu correo electrónico? Puedes dejarlo vacío si no tienes."),
- P("cita","¿Ya tienes una cita para el trámite?","opciones",
-   opciones=["Sí","No"]),
- P("vigencia","¿Qué vigencia de pasaporte deseas?","opciones",
-   opciones=["1 año","3 años","6 años","10 años","No sé cuál me corresponde"])
-],
-requisitos=[
-"Comparecer personalmente.",
-"Contar con una cita.",
-"Presentar un documento original que acredite la nacionalidad mexicana.",
-"Presentar un documento original de identidad con fotografía.",
-"Realizar el pago de la tarifa correspondiente."
-],
-personas=["La persona que solicita el pasaporte debe presentarse personalmente."],
-originales=[
-"Documento original que acredite la nacionalidad mexicana.",
-"Documento original de identidad con fotografía."
-],
-copias=[],
-pago="La tarifa depende de la vigencia elegida. Tarifas oficiales 2026: 1 año $44, 3 años $101, 6 años $137 y 10 años $209 USD.",
-cita=True,
-vigencia="Menores de 3 años: 1 o 3 años. De 3 a menos de 18 años: 3 o 6 años. Adultos: 3, 6 o 10 años.",
-entrega="El Consulado de México en Estados Unidos informa que el pasaporte puede entregarse el mismo día después de cumplir los requisitos; el tiempo puede variar y puede haber demoras por fallas del sistema.",
-acciones=[
-"Verifica que tu nombre y datos estén correctos antes de finalizar el trámite.",
-"Confirma la cita antes de acudir.",
-"Confirma la tarifa vigente antes de pagar.",
-"Lleva los documentos originales indicados."
-]
+ "pasaporte_primera_vez","Pasaporte mexicano — primera vez",
+ "Preparación de pasaporte mexicano por primera vez.",
+ "Todas las edades",
+ PASAPORTE_BASE,
+ documentos=["Prueba original de nacionalidad mexicana","Identificación original con fotografía","Comprobante de pago"],
+ originales=["Documento original que pruebe nacionalidad mexicana","Identificación original con fotografía"],
+ copias=[],
+ pago="Tarifa según vigencia y edad. Confirma la tarifa oficial vigente.",
+ cita="Se requiere cita y comparecencia personal.",
+ vigencia="Menores de 3 años: 1 o 3 años. De 3 a 17 años: 3 o 6 años. Adultos: 3, 6 o 10 años.",
+ entrega="La información oficial del Consulado de Miami indica entrega el mismo día, aproximadamente 2 horas, cuando no existe falla del sistema.",
+ fuente=FUENTES["pasaporte"]
 )
-
-# ============================================================
-# 2. PASAPORTE - RENOVACIÓN
-# ============================================================
 
 registrar(
-"pasaporte_renovacion",
-"Pasaporte mexicano — renovación",
-"Preparación para renovar un pasaporte mexicano.",
-FUENTES["pasaporte"],"Pasaporte",
-[
- P("pasaporte_actual","¿Tienes el pasaporte mexicano que vas a renovar?","opciones",
-   opciones=["Sí","No"]),
- P("estado_pasaporte","¿El pasaporte está en condiciones de presentarse?","opciones",
-   opciones=["Sí","No","Está dañado"]),
- P("naturalizado","¿Eres mexicano o mexicana por naturalización?","opciones",
-   opciones=["Sí","No"]),
- P("fecha_pasaporte","¿Tu pasaporte fue expedido hace muchos años, antes de los periodos normales de renovación?","opciones",
-   opciones=["Sí","No","No sé"]),
- P("nombre","¿Cuál es tu nombre completo?"),
- P("telefono","¿Cuál es tu número de teléfono?"),
- P("direccion","¿Cuál es tu dirección actual?"),
- P("estado","¿En qué estado de Estados Unidos vives?"),
- P("zip","¿Cuál es tu ZIP Code?"),
- P("email","¿Cuál es tu correo electrónico? Puedes dejarlo vacío si no tienes."),
- P("cita","¿Ya tienes una cita?","opciones",opciones=["Sí","No"])
-],
-requisitos=[
-"Comparecer personalmente.",
-"Contar con una cita.",
-"Presentar el pasaporte que se desea renovar.",
-"Realizar el pago correspondiente."
-],
-personas=["La persona titular del pasaporte debe presentarse personalmente."],
-originales=["Pasaporte mexicano que se desea renovar."],
-copias=[],
-pago="Tarifa oficial 2026: 3 años $101 USD, 6 años $137 USD y 10 años $209 USD, según la vigencia que corresponda.",
-cita=True,
-vigencia="Adultos pueden solicitar 3, 6 o 10 años. Menores tienen reglas distintas.",
-entrega="La entrega puede realizarse el mismo día después de cumplir los requisitos; el tiempo puede variar.",
-acciones=[
-"Revisa el pasaporte que vas a renovar.",
-"Si eres naturalizado, prepara el documento original correspondiente.",
-"Confirma que tu cita y tarifa estén vigentes.",
-"Revisa tus datos antes de recibir/imprimir el documento."
-],
-especiales=[
-"Un pasaporte de un año no puede renovarse como renovación ordinaria.",
-"Pasaportes de emergencia, protección, restringidos o no canjeables pueden requerir un procedimiento especial.",
-"Pasaportes antiguos pueden requerir documentación adicional según la fecha y lugar de expedición."
-]
+ "pasaporte_renovacion","Pasaporte mexicano — renovación",
+ "Preparación para renovar un pasaporte mexicano.",
+ "Todas las edades",
+ PASAPORTE_BASE,
+ documentos=["Pasaporte anterior","Comprobante de pago"],
+ originales=["Pasaporte anterior"],
+ copias=[],
+ pago="Tarifa según vigencia y edad. Confirma la tarifa oficial vigente.",
+ cita="Se requiere cita y comparecencia personal.",
+ vigencia="Menores de 3 años: 1 o 3 años. De 3 a 17 años: 3 o 6 años. Adultos: 3, 6 o 10 años.",
+ entrega="La información oficial del Consulado de Miami indica entrega el mismo día, aproximadamente 2 horas, cuando no existe falla del sistema.",
+ fuente=FUENTES["pasaporte"]
 )
-
-# ============================================================
-# 3. PASAPORTE - PERDIDO / ROBADO / DAÑADO
-# ============================================================
 
 registrar(
-"pasaporte_perdido_robo_mutilado",
-"Pasaporte mexicano — perdido, robado o dañado",
-"Preparación para solicitar un nuevo pasaporte cuando el anterior fue perdido, robado, destruido o está mutilado.",
-FUENTES["pasaporte"],"Pasaporte",
-[
- P("situacion","¿Qué ocurrió con tu pasaporte?","opciones",
-   opciones=["Lo perdí","Me lo robaron","Está destruido","Está mutilado o muy dañado"]),
- P("reporte","¿Ya tienes un reporte o constancia de la autoridad competente sobre la pérdida o robo?","opciones",
-   opciones=["Sí","No"]),
- P("nacionalidad","¿Tienes un documento original para demostrar tu nacionalidad mexicana?","opciones",
-   opciones=["Sí","No"]),
- P("identidad","¿Tienes una identificación original con fotografía?","opciones",
-   opciones=["Sí","No"]),
- P("nombre","¿Cuál es tu nombre completo?"),
- P("telefono","¿Cuál es tu teléfono?"),
- P("direccion","¿Cuál es tu dirección actual?"),
- P("estado","¿En qué estado vives?"),
- P("zip","¿Cuál es tu ZIP Code?"),
- P("email","¿Cuál es tu correo electrónico?"),
- P("cita","¿Ya tienes cita?","opciones",opciones=["Sí","No"])
-],
-requisitos=[
-"Comparecer personalmente.",
-"Presentar el reporte o constancia correspondiente cuando se trate de pérdida o robo.",
-"Presentar documentación de nacionalidad mexicana.",
-"Presentar identificación con fotografía.",
-"Realizar el pago correspondiente.",
-"Seguir el procedimiento de primera expedición cuando corresponda."
-],
-personas=["La persona titular debe presentarse personalmente."],
-originales=[
-"Reporte o constancia de la autoridad competente cuando corresponda.",
-"Documento original de nacionalidad mexicana.",
-"Identificación original con fotografía."
-],
-copias=[],
-pago="La tarifa depende de la vigencia solicitada y de la situación concreta.",
-cita=True,
-vigencia="La vigencia dependerá del tipo de pasaporte que corresponda.",
-entrega="La entrega está sujeta a que el expediente quede completo y el sistema consular funcione normalmente.",
-acciones=[
-"Primero reúne el reporte o constancia cuando corresponda.",
-"No acudas pensando que el pasaporte perdido puede simplemente renovarse.",
-"Prepara los documentos de nacionalidad e identidad.",
-"Confirma con el Consulado cualquier situación especial antes de acudir."
-],
-especiales=[
-"Cuando un pasaporte fue perdido, robado, destruido o mutilado, el procedimiento puede requerir documentación equivalente a una primera expedición.",
-"Si el documento presenta una situación especial, el Consulado puede determinar requisitos adicionales."
-]
+ "pasaporte_perdido_robo_mutilado","Pasaporte mexicano — perdido, robado o dañado",
+ "Preparación cuando el pasaporte se perdió, fue robado o está dañado.",
+ "Todas las edades",
+ PASAPORTE_BASE,
+ documentos=["Reporte de la autoridad competente","Documentos de nacionalidad","Identificación con fotografía","Comprobante de pago"],
+ originales=["Reporte correspondiente","Documento original de nacionalidad","Identificación original con fotografía"],
+ copias=[],
+ pago="Tarifa según vigencia y edad. Confirma la tarifa oficial vigente.",
+ cita="Se requiere cita y comparecencia personal.",
+ vigencia="Depende de la edad.",
+ entrega="La información oficial del Consulado de Miami indica entrega el mismo día cuando no existe falla del sistema.",
+ fuente=FUENTES["pasaporte"]
 )
-
-# ============================================================
-# 4. MATRÍCULA CONSULAR - PRIMERA VEZ
-# ============================================================
 
 registrar(
-"matricula_primera_vez",
-"Matrícula consular — primera vez",
-"Preparación para solicitar por primera vez la matrícula consular de alta seguridad.",
-FUENTES["matricula"],"Matrícula consular",
-[
- P("nacionalidad","¿Tienes un documento original que demuestre tu nacionalidad mexicana?","opciones",
-   opciones=["Sí","No"]),
- P("identidad","¿Tienes una identificación original con fotografía?","opciones",
-   opciones=["Sí","No"]),
- P("domicilio","¿Tienes un comprobante original de domicilio a tu nombre con tu dirección completa?","opciones",
-   opciones=["Sí","No","El comprobante está a nombre de otra persona"]),
- P("nombre","¿Cuál es tu nombre completo?"),
- P("telefono","¿Cuál es tu teléfono?"),
- P("direccion","¿Cuál es tu dirección actual?"),
- P("estado","¿En qué estado de Estados Unidos vives?"),
- P("zip","¿Cuál es tu ZIP Code?"),
- P("email","¿Cuál es tu correo electrónico?"),
- P("cita","¿Ya tienes una cita?","opciones",opciones=["Sí","No"])
-],
-requisitos=[
-"Comparecer personalmente.",
-"Contar con cita.",
-"Presentar documento original de nacionalidad mexicana.",
-"Presentar identificación original con fotografía.",
-"Presentar comprobante de domicilio con dirección completa.",
-"Realizar el pago correspondiente."
-],
-personas=["La persona que solicita la matrícula debe presentarse personalmente."],
-originales=[
-"Documento original de nacionalidad mexicana.",
-"Identificación original con fotografía.",
-"Comprobante de domicilio con dirección completa."
-],
-copias=[],
-pago="La tarifa oficial 2026 para matrícula consular es $41 USD.",
-cita=True,
-vigencia="La matrícula consular tiene una vigencia de 5 años.",
-entrega="El Consulado informa entrega el mismo día después de cumplir los requisitos; el tiempo puede variar.",
-acciones=[
-"Comprueba que el comprobante de domicilio tenga la dirección completa.",
-"Si el comprobante no está a tu nombre, revisa con el Consulado qué documento alternativo corresponde a tu situación.",
-"Revisa los datos antes de que se imprima la matrícula."
-],
-especiales=[
-"Si el comprobante de domicilio está a nombre de un familiar o conocido, existen alternativas específicas que deben corresponder a la relación y situación del solicitante."
-]
+ "matricula_primera_vez","Matrícula consular — primera vez",
+ "Preparación para obtener la matrícula consular por primera vez.",
+ "Mexicanos que viven en Estados Unidos",
+ [
+  P("nacionalidad","¿Tienes un documento original que pruebe tu nacionalidad mexicana?",tipo="opciones",opciones=["Sí","No"],required=True),
+  P("identificacion","¿Tienes una identificación original con fotografía?",tipo="opciones",opciones=["Sí","No"],required=True),
+  P("domicilio","¿Tienes un comprobante de domicilio con tu nombre y dirección completa?",tipo="opciones",opciones=["Sí","No","Está a nombre de otra persona"],required=True),
+  P("cita","¿Ya tienes cita?",tipo="opciones",opciones=["Sí","No"],required=True)
+ ],
+ documentos=["Documento original de nacionalidad mexicana","Identificación original con fotografía","Comprobante de domicilio","Comprobante de pago"],
+ originales=["Documento de nacionalidad","Identificación con fotografía","Comprobante de domicilio"],
+ copias=[],
+ pago=f"${TARIFAS['matricula']} según tarifa publicada para Miami; confirma tarifa vigente.",
+ cita="Se requiere cita y comparecencia personal.",
+ vigencia="5 años.",
+ entrega="La información oficial del Consulado de Miami indica entrega el mismo día, aproximadamente 2 horas, cuando no existe falla del sistema.",
+ fuente=FUENTES["matricula"]
 )
-
-# ============================================================
-# 5. MATRÍCULA CONSULAR - RENOVACIÓN
-# ============================================================
 
 registrar(
-"matricula_renovacion",
-"Matrícula consular — renovación",
-"Preparación para renovar una matrícula consular.",
-FUENTES["matricula"],"Matrícula consular",
-[
- P("matricula_actual","¿Tienes tu matrícula consular actual?","opciones",
-   opciones=["Sí","No"]),
- P("domicilio_cambio","¿Cambió tu domicilio desde que obtuviste la matrícula actual?","opciones",
-   opciones=["Sí","No"]),
- P("domicilio","¿Tienes comprobante de domicilio a tu nombre?","opciones",
-   opciones=["Sí","No","Está a nombre de otra persona"]),
- P("nombre","¿Cuál es tu nombre completo?"),
- P("telefono","¿Cuál es tu teléfono?"),
- P("direccion","¿Cuál es tu dirección actual?"),
- P("estado","¿En qué estado vives?"),
- P("zip","¿Cuál es tu ZIP Code?"),
- P("email","¿Cuál es tu correo electrónico?"),
- P("cita","¿Ya tienes una cita?","opciones",opciones=["Sí","No"])
-],
-requisitos=[
-"Comparecer personalmente.",
-"Contar con cita.",
-"Presentar la matrícula consular actual.",
-"Presentar comprobante de domicilio si cambió la residencia.",
-"Realizar el pago correspondiente."
-],
-personas=["La persona titular debe presentarse personalmente."],
-originales=["Matrícula consular actual."],
-copias=[],
-pago="La tarifa oficial 2026 para matrícula consular es $41 USD.",
-cita=True,
-vigencia="La matrícula consular tiene una vigencia de 5 años.",
-entrega="El Consulado informa entrega el mismo día después de cumplir los requisitos; el tiempo puede variar.",
-acciones=[
-"Si tu domicilio no cambió, prepara tu matrícula actual.",
-"Si cambió tu domicilio, prepara también el comprobante correspondiente.",
-"Revisa los datos antes de que se imprima la nueva matrícula."
-],
-especiales=[
-"El comprobante de domicilio se solicita cuando la residencia cambió."
-]
+ "matricula_renovacion","Matrícula consular — renovación",
+ "Preparación para renovar la matrícula consular.",
+ "Mexicanos que viven en Estados Unidos",
+ [
+  P("matricula_actual","¿Tienes tu matrícula consular anterior?",tipo="opciones",opciones=["Sí","No"],required=True),
+  P("cambio_domicilio","¿Cambiaste de domicilio desde tu última matrícula?",tipo="opciones",opciones=["Sí","No"],required=True),
+  P("domicilio","¿Tienes comprobante de tu nuevo domicilio?",tipo="opciones",opciones=["Sí","No"],required=True,
+    aplica=lambda r:si(r.get("cambio_domicilio"))),
+  P("cita","¿Ya tienes cita?",tipo="opciones",opciones=["Sí","No"],required=True)
+ ],
+ documentos=["Matrícula consular anterior","Comprobante de domicilio si cambió la residencia","Comprobante de pago"],
+ originales=["Matrícula consular anterior","Comprobante de domicilio si corresponde"],
+ copias=[],
+ pago=f"${TARIFAS['matricula']} según tarifa publicada para Miami; confirma tarifa vigente.",
+ cita="Se requiere cita y comparecencia personal.",
+ vigencia="5 años.",
+ entrega="La información oficial del Consulado de Miami indica entrega el mismo día cuando no existe falla del sistema.",
+ fuente=FUENTES["matricula"]
 )
-
-# ============================================================
-# 6. ACTA DE NACIMIENTO MEXICANA - COPIA CERTIFICADA
-# ============================================================
 
 registrar(
-"acta_nacimiento_certificada",
-"Acta de nacimiento mexicana — copia certificada",
-"Preparación para obtener una copia certificada de un acta de nacimiento mexicana.",
-FUENTES["acta"],"Acta de nacimiento",
-[
- P("forma","¿Cómo quieres obtener el acta?","opciones",
-   opciones=["En línea","En el Consulado"]),
- P("datos_acta","¿Tienes los datos necesarios para localizar tu acta de nacimiento?","opciones",
-   opciones=["Sí","No"]),
- P("identidad","Si acudirás al Consulado, ¿tienes una identificación oficial que demuestre que eres el titular?","opciones",
-   opciones=["Sí","No","No aplica"]),
- P("curp","¿Tienes tu CURP?","opciones",
-   opciones=["Sí","No","No sé"]),
- P("nombre","¿Cuál es tu nombre completo?"),
- P("telefono","¿Cuál es tu teléfono?"),
- P("email","¿Cuál es tu correo electrónico?"),
- P("estado_nacimiento","¿En qué estado de México está registrada tu acta?"),
- P("cita","Si vas al Consulado, ¿ya tienes cita?","opciones",
-   opciones=["Sí","No","No aplica"])
-],
-requisitos=[
-"Para obtenerla en el Consulado: comparecer y presentar identificación oficial del titular.",
-"Proporcionar los datos necesarios para localizar el acta.",
-"Presentar CURP si se dispone de ella.",
-"Completar la solicitud correspondiente.",
-"Realizar el pago aplicable."
-],
-personas=["La persona interesada o titular debe realizar el trámite conforme al procedimiento correspondiente."],
-originales=["Identificación oficial del titular cuando se solicite en el Consulado."],
-copias=[],
-pago="La tarifa oficial 2026 para copia certificada de acta de nacimiento es $20 USD en el Consulado.",
-cita=True,
-vigencia="No aplica como documento con vigencia fija; la validez del documento depende del uso que se le vaya a dar.",
-entrega="La modalidad y entrega dependen de si se obtiene en línea o mediante el Consulado.",
-acciones=[
-"Si eliges la opción en línea, utiliza únicamente el portal oficial.",
-"Si vas al Consulado, lleva los datos del acta y la identificación correspondiente.",
-"Confirma la tarifa antes de realizar el pago."
-],
-especiales=[
-"El Consulado de Miami informa que las copias certificadas también pueden obtenerse en línea mediante el portal oficial de actas.",
-"El portal oficial para obtener el acta en línea es https://www.gob.mx/ActaNacimiento/"
-]
+ "acta_nacimiento_certificada","Acta de nacimiento mexicana — copia certificada",
+ "Preparación para obtener una copia certificada del acta de nacimiento mexicana.",
+ "Mexicanos de cualquier edad",
+ [
+  P("titular","¿El acta es para ti?",tipo="opciones",opciones=["Sí","No"],required=True),
+  P("identificacion","¿Tienes una identificación oficial?",tipo="opciones",opciones=["Sí","No"],required=True),
+  P("curp","¿Tienes tu CURP?",tipo="opciones",opciones=["Sí","No","No sé"],required=False),
+  P("modalidad","¿Quieres hacerlo en línea o en el Consulado?",tipo="opciones",opciones=["En línea","En el Consulado"],required=True),
+ ],
+ documentos=["Identificación oficial","CURP si está disponible","Datos del acta","Comprobante de pago si corresponde"],
+ originales=["Identificación oficial"],
+ copias=[],
+ pago=f"${TARIFAS['acta']} según tarifa publicada para Miami; confirma tarifa vigente.",
+ cita="Si acudes al Consulado, verifica el procedimiento y cita vigente. También existe opción oficial en línea.",
+ vigencia="Copia certificada.",
+ entrega="En línea: descarga e impresión desde el portal oficial. En Consulado: según el procedimiento oficial vigente.",
+ fuente=FUENTES["acta"],
+ online="https://www.gob.mx/ActaNacimiento/"
 )
-
-# ============================================================
-# DETECCIÓN DE TRÁMITES
-# ============================================================
 
 PALABRAS={
-"pasaporte_primera_vez":[
-"pasaporte","sacar pasaporte","primer pasaporte","primera vez pasaporte",
-"nuevo pasaporte","quiero pasaporte"
-],
-"pasaporte_renovacion":[
-"renovar pasaporte","renovacion pasaporte","renovación pasaporte",
-"pasaporte vencido","se vencio","se venció","renovar"
-],
-"pasaporte_perdido_robo_mutilado":[
-"pasaporte perdido","perdi mi pasaporte","perdí mi pasaporte",
-"pasaporte robado","me robaron el pasaporte","pasaporte roto",
-"pasaporte dañado","pasaporte mutilado","pasaporte destruido"
-],
-"matricula_primera_vez":[
-"matricula consular","matrícula consular","primera matricula",
-"primera matrícula","sacar matricula","sacar matrícula",
-"quiero matricula"
-],
-"matricula_renovacion":[
-"renovar matricula","renovar matrícula","matricula vencida",
-"matrícula vencida","renovacion matricula","renovación matrícula"
-],
-"acta_nacimiento_certificada":[
-"acta de nacimiento","copia certificada","acta certificada",
-"certificacion de acta","certificación de acta","sacar acta"
-]
+ "pasaporte_primera_vez":["pasaporte","primera vez","sacar pasaporte","nuevo pasaporte"],
+ "pasaporte_renovacion":["renovar pasaporte","renovación pasaporte","renovacion pasaporte","pasaporte vencido"],
+ "pasaporte_perdido_robo_mutilado":["pasaporte perdido","pasaporte robado","pasaporte dañado","pasaporte roto","perdi mi pasaporte","me robaron el pasaporte"],
+ "matricula_primera_vez":["matrícula primera vez","matricula primera vez","sacar matrícula","sacar matricula"],
+ "matricula_renovacion":["renovar matrícula","renovar matricula","renovación matrícula","renovacion matricula"],
+ "acta_nacimiento_certificada":["acta de nacimiento","copia certificada","acta certificada"]
 }
 
-def puntuar_caso(caso,s):
-    n=normalizar(s)
-    score=0
-    for p in PALABRAS.get(caso,[]):
-        if normalizar(p) in n:
-            score+=2 if " " in p else 1
-    return score
+def puntuar_caso(t):
+ n=normalizar(t);scores={}
+ for caso,pals in PALABRAS.items():
+  scores[caso]=sum(1 for x in pals if normalizar(x) in n)
+ if "pasaporte" in n:
+  if any(x in n for x in ["perdido","robo","robado","dañado","roto"]):scores["pasaporte_perdido_robo_mutilado"]+=5
+  elif any(x in n for x in ["renovar","renovacion","vencido"]):scores["pasaporte_renovacion"]+=5
+  else:scores["pasaporte_primera_vez"]+=2
+ if "matricula" in n or "matrícula" in t.lower():
+  if any(x in n for x in ["renovar","renovacion"]):scores["matricula_renovacion"]+=5
+  else:scores["matricula_primera_vez"]+=2
+ return scores
 
-def identificar_caso(s):
-    s=texto(s)
-    n=normalizar(s)
-    # Casos específicos primero
-    if any(x in n for x in [
-        "pasaporte perdido","perdi mi pasaporte","pasaporte robado",
-        "me robaron el pasaporte","pasaporte dañado","pasaporte mutilado",
-        "pasaporte destruido"
-    ]):
-        return "pasaporte_perdido_robo_mutilado"
-    if any(x in n for x in [
-        "renovar pasaporte","renovacion pasaporte","pasaporte vencido"
-    ]):
-        return "pasaporte_renovacion"
-    if any(x in n for x in [
-        "renovar matricula","renovacion matricula","matricula vencida"
-    ]):
-        return "matricula_renovacion"
-    if "matricula" in n or "matrícula" in s.lower():
-        return "matricula_primera_vez"
-    if "acta de nacimiento" in n or "copia certificada" in n:
-        return "acta_nacimiento_certificada"
-    if "pasaporte" in n:
-        return "pasaporte_primera_vez"
-    return ""
+def identificar_caso(t):
+ s=puntuar_caso(t)
+ return max(s,key=s.get) if s and max(s.values())>0 else ""
 
-def normalizar_servicio(servicio):
-    n=normalizar(servicio)
-    if "pasaporte" in n:return "pasaporte"
-    if "matricula" in n:return "matricula"
-    if "acta" in n:return "acta"
-    return ""
-
-# ============================================================
-# REGLAS DE PREGUNTAS
-# ============================================================
+def normalizar_servicio(v):
+ return identificar_caso(v) or texto(v)
 
 def obtener_caso(caso):
-    return TRAMITES.get(caso or {})
+ return TRAMITES.get(caso)
 
 def pregunta_por_id(caso,pid):
-    c=obtener_caso(caso)
-    if not c:return None
-    for q in c["preguntas"]:
-        if q["id"]==pid:return q
-    return None
+ c=obtener_caso(caso)
+ if not c:return None
+ for q in c["preguntas"]:
+  if q["id"]==pid:return q
+ return None
 
-def _pregunta_aplica(q,r):
-    pid=q.get("id","")
-    if pid=="fecha_pasaporte":
-        return True
-    return True
+def _aplica(q,res):
+ f=q.get("aplica")
+ try:return bool(f(res)) if callable(f) else True
+ except:return False
 
-def siguiente_pregunta(caso,respuestas,pregunta_id=""):
-    c=obtener_caso(caso)
-    if not c:return None
-    r=respuestas or {}
-    for q in c["preguntas"]:
-        if not _pregunta_aplica(q,r):continue
-        if vacio(r.get(q["id"])):return q
-    return None
+def perfil_completo(p):
+ campos=["nombre_completo","fecha_nacimiento","edad","direccion","estado","codigo_postal","telefono"]
+ return all(texto(p.get(x)) for x in campos)
 
-def pregunta_json(caso,q,respuestas=None):
-    c=obtener_caso(caso)
-    preguntas=c["preguntas"] if c else []
-    r=respuestas or {}
-    pendientes=[
-        x for x in preguntas
-        if _pregunta_aplica(x,r) and vacio(r.get(x["id"]))
-    ]
-    return {
-        "id":q.get("id",""),
-        "texto":q.get("texto",""),
-        "tipo":q.get("tipo","texto"),
-        "opciones":q.get("opciones",[]),
-        "permite_otro":q.get("permite_otro",True),
-        "obligatorio":q.get("obligatorio",True),
-        "paso":len(preguntas)-len(pendientes)+1,
-        "total":len(preguntas)
-    }
+def preguntas_activas(caso,res):
+ c=obtener_caso(caso)
+ if not c:return []
+ return [q for q in c["preguntas"] if _aplica(q,res)]
 
-def interpretar_respuesta(caso,pregunta_id,valor,respuestas=None):
-    q=pregunta_por_id(caso,pregunta_id)
-    if not q:return valor
-    v=texto(valor)
-    if q.get("tipo")=="opciones":
-        for x in q.get("opciones",[]):
-            if normalizar(x)==normalizar(v):
-                return x
-    return v
+def siguiente_pregunta(caso,respuestas):
+ for q in preguntas_activas(caso,respuestas):
+  if not texto(respuestas.get(q["id"])):
+   return q
+ return None
+
+def pregunta_json(q,numero=0,total=0):
+ if not q:return None
+ d={k:v for k,v in q.items() if k!="aplica"}
+ d["paso"]=numero
+ d["total"]=total
+ d["progreso"]=round((numero-1)/total*100,1) if total else 0
+ return d
+
+def interpretar_respuesta(q,v):
+ v=texto(v)
+ if not v:return v
+ n=normalizar(v)
+ if q.get("tipo")=="opciones":
+  for o in q.get("opciones",[]):
+   if n==normalizar(o):return o
+  if n in {"si","s","yes","y"}:return "Sí"
+  if n in {"no","n"}:return "No"
+ return v
 
 def _perfil_desde(respuestas,perfil=None):
-    p=fusionar(perfil_vacio(),perfil or {})
-    mapa={
-        "nombre":"nombre_completo",
-        "telefono":"telefono",
-        "email":"email",
-        "direccion":"direccion",
-        "estado":"estado",
-        "zip":"zip"
-    }
-    for k,d in mapa.items():
-        if vacio(p.get(d)) and not vacio((respuestas or {}).get(k)):
-            p[d]=texto(respuestas[k])
-    return p
+ p=fusionar(perfil_vacio(),perfil)
+ for k in p:
+  if texto(respuestas.get(k)):p[k]=respuestas[k]
+ return p
 
-# ============================================================
-# INFORMACIÓN DEL RESULTADO
-# ============================================================
+def datos_personales(perfil):
+ p=fusionar(perfil_vacio(),perfil)
+ return [
+  f"Nombre: {p['nombre_completo'] or 'Pendiente'}",
+  f"Fecha de nacimiento: {p['fecha_nacimiento'] or 'Pendiente'}",
+  f"Edad: {p['edad'] or 'Pendiente'}",
+  f"Dirección: {p['direccion'] or 'Pendiente'}",
+  f"Estado: {p['estado'] or 'Pendiente'}",
+  f"Código postal: {p['codigo_postal'] or 'Pendiente'}",
+  f"Teléfono: {p['telefono'] or 'Pendiente'}",
+  f"Trabajo: {p['trabajo'] or 'No indicado'}"
+ ]
 
-def datos_personales(perfil,respuestas):
-    p=fusionar(perfil_vacio(),perfil or {})
-    for k,d in {
-        "nombre":"nombre_completo","telefono":"telefono",
-        "email":"email","direccion":"direccion",
-        "estado":"estado","zip":"zip"
-    }.items():
-        if vacio(p.get(d)) and not vacio((respuestas or {}).get(k)):
-            p[d]=respuestas[k]
-    return p
+def personas_del_caso(caso,p):
+ edad=entero(p.get("edad"))
+ if caso.startswith("pasaporte"):
+  if edad is not None and edad<18:return ["La persona solicitante debe presentarse personalmente. El adulto responsable debe confirmar los requisitos aplicables al menor."]
+  return ["La persona solicitante debe presentarse personalmente."]
+ if caso.startswith("matricula"):return ["La persona solicitante debe presentarse personalmente."]
+ return ["La persona titular debe contar con la identificación o información necesaria para realizar el trámite."]
 
-def personas_del_caso(caso):
-    return obtener_caso(caso).get("personas",[]) if obtener_caso(caso) else []
+def documentos_del_caso(c):
+ return list(c.get("documentos",[]))
 
-def documentos_del_caso(caso):
-    return obtener_caso(caso).get("requisitos",[]) if obtener_caso(caso) else []
+def originales_del_caso(c):
+ return list(c.get("originales",[]))
 
-def originales_del_caso(caso):
-    return obtener_caso(caso).get("originales",[]) if obtener_caso(caso) else []
+def copias_del_caso(c):
+ return list(c.get("copias",[]))
 
-def copias_del_caso(caso):
-    return obtener_caso(caso).get("copias",[]) if obtener_caso(caso) else []
+def evaluar_requisitos(caso,res,p):
+ falt=[]
+ c=obtener_caso(caso)
+ for q in preguntas_activas(caso,res):
+  if q.get("required") and not texto(res.get(q["id"])):
+   falt.append(q["pregunta"])
+ if caso=="pasaporte_perdido_robo_mutilado" and not si(res.get("reporte")):
+  if "reporte" not in falt:falt.append("Reporte de la autoridad competente sobre la pérdida, robo o daño.")
+ if caso=="matricula_primera_vez" and res.get("domicilio")=="No":
+  falt.append("Comprobante de domicilio con nombre y dirección completa.")
+ if caso=="matricula_renovacion" and si(res.get("cambio_domicilio")) and no(res.get("domicilio")):
+  falt.append("Comprobante del nuevo domicilio.")
+ return unicos(falt)
 
-def evaluar_requisitos(caso,respuestas):
-    c=obtener_caso(caso)
-    if not c:return {"faltan":[],"confirmar":[]}
-    faltan=[]
-    confirmar=[]
-    for q in c["preguntas"]:
-        v=respuestas.get(q["id"])
-        if vacio(v):
-            faltan.append(q["texto"])
-    if caso=="pasaporte_perdido_robo_mutilado":
-        if vacio(respuestas.get("reporte")) or no(respuestas.get("reporte")):
-            faltan.append("Reporte o constancia de la autoridad competente.")
-    if caso=="matricula_primera_vez":
-        if normalizar(respuestas.get("domicilio"))=="no":
-            faltan.append("Comprobante de domicilio.")
-    if caso=="pasaporte_primera_vez":
-        if no(respuestas.get("nacionalidad")):
-            faltan.append("Documento original de nacionalidad mexicana.")
-        if no(respuestas.get("identidad")):
-            faltan.append("Identificación original con fotografía.")
-    if caso=="pasaporte_renovacion":
-        if no(respuestas.get("pasaporte_actual")):
-            faltan.append("Pasaporte que se desea renovar.")
-    if caso=="matricula_renovacion":
-        if no(respuestas.get("matricula_actual")):
-            faltan.append("Matrícula consular actual.")
-    return {"faltan":unicos(faltan),"confirmar":unicos(confirmar)}
+def calcular_estado(caso,res,p):
+ falt=evaluar_requisitos(caso,res,p)
+ if falt:return "INCOMPLETO"
+ return "PREPARADO PARA REVISIÓN"
 
-def calcular_estado(caso,respuestas,perfil):
-    ev=evaluar_requisitos(caso,respuestas)
-    if ev["faltan"]:
-        return "rojo" if len(ev["faltan"])>=2 else "amarillo"
-    return "verde"
+def informacion_cita(caso,c,res):
+ return c.get("cita","Confirma el procedimiento oficial de cita.")
 
-def informacion_cita(caso,respuestas):
-    c=obtener_caso(caso)
-    if not c or not c["cita"]:return ""
-    return (
-        "La atención requiere cita. Consulta y confirma la cita en "
-        f"{FUENTES['citas']} o mediante el teléfono {CONTACTO['telefono']}."
-    )
+def informacion_pago(caso,c,res,p):
+ edad=entero(p.get("edad"))
+ if caso.startswith("pasaporte"):
+  vig=normalizar(res.get("vigencia_pasaporte"))
+  if edad is not None and edad<3:
+   return "Tarifa según vigencia de 1 o 3 años. Confirma tarifa oficial vigente."
+  if edad is not None and edad<18:
+   if "6" in vig:return f"${TARIFAS['pasaporte_6']} para 6 años, según tarifa publicada para Miami. Confirma tarifa vigente."
+   return f"${TARIFAS['pasaporte_3']} para 3 años, según tarifa publicada para Miami. Confirma tarifa vigente."
+  if "10" in vig:return f"${TARIFAS['pasaporte_10']} para 10 años, según tarifa publicada para Miami. Confirma tarifa vigente."
+  if "6" in vig:return f"${TARIFAS['pasaporte_6']} para 6 años, según tarifa publicada para Miami. Confirma tarifa vigente."
+  if "3" in vig:return f"${TARIFAS['pasaporte_3']} para 3 años, según tarifa publicada para Miami. Confirma tarifa vigente."
+  return "Tarifa según la vigencia elegida. Confirma la tarifa oficial vigente."
+ return c.get("pago","Confirma la tarifa oficial vigente.")
 
-def informacion_pago(caso,respuestas):
-    c=obtener_caso(caso)
-    return c.get("pago","") if c else ""
+def vigencia_del_caso(caso,c,p):
+ return c.get("vigencia","Confirma la vigencia oficial.")
 
-def vigencia_del_caso(caso,respuestas):
-    c=obtener_caso(caso)
-    return c.get("vigencia","") if c else ""
+def entrega_del_caso(caso,c):
+ return c.get("entrega","Confirma la entrega oficial.")
 
-def entrega_del_caso(caso,respuestas):
-    c=obtener_caso(caso)
-    return c.get("entrega","") if c else ""
+def situaciones_especiales(caso,res,p):
+ s=[]
+ edad=entero(p.get("edad"))
+ if caso.startswith("pasaporte"):
+  if edad is not None and edad<3:s.append("Para menores de 3 años existen vigencias específicas.")
+  elif edad is not None and edad<18:s.append("Para menores de edad existen requisitos adicionales que deben confirmarse con el Consulado.")
+  if caso=="pasaporte_renovacion" and no(res.get("pasaporte_actual")):s.append("Si no tienes el pasaporte anterior, pueden aplicar requisitos de primera expedición.")
+  if caso=="pasaporte_perdido_robo_mutilado" and not si(res.get("reporte")):s.append("La pérdida, robo o daño requiere atención especial y reporte de la autoridad competente.")
+ if caso=="matricula_primera_vez" and res.get("domicilio")=="Está a nombre de otra persona":
+  s.append("Si el comprobante de domicilio no está a tu nombre, confirma las alternativas aceptadas por el Consulado.")
+ if caso=="acta_nacimiento_certificada" and res.get("modalidad")=="En línea":
+  s.append("Puedes consultar la opción oficial en gob.mx/ActaNacimiento.")
+ return unicos(s)
 
-def situaciones_especiales(caso,respuestas):
-    c=obtener_caso(caso)
-    return c.get("especiales",[]) if c else []
+def acciones_del_caso(caso,res,p,falt):
+ acciones=[]
+ if falt:acciones.append("Completa los datos que aparecen como pendientes.")
+ if not si(res.get("cita")) and caso!="acta_nacimiento_certificada":
+  acciones.append("Solicita o confirma tu cita.")
+ if caso=="acta_nacimiento_certificada" and res.get("modalidad")=="En línea":
+  acciones.append("Consulta el portal oficial para realizar el trámite en línea.")
+ acciones.append("Revisa tu Hoja de Ruta antes de acudir.")
+ acciones.append("Confirma la información oficial antes de realizar el trámite.")
+ return unicos(acciones)
 
-def acciones_del_caso(caso,respuestas):
-    c=obtener_caso(caso)
-    return c.get("acciones",[]) if c else []
+def pantalla_resultado(caso,res,p):
+ c=obtener_caso(caso)
+ falt=evaluar_requisitos(caso,res,p)
+ return {
+  "caso":caso,
+  "nombre_tramite":c["nombre"],
+  "estado":calcular_estado(caso,res,p),
+  "datos":datos_personales(p),
+  "personas":personas_del_caso(caso,p),
+  "requisitos":documentos_del_caso(c),
+  "originales":originales_del_caso(c),
+  "copias":copias_del_caso(c),
+  "faltantes":falt,
+  "confirmar":["Confirma la información oficial del Consulado correspondiente a tu lugar de residencia."],
+  "pago":informacion_pago(caso,c,res,p),
+  "cita":informacion_cita(caso,c,res),
+  "vigencia":vigencia_del_caso(caso,c,p),
+  "entrega":entrega_del_caso(caso,c),
+  "especial":situaciones_especiales(caso,res,p),
+  "acciones":acciones_del_caso(caso,res,p,falt),
+  "fuentes":[{"nombre":"Información oficial","url":c.get("fuente","")}],
+  "fuente":c.get("fuente",""),
+  "contacto":CONTACTO,
+  "perfil":p
+ }
 
-def _texto_estado(estado):
-    if estado=="verde":
-        return "🟢 PARECES LISTO"
-    if estado=="amarillo":
-        return "🟡 TE FALTA ALGO"
-    return "🔴 ATENCIÓN / NO VAYAS TODAVÍA"
+def resultado(caso,respuestas=None,perfil=None):
+ respuestas=respuestas or {}
+ p=_perfil_desde(respuestas,perfil)
+ return pantalla_resultado(caso,respuestas,p)
 
-def pantalla_resultado(servicio,caso,respuestas=None,perfil=None):
-    respuestas=deepcopy(respuestas or {})
-    perfil=datos_personales(perfil or {},respuestas)
-    c=obtener_caso(caso)
-    if not c:
-        return {
-            "tipo":"error",
-            "mensaje":"No pude identificar un trámite válido."
-        }
+def iniciar(texto_inicial="",perfil=None):
+ p=extraer_perfil(texto_inicial,perfil)
+ caso=identificar_caso(texto_inicial)
+ if not caso:
+  return {
+   "ok":True,"pantalla":"inicio","perfil":p,
+   "mensaje":"Primero identifica tus datos y después elige qué necesitas.",
+   "tramites":catalogo()
+  }
+ return seleccionar_caso(caso,p)
 
-    estado=calcular_estado(caso,respuestas,perfil)
-    ev=evaluar_requisitos(caso,respuestas)
+def seleccionar_caso(caso,perfil=None,respuestas=None):
+ if caso not in TRAMITES:raise ValueError("Trámite no disponible.")
+ res=dict(respuestas or {})
+ p=_perfil_desde(res,perfil)
+ q=siguiente_pregunta(caso,res)
+ if q:
+  activos=preguntas_activas(caso,res)
+  return {
+   "ok":True,"caso":caso,"servicio":TRAMITES[caso]["nombre"],
+   "perfil":p,"respuestas":res,
+   "pregunta":pregunta_json(q,activos.index(q)+1,len(activos))
+  }
+ return {"ok":True,"caso":caso,"perfil":p,"respuestas":res,"resultado":resultado(caso,res,p)}
 
-    if estado=="verde":
-        mensaje="Con la información proporcionada, tienes los elementos principales preparados. Confirma la información oficial antes de acudir."
-    elif estado=="amarillo":
-        mensaje="Hay información que todavía debes completar o confirmar antes de acudir."
-    else:
-        mensaje="Todavía falta información o documentación importante. Es mejor no acudir hasta resolver lo indicado."
+def continuar(caso,respuestas=None,perfil=None,pregunta_id="",respuesta=""):
+ res=dict(respuestas or {})
+ if pregunta_id:
+  q=pregunta_por_id(caso,pregunta_id)
+  if q:res[pregunta_id]=interpretar_respuesta(q,respuesta)
+ p=extraer_perfil(res.get("texto",""),perfil)
+ p=_perfil_desde(res,p)
+ q=siguiente_pregunta(caso,res)
+ if q:
+  activos=preguntas_activas(caso,res)
+  return {
+   "ok":True,"caso":caso,"servicio":TRAMITES[caso]["nombre"],
+   "perfil":p,"respuestas":res,
+   "pregunta":pregunta_json(q,activos.index(q)+1,len(activos))
+  }
+ return {"ok":True,"caso":caso,"perfil":p,"respuestas":res,"resultado":resultado(caso,res,p)}
 
-    return {
-        "tipo":"resultado",
-        "estado":estado,
-        "titulo":_texto_estado(estado),
-        "mensaje":mensaje,
-        "servicio":servicio,
-        "caso":caso,
-        "nombre_tramite":c["nombre"],
-        "descripcion":c["descripcion"],
-        "perfil":perfil,
-        "datos_personales":perfil,
-        "respuestas":respuestas,
-        "personas":personas_del_caso(caso),
-        "requisitos":documentos_del_caso(caso),
-        "originales":originales_del_caso(caso),
-        "copias":copias_del_caso(caso),
-        "faltan":ev["faltan"],
-        "confirmar":ev["confirmar"],
-        "pago":informacion_pago(caso,respuestas),
-        "cita":informacion_cita(caso,respuestas),
-        "vigencia":vigencia_del_caso(caso,respuestas),
-        "entrega":entrega_del_caso(caso,respuestas),
-        "especiales":situaciones_especiales(caso,respuestas),
-        "acciones":acciones_del_caso(caso,respuestas),
-        "fuente":c["fuente"],
-        "fuente_oficial":c["fuente"],
-        "boton_oficial":"VER INFORMACIÓN OFICIAL",
-        "contacto":CONTACTO
-    }
-
-def resultado(servicio,caso,respuestas=None,perfil=None):
-    return pantalla_resultado(servicio,caso,respuestas,perfil)
-
-# ============================================================
-# FLUJO PRINCIPAL
-# ============================================================
-
-def iniciar(texto_inicial="",servicio=""):
-    s=texto(texto_inicial)
-    perfil=extraer_perfil(s)
-    caso=identificar_caso(s)
-
-    if not caso:
-        return {
-            "tipo":"seleccion",
-            "servicio":normalizar_servicio(servicio),
-            "perfil":perfil,
-            "catalogo":obtener_catalogo()
-        }
-
-    c=obtener_caso(caso)
-    respuestas={}
-
-    # La frase inicial solamente alimenta los datos que realmente
-    # pueden identificarse. No se usa como respuesta automática
-    # para todas las preguntas.
-    if perfil.get("nombre_completo"):
-        respuestas["nombre"]=perfil["nombre_completo"]
-    if perfil.get("telefono"):
-        respuestas["telefono"]=perfil["telefono"]
-    if perfil.get("email"):
-        respuestas["email"]=perfil["email"]
-    if perfil.get("direccion"):
-        respuestas["direccion"]=perfil["direccion"]
-    if perfil.get("estado"):
-        respuestas["estado"]=perfil["estado"]
-    if perfil.get("zip"):
-        respuestas["zip"]=perfil["zip"]
-
-    q=siguiente_pregunta(caso,respuestas)
-
-    if q:
-        return {
-            "tipo":"pregunta",
-            "servicio":normalizar_servicio(servicio) or c["categoria"],
-            "caso":caso,
-            "pregunta":pregunta_json(caso,q,respuestas),
-            "pregunta_id":q["id"],
-            "respuestas":respuestas,
-            "perfil":perfil
-        }
-
-    return pantalla_resultado(
-        normalizar_servicio(servicio) or c["categoria"],
-        caso,respuestas,perfil
-    )
-
-def seleccionar_caso(servicio,caso,perfil=None,respuestas=None):
-    if caso not in TRAMITES:
-        return {"tipo":"error","mensaje":"Trámite no disponible."}
-    r=deepcopy(respuestas or {})
-    p=fusionar(perfil_vacio(),perfil or {})
-    for k,v in {
-        "nombre":"nombre_completo","telefono":"telefono",
-        "email":"email","direccion":"direccion",
-        "estado":"estado","zip":"zip"
-    }.items():
-        if p.get(v) and not r.get(k):
-            r[k]=p[v]
-
-    q=siguiente_pregunta(caso,r)
-    if q:
-        return {
-            "tipo":"pregunta",
-            "servicio":servicio or obtener_caso(caso)["categoria"],
-            "caso":caso,
-            "pregunta":pregunta_json(caso,q,r),
-            "pregunta_id":q["id"],
-            "respuestas":r,
-            "perfil":p
-        }
-    return pantalla_resultado(servicio,caso,r,p)
-
-def continuar(servicio,caso,pregunta_id="",texto="",respuestas=None,perfil=None):
-    r=deepcopy(respuestas or {})
-    p=fusionar(perfil_vacio(),perfil or {})
-    valor=texto if isinstance(texto,str) else str(texto or "")
-
-    # IMPORTANTE:
-    # app.js puede mandar la respuesta mediante "respuestas" y
-    # dejar texto vacío. Por eso primero conservamos ese diccionario.
-    if pregunta_id and valor.strip():
-        r[pregunta_id]=interpretar_respuesta(caso,pregunta_id,valor,r)
-        p=extraer_perfil(valor,p)
-
-    # Si el texto contiene datos personales, se incorporan sin
-    # convertir toda la frase en respuesta de la pregunta actual.
-    p=extraer_perfil(valor,p)
-
-    for k,d in {
-        "nombre":"nombre_completo","telefono":"telefono",
-        "email":"email","direccion":"direccion",
-        "estado":"estado","zip":"zip"
-    }.items():
-        if vacio(r.get(k)) and not vacio(p.get(d)):
-            r[k]=p[d]
-
-    q=siguiente_pregunta(caso,r,pregunta_id)
-
-    if q:
-        return {
-            "tipo":"pregunta",
-            "servicio":servicio,
-            "caso":caso,
-            "pregunta":pregunta_json(caso,q,r),
-            "pregunta_id":q["id"],
-            "respuestas":r,
-            "perfil":p
-        }
-
-    return pantalla_resultado(servicio,caso,r,p)
-
-def interpretar(servicio,texto_usuario="",caso="",respuestas=None,perfil=None):
-    s=texto(texto_usuario)
-    r=deepcopy(respuestas or {})
-    p=extraer_perfil(s,perfil or {})
-    caso=caso or identificar_caso(s)
-
-    if not caso:
-        return {
-            "tipo":"seleccion",
-            "servicio":normalizar_servicio(servicio),
-            "perfil":p,
-            "catalogo":obtener_catalogo()
-        }
-
-    # Solo intenta responder la pregunta actual cuando el servidor
-    # conoce cuál es. Los demás datos de la frase se guardan en perfil.
-    pid=""
-    q=siguiente_pregunta(caso,r)
-    if q:
-        pid=q["id"]
-
-    if pid:
-        r[pid]=interpretar_respuesta(caso,pid,s,r)
-
-    for k,d in {
-        "nombre":"nombre_completo","telefono":"telefono",
-        "email":"email","direccion":"direccion",
-        "estado":"estado","zip":"zip"
-    }.items():
-        if p.get(d):r[k]=p[d]
-
-    return continuar(servicio,caso,pid,"",r,p)
-
-# ============================================================
-# CATÁLOGO / FUENTES / MANUAL
-# ============================================================
+def interpretar(caso,texto_usuario="",respuestas=None,perfil=None):
+ t=texto(texto_usuario)
+ res=dict(respuestas or {})
+ p=extraer_perfil(t,perfil)
+ if not caso:caso=identificar_caso(t)
+ if not caso:
+  return {
+   "ok":True,"pantalla":"seleccion",
+   "perfil":p,"mensaje":"Elige el trámite que necesitas.",
+   "tramites":catalogo()
+  }
+ q=siguiente_pregunta(caso,res)
+ if q:
+  val=interpretar_respuesta(q,t)
+  res[q["id"]]=val
+  p=extraer_perfil(t,p)
+  return continuar(caso,res,p,q["id"],val)
+ return resultado(caso,res,p)
 
 def catalogo():
-    return [
-        {
-            "id":"pasaporte_primera_vez",
-            "nombre":"Pasaporte mexicano — primera vez",
-            "descripcion":"Preparación para solicitar tu pasaporte por primera vez."
-        },
-        {
-            "id":"pasaporte_renovacion",
-            "nombre":"Pasaporte mexicano — renovación",
-            "descripcion":"Preparación para renovar tu pasaporte."
-        },
-        {
-            "id":"pasaporte_perdido_robo_mutilado",
-            "nombre":"Pasaporte — perdido, robado o dañado",
-            "descripcion":"Qué preparar cuando tu pasaporte se perdió, fue robado o está dañado."
-        },
-        {
-            "id":"matricula_primera_vez",
-            "nombre":"Matrícula consular — primera vez",
-            "descripcion":"Preparación para obtener tu matrícula consular."
-        },
-        {
-            "id":"matricula_renovacion",
-            "nombre":"Matrícula consular — renovación",
-            "descripcion":"Preparación para renovar tu matrícula consular."
-        },
-        {
-            "id":"acta_nacimiento_certificada",
-            "nombre":"Acta de nacimiento mexicana — copia certificada",
-            "descripcion":"Preparación para obtener una copia certificada."
-        }
-    ]
+ return [
+  {"caso":"pasaporte_primera_vez","nombre":"Pasaporte mexicano — primera vez","descripcion":"Para mexicanos de cualquier edad."},
+  {"caso":"pasaporte_renovacion","nombre":"Pasaporte mexicano — renovación","descripcion":"Para renovar un pasaporte."},
+  {"caso":"pasaporte_perdido_robo_mutilado","nombre":"Pasaporte mexicano — perdido, robado o dañado","descripcion":"Para estos casos especiales."},
+  {"caso":"matricula_primera_vez","nombre":"Matrícula consular — primera vez","descripcion":"Para obtenerla por primera vez."},
+  {"caso":"matricula_renovacion","nombre":"Matrícula consular — renovación","descripcion":"Para renovar la matrícula."},
+  {"caso":"acta_nacimiento_certificada","nombre":"Acta de nacimiento mexicana — copia certificada","descripcion":"Para obtener una copia certificada."}
+ ]
 
 def obtener_catalogo():
-    return catalogo()
+ return catalogo()
 
 def obtener_fuentes():
-    return {
-        "pasaporte":FUENTES["pasaporte"],
-        "matricula":FUENTES["matricula"],
-        "acta":FUENTES["acta"],
-        "tarifas":FUENTES["tarifas"],
-        "citas":FUENTES["citas"]
-    }
+ return deepcopy(FUENTES)
 
 def obtener_contacto():
-    return CONTACTO
+ return deepcopy(CONTACTO)
 
 def obtener_tarifas():
-    return TARIFAS
+ return deepcopy(TARIFAS)
 
 def obtener_manual():
-    return {
-        "nombre":APP,
-        "version":"4.0.0",
-        "funciona_sin_ia":True,
-        "tramites":catalogo(),
-        "regla":"Nunca inventar requisitos. Si falta información, indicarlo como PENDIENTE DE COMPLETAR y dirigir a la fuente oficial.",
-        "fuentes":obtener_fuentes(),
-        "contacto":CONTACTO,
-        "tarifas":TARIFAS
-    }
-
-# ============================================================
-# COMPATIBILIDAD CON VERSIONES ANTERIORES
-# ============================================================
+ return {
+  "app":APP,
+  "version":VERSION,
+  "proposito":"Identificar, preparar, revisar y recordar al usuario la información necesaria para sus trámites.",
+  "privacidad":"Los datos personales pueden mantenerse únicamente en el dispositivo del usuario mediante almacenamiento local del navegador; este motor no necesita una base de datos personal.",
+  "tramites":catalogo(),
+  "fuentes":FUENTES,
+  "regla":"No inventar requisitos. Confirmar siempre la información oficial vigente.",
+  "fuera_de_alcance":[
+   "Naturalización","Apellido por matrimonio","Acta extemporánea",
+   "Doble nacionalidad","OP-7","Poderes notariales","Cartilla militar",
+   "Credencial para votar","Otros trámites jurídicamente complejos no incluidos"
+  ]
+ }
 
 def caso_info(caso):
-    c=obtener_caso(caso)
-    if not c:return {}
-    return {
-        "id":c["id"],
-        "nombre":c["nombre"],
-        "descripcion":c["descripcion"],
-        "fuente":c["fuente"],
-        "requisitos":c["requisitos"],
-        "preguntas":c["preguntas"]
-    }
+ return obtener_caso(caso)
 
 def tramite_oficial(caso):
-    c=obtener_caso(caso)
-    return c["fuente"] if c else ""
+ c=obtener_caso(caso)
+ return c.get("fuente","") if c else ""
 
-def procesar(texto_usuario="",servicio="",caso="",respuestas=None,perfil=None):
-    if caso:
-        return continuar(
-            servicio,caso,
-            "",
-            texto_usuario,
-            respuestas or {},
-            perfil or {}
-        )
-    return iniciar(texto_usuario,servicio)
-
-# ============================================================
-# VALIDACIÓN INTERNA
-# ============================================================
-
-MANUAL_VALIDACION={
-    "pasaporte_primera_vez":True,
-    "pasaporte_renovacion":True,
-    "pasaporte_perdido_robo_mutilado":True,
-    "matricula_primera_vez":True,
-    "matricula_renovacion":True,
-    "acta_nacimiento_certificada":True
-}
+def procesar(caso,respuestas=None,perfil=None):
+ return resultado(caso,respuestas,perfil)
 
 def validar_manual():
-    errores=[]
-    for cid,c in TRAMITES.items():
-        if not c["preguntas"]:
-            errores.append(cid+": sin preguntas")
-        if not c["requisitos"]:
-            errores.append(cid+": sin requisitos")
-        if not c["originales"]:
-            errores.append(cid+": sin originales")
-        if not c["fuente"]:
-            errores.append(cid+": sin fuente oficial")
-    return {"ok":not errores,"errores":errores}
+ errores=[]
+ if len(TRAMITES)!=6:errores.append("El catálogo debe contener exactamente 6 trámites.")
+ for caso,c in TRAMITES.items():
+  if not c.get("preguntas"):errores.append(f"{caso}: sin preguntas.")
+  if not c.get("fuente"):errores.append(f"{caso}: sin fuente oficial.")
+ return {"ok":not errores,"errores":errores}
+
+MANUAL_VALIDACION=validar_manual()
+MANUAL_RESUMEN={
+ "version":VERSION,
+ "tramites":len(TRAMITES),
+ "validacion":MANUAL_VALIDACION["ok"]
+}
 
 def resumen_manual():
-    v=validar_manual()
-    return {
-        "tramites":len(TRAMITES),
-        "preguntas":sum(len(x["preguntas"]) for x in TRAMITES.values()),
-        "ok":v["ok"],
-        "errores":v["errores"]
-    }
+ return MANUAL_RESUMEN
 
-MANUAL_RESUMEN=resumen_manual()
+__all__=[
+ "APP","VERSION","CONSULADO","FUENTES","CONTACTO","TARIFAS","TRAMITES",
+ "catalogo","obtener_catalogo","obtener_fuentes","obtener_contacto",
+ "obtener_tarifas","obtener_manual","iniciar","seleccionar_caso",
+ "continuar","interpretar","resultado","caso_info","tramite_oficial",
+ "procesar","validar_manual","resumen_manual","extraer_perfil",
+ "perfil_vacio","pregunta_por_id","siguiente_pregunta","pregunta_json"
+]
