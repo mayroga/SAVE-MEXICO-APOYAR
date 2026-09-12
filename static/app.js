@@ -26,29 +26,57 @@ function comenzarDeNuevoLimpio() {
     casoActual = "";
     respuestas = {};
     resultadoFinal = null;
-    document.getElementById('input-nombre').value = "";
-    document.getElementById('input-tel').value = "";
-    document.getElementById('input-estado').value = "California";
-    document.getElementById('check-legal').checked = false;
-    document.getElementById('btn-comenzar').disabled = true;
+    
+    // Limpia los campos del formulario de forma segura
+    const nombre = document.getElementById('input-nombre');
+    const fecha = document.getElementById('input-fecha');
+    const origen = document.getElementById('input-origen');
+    const direccion = document.getElementById('input-direccion');
+    const tel = document.getElementById('input-tel');
+    const edo = document.getElementById('input-estado');
+    const chk = document.getElementById('check-legal');
+    const btn = document.getElementById('btn-comenzar');
+    
+    if (nombre) nombre.value = "";
+    if (fecha) fecha.value = "";
+    if (origen) origen.value = "Michoacán";
+    if (direccion) direccion.value = "";
+    if (tel) tel.value = "";
+    if (edo) edo.value = "California";
+    if (chk) chk.checked = false;
+    if (btn) btn.disabled = true;
+    
     irAPaso('paso-legal');
 }
 
 function irAPaso(id) {
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+    const target = document.getElementById(id);
+    if (target) target.classList.add('active');
     window.scrollTo(0, 0);
 }
 
 function guardarDatos() {
     const nombre = document.getElementById('input-nombre').value.trim();
+    const fecha = document.getElementById('input-fecha').value.trim();
+    const origen = document.getElementById('input-origen').value;
+    const direccion = document.getElementById('input-direccion').value.trim();
     const tel = document.getElementById('input-tel').value.trim();
     const edo = document.getElementById('input-estado').value;
 
     if (!nombre) { alert("Por favor escribe tu Nombre y Apellidos."); return; }
+    if (!fecha) { alert("Por favor escribe tu Fecha de Nacimiento."); return; }
+    if (!direccion) { alert("Por favor escribe tu Dirección en EE. UU."); return; }
     
-    perfil = { nombre_completo: nombre, telephone: tel, estado: edo, nacionalidad: "mexicana" };
-    perfil["telefono"] = tel; 
+    perfil = { 
+        nombre_completo: nombre, 
+        fecha_nacimiento: fecha,
+        origen_mexico: origen,
+        direccion_usa: direccion,
+        telefono: tel, 
+        estado: edo, 
+        nacionalidad: "mexicana" 
+    };
     cargarCatalogo();
 }
 
@@ -57,15 +85,16 @@ async function cargarCatalogo() {
         let res = await fetch('/api/catalogo');
         let datos = await res.json();
         let lista = document.getElementById('lista-tramites');
-        lista.innerHTML = "";
-        
-        datos.forEach(t => {
-            let btn = document.createElement('button');
-            btn.className = "option-btn";
-            btn.onclick = () => iniciarTramite(t.caso);
-            btn.innerHTML = `<strong>${t.nombre}</strong><span>${t.descripcion}</span>`;
-            lista.appendChild(btn);
-        });
+        if (lista) {
+            lista.innerHTML = "";
+            datos.forEach(t => {
+                let btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.onclick = () => iniciarTramite(t.caso);
+                btn.innerHTML = `<strong>${t.nombre}</strong><span>${t.descripcion}</span>`;
+                lista.appendChild(btn);
+            });
+        }
         irAPaso('paso-tramites');
     } catch(e) {
         alert("Error de conexión al cargar trámites.");
@@ -105,18 +134,39 @@ function procesarPaso(data) {
         document.getElementById('pregunta-titulo').innerText = data.servicio;
         document.getElementById('pregunta-texto').innerText = data.pregunta.pregunta;
         
-        let opcionesCont = document.getElementById('contenedor-opciones');
-        opcionesCont.innerHTML = "";
+        // Mapeo e Inyección de Ejemplos Visuales Oficiales para el Cliente
+        const divVisual = document.getElementById('contenedor-ejemplo-visual');
+        const imgVisual = document.getElementById('img-ejemplo');
         
-        data.pregunta.opciones.forEach(o => {
-            let lbl = document.createElement('label');
-            lbl.className = "radio-label";
-            lbl.innerHTML = `<input type="radio" name="r_opt" value="${o}"> <span>${o}</span>`;
-            lbl.onclick = () => {
-                setTimeout(() => enviarRespuesta(data.pregunta.id, o), 150);
-            };
-            opcionesCont.appendChild(lbl);
-        });
+        if (divVisual && imgVisual) {
+            if (data.pregunta.id === "acta_nacimiento") {
+                divVisual.style.display = "block";
+                imgVisual.src = "https://www.gob.mx";
+            } else if (data.pregunta.id === "identificacion") {
+                divVisual.style.display = "block";
+                imgVisual.src = "https://ine.mx";
+            } else if (data.pregunta.id === "domicilio") {
+                divVisual.style.display = "block";
+                imgVisual.src = "https://sre.gob.mx";
+            } else {
+                divVisual.style.display = "none";
+                imgVisual.src = "";
+            }
+        }
+        
+        let opcionesCont = document.getElementById('contenedor-opciones');
+        if (opcionesCont) {
+            opcionesCont.innerHTML = "";
+            data.pregunta.opciones.forEach(o => {
+                let lbl = document.createElement('label');
+                lbl.className = "radio-label";
+                lbl.innerHTML = `<input type="radio" name="r_opt" value="${o}"> <span>${o}</span>`;
+                lbl.onclick = () => {
+                    setTimeout(() => enviarRespuesta(data.pregunta.id, o), 150);
+                };
+                opcionesCont.appendChild(lbl);
+            });
+        }
     } else if (data.resultado) {
         mostrarResultado(data.resultado);
     }
@@ -127,8 +177,10 @@ function mostrarResultado(r) {
     irAPaso('paso-resultado');
     
     let cajaEstado = document.getElementById('res-caja-estado');
-    cajaEstado.className = "box-info " + (r.estado === "LISTO PARA TU CITA" ? "success" : "danger");
-    cajaEstado.innerHTML = `<strong>ESTATUS: ${r.estado}</strong><br>${r.mensaje_estado}`;
+    if (cajaEstado) {
+        cajaEstado.className = "box-info " + (r.estado === "LISTO PARA TU CITA" ? "success" : "danger");
+        cajaEstado.innerHTML = `<strong>ESTATUS: ${r.estado}</strong><br>${r.mensaje_estado}`;
+    }
     
     document.getElementById('res-consulado').innerText = r.consulado_nombre;
     document.getElementById('res-direccion').innerText = "📍 " + r.consulado_direccion;
@@ -141,26 +193,31 @@ function mostrarResultado(r) {
     inyectarLista('res-requisitos', r.requisitos_oficiales);
     
     let secFaltantes = document.getElementById('seccion-faltantes');
-    if(r.faltantes.length > 0) {
-        secFaltantes.style.display = "block";
-        inyectarLista('res-faltantes', r.faltantes);
-    } else {
-        secFaltantes.style.display = "none";
+    if (secFaltantes) {
+        if (r.faltantes.length > 0) {
+            secFaltantes.style.display = "block";
+            inyectarLista('res-faltantes', r.faltantes);
+        } else {
+            secFaltantes.style.display = "none";
+        }
     }
     
     inyectarLista('res-acciones', r.acciones_recomendadas);
 
     let btnWeb = document.getElementById('lnk-consulado-oficial');
-    if (r.url_consulado) {
-        btnWeb.href = r.url_consulado;
-        btnWeb.style.display = "block";
-    } else {
-        btnWeb.style.display = "none";
+    if (btnWeb) {
+        if (r.url_consulado) {
+            btnWeb.href = r.url_consulado;
+            btnWeb.style.display = "block";
+        } else {
+            btnWeb.style.display = "none";
+        }
     }
 }
 
 function inyectarLista(id, arreglo) {
     let el = document.getElementById(id);
+    if (!el) return;
     el.innerHTML = "";
     (arreglo || []).forEach(x => {
         let li = document.createElement('li');
@@ -208,11 +265,22 @@ async function descargarPDF() {
             document.body.appendChild(a);
             a.click();
             a.remove();
-        } else { alert("No se pudo guardar tu Hoja de Ruta."); }
-    } catch(e) { alert("Error de red al compilar tu PDF final."); }
+            setTimeout(() => window.URL.revokeObjectURL(url), 2000);
+        } else { 
+            alert("No se pudo guardar tu Hoja de Ruta."); 
+        }
+    } catch(e) { 
+        alert("Error de red al compilar tu PDF final."); 
+    }
 }
 
-function abortarCuestionario() { cargarCatalogo(); }
-function reiniciarTodo() { comenzarDeNuevoLimpio(); }
+function abortarCuestionario() { 
+    cargarCatalogo(); 
+}
 
+function reiniciarTodo() { 
+    comenzarDeNuevoLimpio(); 
+}
+
+// Inicializa el sistema protector desde el arranque del script
 iniciarRelojInactividad();
