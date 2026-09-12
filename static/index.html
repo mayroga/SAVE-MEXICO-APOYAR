@@ -81,7 +81,7 @@
  <p>Tu Guía Consular en 3 Pasos</p>
  </div>
 
- <!-- PASO 0: EXPLICACIÓN DE ENTRADA Y AVISO LEGAL -->
+ <!-- PASO 0: EXPLICACIÓN DE ENTRADA, MURO DE PAGO STRIPE Y ACCESO DEV -->
  <div id="paso-legal" class="step active">
  <div class="hero-banner">
  <h1>MEXICANO APOYA MEXICANO</h1>
@@ -105,13 +105,34 @@
  Al marcar la casilla de abajo, liberas de toda responsabilidad jurídica a MAY ROGA LLC y aceptas que usarás esta hoja como una guía informativa previa.
  </p>
  </div>
-<div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
- <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; font-weight: bold;">
- <!-- CORREGIDO: Se añade validación directa por si el script tarda en cargar -->
- <input type="checkbox" id="check-legal" onchange="if(typeof validarCheck === 'function') { validarCheck() } else { document.getElementById('btn-comenzar').disabled = !this.checked; }" style="margin-top: 3px; width: auto; height: auto;">
- <span>Acepto los términos de uso y el deslinde de responsabilidad de MAY ROGA LLC.</span>
- </label>
-</div>
+
+ <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+  <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; font-weight: bold;">
+   <input type="checkbox" id="check-legal" onchange="validarCheck()" style="margin-top: 3px; width: auto; height: auto;">
+   <span>Acepto los términos de uso y el deslinde de responsabilidad de MAY ROGA LLC.</span>
+  </label>
+ </div>
+
+ <!-- CONTENEDOR COMERCIAL: BOTONES DEL MURO DE PAGO DE STRIPE (DESACTIVADOS HASTA MARCAR LA CASILLA) -->
+ <div id="muro-pago-stripe" style="margin-top: 20px;">
+     <h3 style="font-size: 14px; color: var(--primary-dark); margin-bottom: 10px; text-transform: uppercase; font-weight: bold;">Selecciona tu plan para activar el servicio:</h3>
+     <button id="btn-plan-diario" class="btn" style="background: var(--accent);" onclick="solicitarAccesoStripe('diario')" disabled>💳 COMPRAR PASE DIARIO — $15.99 USD (1 Consulta)</button>
+     <button id="btn-plan-mensual" class="btn" style="background: var(--primary);" onclick="solicitarAccesoStripe('mensual')" disabled>🔄 SUSCRIPCIÓN MENSUAL — $25.99 USD (4 Consultas al día por 30 días)</button>
+ </div>
+
+ <!-- BOTÓN DE ACCESO DE CONFIANZA PARA CONTINUAR TRAS EL PAGO -->
+ <button id="btn-comenzar" class="btn btn-secondary" style="display:none;" onclick="irAPaso('paso-datos')">ENTENDIDO Y COMENZAR FORMULARIO</button>
+
+ <!-- BOTÓN OCULTO PARA EL DESARROLLADOR (BYPASS DE PAGO) -->
+ <div style="margin-top: 30px; text-align: center; border-top: 1px dashed #cbd5e0; padding-top: 15px;">
+     <a href="#" style="font-size: 11px; color: var(--muted); text-decoration: none;" onclick="document.getElementById('form-dev-oculto').style.display='block'; return false;">🔧 Acceso Desarrollador (Bypass Gratis)</a>
+     <div id="form-dev-oculto" style="display: none; margin-top: 10px; background: #edf2f7; padding: 10px; border-radius: 6px;">
+         <input type="text" id="dev-user" placeholder="Username" style="margin-bottom: 5px; padding: 6px; font-size: 12px; width: 100%;">
+         <input type="password" id="dev-pass" placeholder="Password" style="margin-bottom: 5px; padding: 6px; font-size: 12px; width: 100%;">
+         <button type="button" class="btn" style="padding: 6px; font-size: 12px; margin: 0;" onclick="bypassDesarrollador(document.getElementById('dev-user').value, document.getElementById('dev-pass').value)">Validar Acceso</button>
+     </div>
+ </div>
+ </div>
 
  <!-- PASO 1: TUS DATOS BÁSICOS -->
  <div id="paso-datos" class="step">
