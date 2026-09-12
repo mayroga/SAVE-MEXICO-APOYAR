@@ -1,6 +1,11 @@
 const $=id=>document.getElementById(id);
 const KEY="mexicano_apoya_mexicano_perfil";
-const state={caso:"",servicio:"",pregunta_id:"",pregunta:null,respuestas:{},perfil:{},resultado:null,identificacion:[],historial:[],pdfTexto:""};
+
+const state={
+ caso:"",servicio:"",pregunta_id:"",pregunta:null,
+ respuestas:{},perfil:{},resultado:null,
+ historial:[],pdfTexto:"",pdfUrl:""
+};
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const txt=v=>String(v??"").trim();
@@ -22,7 +27,7 @@ function toast(t){
  const e=$("toast");if(!e)return;
  e.textContent=t;e.classList.add("show");
  clearTimeout(window._toast);
- window._toast=setTimeout(()=>e.classList.remove("show"),2600);
+ window._toast=setTimeout(()=>e.classList.remove("show"),2800);
 }
 
 function guardarLocal(){
@@ -34,11 +39,6 @@ function cargarLocal(){
   const p=JSON.parse(localStorage.getItem(KEY)||"{}");
   if(p&&typeof p==="object")state.perfil=p;
  }catch(e){state.perfil={};}
-}
-
-function borrarLocal(){
- try{localStorage.removeItem(KEY)}catch(e){}
- state.perfil={};
 }
 
 function campo(id,label,type="text",value=""){
@@ -97,16 +97,14 @@ async function cargarCatalogo(){
   const d=await api("/api/catalogo");
   const lista=Array.isArray(d)?d:(d.casos||d.tramites||d.catalogo||[]);
   renderCatalogo(lista);
- }catch(e){
-  toast("No se pudo cargar la información.");
- }
+ }catch(e){toast("No se pudo cargar la información.");}
 }
 
 function renderCatalogo(lista){
  const box=$("listaTramites");
  if(!box)return;
  box.innerHTML="";
- if(!Array.isArray(lista)||!lista.length){
+ if(!lista.length){
   box.innerHTML="<p class='muted'>No hay trámites disponibles.</p>";
   return;
  }
@@ -116,7 +114,7 @@ function renderCatalogo(lista){
   const b=document.createElement("button");
   b.className="tramite";
   b.type="button";
-  b.innerHTML=`<strong>${esc(x.nombre||x.titulo||id)}</strong><small>${esc(x.descripcion||"Preparación y revisión del trámite.")}</small>`;
+  b.innerHTML=`<strong>${esc(x.nombre||x.titulo||id)}</strong><small>${esc(x.descripcion||"Preparación del trámite.")}</small>`;
   b.onclick=()=>seleccionar(id,x.nombre||"");
   box.appendChild(b);
  });
@@ -128,6 +126,7 @@ async function seleccionar(caso,nombre){
  state.respuestas={};
  state.resultado=null;
  state.historial=[];
+
  const faltantes=perfilNecesario();
  if(faltantes.length){
   renderIdentificacion();
@@ -153,24 +152,16 @@ async function comenzarCaso(){
 
 async function guardarPerfil(){
  leerIdentificacion();
+
  const faltantes=perfilNecesario();
  if(faltantes.length){
   toast("Falta: "+faltantes[0]);
   focoPerfil(faltantes[0]);
   return;
  }
+
  guardarLocal();
  await comenzarCaso();
-}
-
-function guardarEstadoPregunta(){
- if(state.pregunta_id){
-  state.historial.push({
-   pregunta_id:state.pregunta_id,
-   pregunta:state.pregunta,
-   respuesta:state.respuestas[state.pregunta_id]
-  });
- }
 }
 
 function aplicar(d){
@@ -195,14 +186,18 @@ function aplicar(d){
 
 function renderPregunta(q){
  state.pregunta=q;
+
  $("tramiteTitulo").textContent=state.servicio||"Tu trámite";
  $("preguntaTexto").textContent=q.pregunta||q.texto||"";
+
  const paso=Number(q.paso||0),total=Number(q.total||0);
  $("paso").textContent=total?`${paso} de ${total}`:"";
- $("progresoBarra").style.width=total?`${Math.max(0,Math.min(100,(paso-1)/total*100))}%`:"0%";
+ $("progresoBarra").style.width=total?
+  `${Math.max(0,Math.min(100,(paso-1)/total*100))}%`:"0%";
 
  const box=$("opciones");
  box.innerHTML="";
+
  (q.opciones||[]).forEach(v=>{
   const label=document.createElement("label");
   label.className="opcion";
@@ -211,7 +206,7 @@ function renderPregunta(q){
  });
 
  $("textoEntrada").value="";
- $("textoEntrada").placeholder=q.placeholder||"Escribe, pega o usa HABLAR.";
+ $("textoEntrada").placeholder=q.placeholder||"Escribe, pega o agrega información aquí...";
 }
 
 function obtenerRespuesta(){
@@ -235,7 +230,12 @@ async function continuar(){
  if(state.pregunta_id)state.respuestas[state.pregunta_id]=v;
 
  try{
-  guardarEstadoPregunta();
+  state.historial.push({
+   pregunta_id:state.pregunta_id,
+   pregunta:state.pregunta,
+   respuesta:v
+  });
+
   const d=await api("/api/continuar",{
    method:"POST",
    body:JSON.stringify({
@@ -247,41 +247,47 @@ async function continuar(){
     perfil:state.perfil
    })
   });
+
   aplicar(d);
  }catch(e){toast(e.message);}
 }
 
 function anteriorPregunta(){
- if(state.historial.length<2){
+ if(state.historial.length<=1){
+  renderIdentificacion();
   mostrar("identificacion");
   return;
  }
 
  state.historial.pop();
- const anterior=state.historial[state.historial.length-1];
- if(!anterior)return;
+ const a=state.historial[state.historial.length-1];
+ if(!a)return;
 
- state.pregunta_id=anterior.pregunta_id;
- state.pregunta=anterior.pregunta;
- state.respuestas[state.pregunta_id]=anterior.respuesta||"";
- renderPregunta(anterior.pregunta);
+ state.pregunta_id=a.pregunta_id;
+ state.pregunta=a.pregunta;
+ state.respuestas[a.pregunta_id]=a.respuesta||"";
+
+ renderPregunta(a.pregunta);
  mostrar("preguntas");
 
  setTimeout(()=>{
-  const v=anterior.respuesta||"";
+  const v=a.respuesta||"";
   document.querySelectorAll("input[name='q']").forEach(x=>{
-   if(x.value===v)x.checked=true;
+   x.checked=x.value===v;
   });
-  if(!document.querySelector("input[name='q']:checked"))$("textoEntrada").value=v;
- },0);
+  if(!document.querySelector("input[name='q']:checked")){
+   $("textoEntrada").value=v;
+  }
+ },30);
 }
 
-async function hablar(){
+function reconocimiento(campo){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR){
   toast("Tu navegador no permite usar el micrófono.");
   return;
  }
+
  const r=new SR();
  r.lang="es-MX";
  r.interimResults=false;
@@ -289,7 +295,37 @@ async function hablar(){
  r.onstart=()=>toast("Habla ahora...");
  r.onerror=()=>toast("No se pudo usar el micrófono.");
  r.onresult=e=>{
-  $("textoEntrada").value=e.results?.[0]?.[0]?.transcript||"";
+  const t=e.results?.[0]?.[0]?.transcript||"";
+  if(campo){
+   const el=$(campo);
+   if(el)el.value=t;
+  }else $("textoEntrada").value=t;
+ };
+ r.start();
+}
+
+function hablar(){reconocimiento("textoEntrada");}
+
+function hablarPerfil(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){
+  toast("Tu navegador no permite usar el micrófono.");
+  return;
+ }
+
+ const r=new SR();
+ r.lang="es-MX";
+ r.interimResults=false;
+ r.continuous=false;
+ r.onstart=()=>toast("Di tus datos...");
+ r.onerror=()=>toast("No se pudo usar el micrófono.");
+ r.onresult=e=>{
+  const t=e.results?.[0]?.[0]?.transcript||"";
+  const el=$("id_nombre_completo");
+  if(el){
+   el.value=t;
+   toast("Información recibida. Revisa y completa los demás campos.");
+  }
  };
  r.start();
 }
@@ -307,30 +343,147 @@ async function pegar(){
  }
 }
 
+async function pegarPerfil(){
+ try{
+  const t=await navigator.clipboard.readText();
+  if(!t){
+   toast("No hay texto para pegar.");
+   return;
+  }
+
+  const el=$("id_nombre_completo");
+  if(el)el.value=t;
+  toast("Información pegada. Revísala antes de continuar.");
+ }catch(e){
+  toast("Pega la información directamente en los campos.");
+ }
+}
+
+async function enviarPDF(inputId,mensajeId,textareaId,usar){
+ const input=$(inputId);
+ if(!input?.files?.length){
+  toast("Selecciona un PDF.");
+  return;
+ }
+
+ const file=input.files[0];
+
+ if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){
+  toast("El archivo debe ser PDF.");
+  return;
+ }
+
+ if(file.size>15*1024*1024){
+  toast("El PDF no puede superar 15 MB.");
+  return;
+ }
+
+ const fd=new FormData();
+ fd.append("file",file);
+
+ try{
+  $(mensajeId).textContent="Leyendo PDF...";
+  const r=await fetch("/api/documento",{method:"POST",body:fd});
+  const d=await r.json().catch(()=>({}));
+
+  if(!r.ok)throw Error(d.detail||"No se pudo leer el PDF.");
+
+  state.pdfTexto=d.texto||"";
+
+  if(!state.pdfTexto){
+   $(mensajeId).textContent="No se encontró texto extraíble. Puedes copiar la información manualmente.";
+   toast("El PDF no contiene texto extraíble.");
+   return;
+  }
+
+  if(textareaId){
+   $(textareaId).value=state.pdfTexto;
+   $(textareaId).classList.remove("oculto");
+  }
+
+  $(mensajeId).textContent="PDF leído. Revisa la información encontrada.";
+
+  if(usar){
+   $(usar).classList.remove("oculto");
+   $(usar).dataset.texto=state.pdfTexto;
+  }
+
+  toast("PDF leído correctamente.");
+ }catch(e){
+  $(mensajeId).textContent="";
+  toast(e.message);
+ }
+}
+
+async function leerPDFPrincipal(){
+ await enviarPDF("archivoPdf","pdfMensaje","pdfTexto","usarPdf");
+}
+
+function usarPDFPrincipal(){
+ if(!state.pdfTexto){
+  toast("Primero selecciona y lee un PDF.");
+  return;
+ }
+
+ state.perfil._texto_pdf=state.pdfTexto;
+
+ mostrar("identificacion");
+ renderIdentificacion();
+
+ const campo=$("id_nombre_completo");
+ if(campo)campo.value=state.pdfTexto;
+
+ toast("Información del PDF cargada. Revisa y completa tus datos.");
+}
+
+async function leerPDFPregunta(){
+ await enviarPDF("pdfPregunta","pdfPreguntaMensaje","textoEntrada",null);
+ if(state.pdfTexto){
+  $("textoEntrada").value=state.pdfTexto;
+  $("pdfPreguntaMensaje").textContent="PDF leído. Revisa el texto antes de continuar.";
+ }
+}
+
 function renderLista(v){
  if(!Array.isArray(v)||!v.length)return "<p class='muted'>No hay información registrada.</p>";
- return `<ul class="lista-simple">${v.map(x=>{
-  const t=typeof x==="string"?x:(x?.texto||x?.nombre||x?.descripcion||"");
-  return t?`<li>${esc(t)}</li>`:"";
- }).join("")}</ul>`;
+
+ return `<ul class="lista-simple">${
+  v.map(x=>{
+   const t=typeof x==="string"?x:(x?.texto||x?.nombre||x?.descripcion||"");
+   return t?`<li>${esc(t)}</li>`:"";
+  }).join("")
+ }</ul>`;
 }
 
 function renderDatos(v){
  if(!Array.isArray(v)||!v.length)return "<p class='muted'>No hay datos registrados.</p>";
- return `<ul class="lista-simple">${v.map(x=>`<li>${esc(typeof x==="string"?x:(x?.texto||x?.nombre||""))}</li>`).join("")}</ul>`;
+
+ return `<ul class="lista-simple">${
+  v.map(x=>{
+   const t=typeof x==="string"?x:(x?.texto||x?.nombre||"");
+   return `<li>${esc(t)}</li>`;
+  }).join("")
+ }</ul>`;
 }
 
 function renderResultado(r){
  state.resultado=r||{};
+
  $("nombreResultado").textContent=r.nombre_tramite||"Tu trámite";
 
  const estado=r.estado||"REVISIÓN";
  $("estadoResultado").textContent=estado;
 
- let mensaje="Revisa cuidadosamente toda la información antes de finalizar.";
- if(estado==="INCOMPLETO")mensaje="Todavía hay información que debes completar.";
- if(estado==="REVISAR DATOS")mensaje="Hay datos que no coinciden o necesitan corrección.";
- if(estado==="PREPARADO PARA REVISIÓN")mensaje="La preparación está lista. Ahora revisa todo antes de guardar tu Hoja de Ruta.";
+ let mensaje="Revisa cuidadosamente toda la información.";
+
+ if(estado==="INCOMPLETO")
+  mensaje="Todavía hay información que debes completar.";
+
+ if(estado==="REVISAR DATOS")
+  mensaje="Hay datos que no coinciden o necesitan corrección.";
+
+ if(estado==="PREPARADO PARA REVISIÓN")
+  mensaje="La preparación está lista. Revisa todo antes de guardar tu Hoja de Ruta.";
 
  $("mensajeResultado").textContent=mensaje;
 
@@ -338,19 +491,24 @@ function renderResultado(r){
   `<h3>TUS DATOS</h3>${renderDatos(r.datos)}`;
 
  $("resultadoNecesitas").innerHTML=
-  `<h3>NECESITAS</h3>${renderLista(r.requisitos||r.originales)}`;
+  `<h3>REQUISITOS</h3>${renderLista(r.requisitos||r.originales)}`;
 
  const falt=r.faltantes||[];
- $("resultadoFaltantes").innerHTML=
-  `<h3>${falt.length?"TE FALTA":"LO QUE ESTÁ COMPLETO"}</h3>`+
-  (falt.length?renderLista(falt):"<p>No se detectan pendientes en la información proporcionada.</p>");
 
- const confirmar=r.confirmar||r.revision||[];
+ $("resultadoFaltantes").innerHTML=
+  `<h3>${falt.length?"LO QUE TE FALTA":"LO QUE ESTÁ COMPLETO"}</h3>`+
+  (falt.length?
+   renderLista(falt):
+   "<p>No se detectan pendientes en la información proporcionada.</p>");
+
+ const confirmar=r.confirmar||r.revision||r.acciones||[];
+
  $("resultadoAcciones").innerHTML=
-  `<h3>REVISA Y CONFIRMA</h3>${renderLista(confirmar.length?confirmar:(r.acciones||[]))}`;
+  `<h3>REVISA Y CONFIRMA</h3>${renderLista(confirmar)}`;
 
  const url=r.fuente||(r.fuentes?.[0]?.url)||"";
  const oficial=$("oficial");
+
  if(url){
   oficial.href=url;
   oficial.style.display="inline-flex";
@@ -372,12 +530,34 @@ async function abrirPreview(){
     perfil:state.perfil
    })
   });
-  if(!r.ok)throw Error("No se pudo preparar la vista previa.");
+
+  if(!r.ok){
+   const d=await r.json().catch(()=>({}));
+   throw Error(d.detail||"No se pudo preparar la Hoja de Ruta.");
+  }
+
   const blob=await r.blob();
-  const url=URL.createObjectURL(blob);
-  window.open(url,"_blank","noopener");
-  setTimeout(()=>URL.revokeObjectURL(url),60000);
- }catch(e){toast(e.message);}
+
+  if(state.pdfUrl)URL.revokeObjectURL(state.pdfUrl);
+
+  state.pdfUrl=URL.createObjectURL(blob);
+
+  $("pdfFrame").src=state.pdfUrl;
+  $("visorPdf").classList.add("active");
+ }catch(e){
+  toast(e.message);
+ }
+}
+
+function cerrarPreview(){
+ $("visorPdf").classList.remove("active");
+
+ if($("pdfFrame"))$("pdfFrame").src="";
+
+ if(state.pdfUrl){
+  URL.revokeObjectURL(state.pdfUrl);
+  state.pdfUrl="";
+ }
 }
 
 async function descargarPDF(){
@@ -391,64 +571,33 @@ async function descargarPDF(){
     perfil:state.perfil
    })
   });
-  if(!r.ok)throw Error("No se pudo preparar la Hoja de Ruta.");
+
+  if(!r.ok){
+   const d=await r.json().catch(()=>({}));
+   throw Error(d.detail||"No se pudo generar el PDF.");
+  }
+
   const blob=await r.blob();
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
+
   a.href=url;
   a.download="Hoja_de_Ruta_EDITABLE.pdf";
+  a.style.display="none";
+
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1500);
- }catch(e){toast(e.message);}
-}
 
-async function leerPDF(){
- const input=$("archivoPdf");
- const mensaje=$("pdfMensaje");
- const texto=$("pdfTexto");
- if(!input?.files?.length){
-  toast("Selecciona un PDF.");
-  return;
- }
-
- const file=input.files[0];
- if(file.type!=="application/pdf"){
-  toast("El archivo debe ser PDF.");
-  return;
- }
-
- if(file.size>15*1024*1024){
-  toast("El PDF no puede superar 15 MB.");
-  return;
- }
-
- const fd=new FormData();
- fd.append("file",file);
-
- try{
-  mensaje.textContent="Leyendo PDF...";
-  const r=await fetch("/api/documento",{method:"POST",body:fd});
-  const d=await r.json().catch(()=>({}));
-  if(!r.ok)throw Error(d.detail||"No se pudo leer el PDF.");
-
-  state.pdfTexto=d.texto||"";
-  texto.value=state.pdfTexto;
-
-  if(state.pdfTexto){
-   texto.classList.remove("oculto");
-   mensaje.textContent="PDF leído. Revisa la información antes de utilizarla.";
-   $("textoEntrada")?.focus();
-   toast("PDF leído correctamente.");
-  }else{
-   mensaje.textContent="El PDF no contiene texto que pueda leerse automáticamente. Puedes copiar su información y pegarla.";
-   texto.classList.add("oculto");
-  }
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  toast("PDF guardado.");
  }catch(e){
-  mensaje.textContent="";
   toast(e.message);
  }
+}
+
+async function guardarDesdePdf(){
+ await descargarPDF();
 }
 
 function aceptarLegal(){
@@ -457,6 +606,8 @@ function aceptarLegal(){
 }
 
 function nuevoTramite(){
+ cerrarPreview();
+
  state.caso="";
  state.servicio="";
  state.pregunta_id="";
@@ -464,10 +615,14 @@ function nuevoTramite(){
  state.respuestas={};
  state.resultado=null;
  state.historial=[];
+ state.pdfTexto="";
+
  mostrar("tramites");
 }
 
 function salir(){
+ cerrarPreview();
+
  state.caso="";
  state.servicio="";
  state.pregunta_id="";
@@ -475,23 +630,14 @@ function salir(){
  state.respuestas={};
  state.resultado=null;
  state.historial=[];
- mostrar("inicio");
-}
+ state.pdfTexto="";
 
-function volverInicio(){
  mostrar("inicio");
-}
-
-function volverTramites(){
- mostrar("tramites");
 }
 
 function volverResultado(){
- if(state.pregunta){
-  mostrar("preguntas");
- }else{
-  mostrar("tramites");
- }
+ if(state.pregunta)mostrar("preguntas");
+ else mostrar("tramites");
 }
 
 function init(){
@@ -502,7 +648,7 @@ function init(){
 
  $("comenzar")?.addEventListener("click",()=>{
   if(!$("aceptarLegal")?.checked){
-   toast("Primero debes leer y aceptar la información.");
+   toast("Primero debes aceptar la información.");
    return;
   }
   mostrar("tramites");
@@ -510,15 +656,31 @@ function init(){
 
  $("guardarPerfil")?.addEventListener("click",guardarPerfil);
  $("continuar")?.addEventListener("click",continuar);
+
  $("voz")?.addEventListener("click",hablar);
+ $("vozPerfil")?.addEventListener("click",hablarPerfil);
+
  $("pegar")?.addEventListener("click",pegar);
- $("pdf")?.addEventListener("click",descargarPDF);
+ $("pegarPerfil")?.addEventListener("click",pegarPerfil);
+
+ $("leerPdf")?.addEventListener("click",leerPDFPrincipal);
+ $("usarPdf")?.addEventListener("click",usarPDFPrincipal);
+
+ $("subirPdfPregunta")?.addEventListener("click",()=>$("pdfPregunta")?.click());
+ $("pdfPregunta")?.addEventListener("change",leerPDFPregunta);
+
  $("pdfPreview")?.addEventListener("click",abrirPreview);
- $("leerPdf")?.addEventListener("click",leerPDF);
+ $("pdf")?.addEventListener("click",descargarPDF);
+ $("guardarDesdePdf")?.addEventListener("click",guardarDesdePdf);
+
+ $("cerrarPdf")?.addEventListener("click",cerrarPreview);
+ $("cerrarPdf2")?.addEventListener("click",cerrarPreview);
+
  $("nuevo")?.addEventListener("click",nuevoTramite);
  $("salir")?.addEventListener("click",salir);
- $("volverInicio")?.addEventListener("click",volverInicio);
- $("volverTramites")?.addEventListener("click",volverTramites);
+
+ $("volverInicio")?.addEventListener("click",()=>mostrar("inicio"));
+ $("volverTramites")?.addEventListener("click",()=>mostrar("tramites"));
  $("volverPregunta")?.addEventListener("click",anteriorPregunta);
  $("volverResultado")?.addEventListener("click",volverResultado);
 
