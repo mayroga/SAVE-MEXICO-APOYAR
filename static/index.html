@@ -4,169 +4,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEXICANO APOYA MEXICANO - Autoservicio Consular</title>
-    <link rel="stylesheet" href="static/style.css">
+    <title>MEXICANO APOYA MEXICANO - Tu Guía Consular</title>
+    <style>
+        :root {
+            --primary: #0f4c81;
+            --primary-dark: #072540;
+            --accent: #2e7d32;
+            --danger: #c62828;
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --text: #2c3e50;
+            --muted: #7f8c8d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; font-size: 15px; }
+        .container { max-width: 600px; margin: 20px auto; background: var(--card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #eaeded; padding-bottom: 15px; }
+        .header h1 { color: var(--primary-dark); font-size: 24px; margin-bottom: 5px; }
+        .header p { color: var(--muted); font-size: 13px; font-weight: bold; }
+        
+        .step { display: none; }
+        .step.active { display: block; }
+        
+        h2 { color: var(--primary); font-size: 18px; margin-bottom: 15px; font-weight: 600; }
+        p { margin-bottom: 15px; line-height: 1.5; }
+        
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px; text-transform: uppercase; color: var(--primary-dark); }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #bdc3c7; border-radius: 6px; font-size: 15px; outline: none; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+        
+        .btn { display: block; width: 100%; background: var(--primary); color: white; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; margin-top: 10px; transition: background 0.2s; }
+        .btn:hover { background: var(--primary-dark); }
+        .btn-secondary { background: #7f8c8d; }
+        .btn-secondary:hover { background: #616a6b; }
+        
+        .grid-options { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 20px 0; }
+        .option-btn { background: #f8f9fa; border: 2px solid #e2e8f0; padding: 18px; border-radius: 8px; text-align: left; cursor: pointer; transition: 0.2s; }
+        .option-btn:hover { border-color: var(--primary); background: #edf2f7; }
+        .option-btn strong { display: block; font-size: 16px; color: var(--primary-dark); margin-bottom: 4px; }
+        .option-btn span { font-size: 12px; color: var(--muted); }
+        
+        .radio-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .radio-label { display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 14px; border: 2px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .radio-label input { width: 18px; height: 18px; }
+        
+        .box-info { padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid; }
+        .box-info.success { background: #e8f5e9; border-left-color: var(--accent); color: #1b5e20; }
+        .box-info.danger { background: #ffebee; border-left-color: var(--danger); color: #b71c1c; }
+        .box-info.warning { background: #fff8e1; border-left-color: #f5b041; color: #7d6608; }
+        
+        .result-section { margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 12px; }
+        .result-section h3 { font-size: 13px; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; }
+        .result-section p { font-size: 14px; margin: 0 0 5px 0; }
+        .result-list { list-style: none; padding-left: 0; }
+        .result-list li { font-size: 14px; position: relative; padding-left: 15px; margin-bottom: 4px; }
+        .result-list li::before { content: "•"; color: var(--primary); position: absolute; left: 0; font-weight: bold; }
+        
+        .disclaimer { font-size: 11px; color: var(--muted); margin-top: 25px; text-align: justify; line-height: 1.4; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    </style>
 </head>
 <body>
-    <!-- Elemento Toast global para notificaciones del sistema -->
-    <div id="toast" class="toast"></div>
 
-    <div class="container">
+<div class="container">
+    <div class="header">
+        <h1>MEXICANO APOYA MEXICANO</h1>
+        <p>Tu Guía Consular en 3 Pasos</p>
+    </div>
+
+    <!-- PASO 1: TUS DATOS -->
+    <div id="paso-datos" class="step active">
+        <h2>Paso 1: Tus Datos Básicos</h2>
+        <p>Escribe tu información para buscar tu consulado y revisar tus costos correspondientes.</p>
         
-        <!-- PANTALLA 1: INICIO Y DESLINDE DE RESPONSABILIDAD LEGAL -->
-        <div id="inicio" class="pantalla active">
-            <div class="hero-banner">
-                <h1>MEXICANO APOYA MEXICANO</h1>
-                <p style="font-size: 13px; opacity: 0.95; margin: 0; font-weight: bold; letter-spacing: 0.5px;">Plataforma Autónoma de Autoservicio y Preparación Consular</p>
-            </div>
+        <div class="form-group">
+            <label>Nombre y Apellidos:</label>
+            <input type="text" id="input-nombre" placeholder="Ej. Juan Pérez López">
+        </div>
+        <div class="form-group">
+            <label>Teléfono de Contacto:</label>
+            <input type="tel" id="input-tel" placeholder="Ej. 123-456-7890">
+        </div>
+        <div class="form-group">
+            <label>Estado donde vives en USA:</label>
+            <select id="input-estado">
+                <option value="California">California</option>
+                <option value="Texas">Texas</option>
+                <option value="Florida">Florida</option>
+                <option value="Illinois">Illinois</option>
+                <option value="New York">New York</option>
+                <option value="Arizona">Arizona</option>
+                <option value="Otro">Otro Estado</option>
+            </select>
+        </div>
+        
+        <button class="btn" onclick="guardarDatos()">Siguiente: Elegir Trámite</button>
+    </div>
 
-            <h2>¿Para qué sirve esta aplicación?</h2>
-            <p>Esta herramienta automatizada permite a los ciudadanos mexicanos en la Unión Americana estructurar su expediente de manera óptima antes de acudir a una sede consular. El sistema evalúa tu perfil para mapear tu circunscripción consular, precalcular tarifas oficiales y prevenir rechazos en ventanilla.</p>
-            
-            <h2>Novedades de la Versión 6.0.0</h2>
-            <p>✨ Mapeo automatizado de sedes consulares en EE. UU., trámite de la credencial <strong>INE desde el extranjero</strong> con gratuidad parametrizada y validación federal preventiva de permisos <strong>OP-7</strong> para menores de edad.</p>
+    <!-- PASO 2: ELEGIR TRÁMITE -->
+    <div id="paso-tramites" class="step">
+        <h2>Paso 2: Selecciona tu Trámite</h2>
+        <p>Presiona el botón del documento oficial que necesitas tramitar:</p>
+        
+        <div id="lista-tramites" class="grid-options"></div>
+        
+        <button class="btn btn-secondary" onclick="irAPaso('paso-datos')">Atrás</button>
+    </div>
 
-            <!-- AVISO DE PROTECCIÓN LEGAL OBLIGATORIO PARA EVITAR SUPLANTACIÓN -->
-            <div class="warning-box" style="margin-top: 25px;">
-                <strong style="color: #b78100; font-size: 13px; display: block; margin-bottom: 6px;">⚠️ AVISO DE PROTECCIÓN LEGAL Y DESLINDE DE RESPONSABILIDADES</strong>
-                <p style="font-size: 12px; margin-bottom: 8px; line-height: 1.45; text-align: justify;">
-                    <strong>1. No Suplantación:</strong> Esta aplicación es una iniciativa ciudadana independiente de orientación técnica. <strong>No está vinculada, gestionada, respaldada ni avalada por la Secretaría de Relaciones Exteriores (SRE)</strong>, el Instituto Nacional Electoral (INE) ni ninguna entidad gubernamental de los Estados Unidos Mexicanos. Este sistema no gestiona citas ni interfiere con la plataforma MiConsulado.
-                </p>
-                <p style="font-size: 12px; margin-bottom: 8px; line-height: 1.45; text-align: justify;">
-                    <strong>2. Privacidad Absoluta de Datos:</strong> Los datos se procesan en memoria volátil de ejecución únicamente para la compilación de tu archivo PDF interactivo. <strong>No almacenamos, guardamos, compartimos ni vendemos tu información personal</strong> en servidores ni bases de datos externas; tu privacidad se respeta localmente en tu dispositivo.
-                </p>
-                <p style="font-size: 12px; margin-bottom: 0; line-height: 1.45; text-align: justify;">
-                    <strong>3. Criterios Oficiales:</strong> Las regulaciones consulares pueden variar según la circunscripción geográfica y directrices federales. El ciudadano mantiene la responsabilidad exclusiva de contrastar los resultados de esta Hoja de Ruta con los canales oficiales vigentes de su sede asignada.
-                </p>
-            </div>
+    <!-- PASO 3: PREGUNTAS SÍ / NO -->
+    <div id="paso-preguntas" class="step">
+        <h2 id="pregunta-titulo">Revisión de Papeles</h2>
+        <p id="pregunta-texto" style="font-size: 16px; font-weight: bold; color: var(--primary-dark); margin-bottom: 20px;"></p>
+        
+        <div id="contenedor-opciones" class="radio-group"></div>
+        
+        <button class="btn btn-secondary" onclick="abortarCuestionario()">Cambiar de Trámite</button>
+    </div>
 
-            <div style="margin-top: 20px; background: #fafafa; padding: 12px; border-radius: 4px; border: 1px solid #ddd;">
-                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; font-weight: bold;">
-                    <input type="checkbox" id="aceptarLegal" style="margin-top: 3px; width: auto;">
-                    <span>He leído, comprendo los alcances de la herramienta y acepto el Deslinde Legal y Aviso de Privacidad.</span>
-                </label>
-            </div>
+    <!-- RESPUESTA FINAL: HOJA DE RUTA -->
+    <div id="paso-resultado" class="step">
+        <h2>Paso 3: Tu Hoja de Ruta Consular</h2>
+        
+        <div id="res-caja-estado" class="box-info"></div>
 
-            <button id="comenzar" class="btn" style="margin-top: 15px; font-size: 15px; padding: 12px;" disabled>ACEPTAR Y EMPEZAR</button>
+        <div class="box-info success" style="border-left-color: var(--primary);">
+            <strong>Tu Sede Consular Asignada:</strong>
+            <p id="res-consulado" style="font-weight: bold; margin-top: 5px; margin-bottom: 2px;"></p>
+            <p id="res-direccion" style="font-size: 13px; margin: 0;"></p>
+            <p id="res-telefono" style="font-size: 13px; margin: 0;"></p>
         </div>
 
-        <!-- PANTALLA 2: SELECCIÓN DE TRÁMITES -->
-        <div id="tramites" class="pantalla">
-            <h2>Selecciona tu trámite</h2>
-            <p>Elige la gestión consular que deseas preparar:</p>
-            
-            <!-- Herramienta de lectura de PDF adjunto -->
-            <div style="margin: 15px 0; background: #f0f4f8; padding: 15px; border-radius: 6px; border: 1px solid #d0dbe5;">
-                <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">¿Tienes un documento previo en PDF? Escanéalo para agilizar el llenado:</label>
-                <input type="file" id="archivoPdf" accept="application/pdf" style="font-size:12px; margin-bottom:8px;">
-                <div style="display:flex; gap:10px;">
-                    <button id="leerPdf" class="btn btn-secondary" style="font-size:11px; padding:6px 12px;">📂 Cargar y Leer PDF</button>
-                    <button id="usarPdf" class="btn oculto" style="font-size:11px; padding:6px 12px; background:var(--accent);">⚡ Usar Información Extraída</button>
-                </div>
-                <p id="pdfMensaje" style="font-size:11px; color:#555; margin-top:5px; font-style:italic;"></p>
-                <textarea id="pdfTexto" class="oculto" style="width:100%; height:80px; font-size:11px; margin-top:5px;" readonly></textarea>
+        <div id="resultado-detalles" style="background: #fdfefe; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;">
+            <div class="result-section">
+                <h3>Costo de Derechos Consulares:</h3>
+                <p id="res-pago" style="font-weight: bold; color: var(--accent); font-size: 16px;"></p>
             </div>
-
-            <div id="listaTramites" class="grid-options"></div>
-            
-            <div style="margin-top: 20px;">
-                <button id="volverInicio" class="btn btn-secondary">Atrás al Inicio</button>
+            <div class="result-section">
+                <h3>Estatus de tu Cita Obligatoria:</h3>
+                <p id="res-cita" style="font-weight: bold;"></p>
             </div>
-        </div>
-
-        <!-- PANTALLA 3: REGISTRO DE IDENTIFICACIÓN -->
-        <div id="identificacion" class="pantalla">
-            <h2>1. Perfil e Identificación del Ciudadano</h2>
-            <p>Completa tus datos para calcular la vigencia de tus documentos y asignar tu sede consular oficial:</p>
-            
-            <div style="margin-bottom:15px; display:flex; gap:10px;">
-                <button id="vozPerfil" class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">🎙️ Dictar por Voz</button>
-                <button id="pegarPerfil" class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">📋 Pegar Portapapeles</button>
+            <div class="result-section">
+                <h3>Documentos Oficiales Requeridos:</h3>
+                <ul id="res-requisitos" class="result-list"></ul>
             </div>
-
-            <div id="identificacionCampos"></div>
-
-            <div style="margin-top: 25px; display: flex; gap: 10px;">
-                <button id="volverTramites" class="btn btn-secondary">Atrás</button>
-                <button id="guardarPerfil" class="btn">EVALUAR REQUISITOS</button>
+            <div id="seccion-faltantes" class="result-section">
+                <h3 style="color: var(--danger);">¡Atención! Te hace falta esto:</h3>
+                <ul id="res-faltantes" class="result-list" style="color: var(--danger); font-weight: bold;"></ul>
             </div>
-        </div>
-
-        <!-- PANTALLA 4: PREGUNTAS DINÁMICAS -->
-        <div id="preguntas" class="pantalla">
-            <h2 id="tramiteTitulo">Evaluación de Requisitos</h2>
-            <div id="progreso-barra-contenedor"><div id="progreso-barra" id="progresoBarra"></div></div>
-            <p id="paso" style="font-size: 11px; color: #666; font-weight: bold; margin-bottom: 15px;"></p>
-            
-            <div class="input-group">
-                <label id="preguntaTexto" style="font-size: 16px; margin-bottom: 15px; color: var(--primary-dark); font-weight: bold; display:block;"></label>
-                <div id="opciones" style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;"></div>
-                
-                <textarea id="textoEntrada" style="width:100%; height:60px; margin-top:10px;" placeholder="Escribe tu respuesta..."></textarea>
-                
-                <div style="margin-top:8px; display:flex; gap:8px;">
-                    <button id="voz" class="btn btn-secondary" style="font-size:11px; padding:4px 10px;">🎙️ Dictar</button>
-                    <button id="pegar" class="btn btn-secondary" style="font-size:11px; padding:4px 10px;">📋 Pegar</button>
-                    <button id="subirPdfPregunta" class="btn btn-secondary" style="font-size:11px; padding:4px 10px;">📄 Adjuntar Doc</button>
-                    <input type="file" id="pdfPregunta" accept="application/pdf" style="display:none;">
-                </div>
-                <p id="pdfPreguntaMensaje" style="font-size:11px; color:#555; font-style:italic; margin-top:4px;"></p>
-            </div>
-
-            <div style="margin-top: 30px; display:flex; gap:10px;">
-                <button id="volverPregunta" class="btn btn-secondary">Pregunta Anterior</button>
-                <button id="continuar" class="btn">Responder y Continuar</button>
+            <div class="result-section">
+                <h3>Pasos Recomendados:</h3>
+                <ul id="res-acciones" class="result-list"></ul>
             </div>
         </div>
 
-        <!-- PANTALLA 5: HOJA DE RUTA / EXPEDIENTE FINAL -->
-        <div id="resultado" class="pantalla">
-            <h2 id="nombreResultado">Tu Hoja de Ruta Consular</h2>
-            
-            <div class="success-box" style="margin: 15px 0; border-left-color: var(--primary);">
-                <span style="font-weight:bold; font-size:12px; color:var(--primary-dark); display:block; text-transform:uppercase;">Estatus del Expediente:</span>
-                <span id="estadoResultado" style="font-weight: bold; font-size: 15px;"></span>
-                <p id="mensajeResultado" style="font-size: 13px; margin: 4px 0 0 0; color:#444;"></p>
-            </div>
+        <button class="btn" onclick="descargarPDF()">📥 GUARDAR HOJA DE RUTA EN TU CELULAR (PDF)</button>
+        <button class="btn btn-secondary" onclick="reiniciarTodo()">Hacer Otro Trámite</button>
+    </div>
 
-            <div id="resultadoDetalles" style="background: #fafafa; border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; display:flex; flex-direction:column; gap:15px;">
-                <div id="resultadoDatos" class="route-section"></div>
-                <div id="resultadoNecesitas" class="route-section"></div>
-                <div id="resultadoFaltantes" class="route-section"></div>
-                <div id="resultadoAcciones" class="route-section"></div>
-            </div>
+    <div class="disclaimer">
+        <strong>Aviso Importante de Orientación:</strong> Esta aplicación es una herramienta ciudadana de apoyo independiente para la comunidad mexicana en USA. <strong>No somos el Gobierno de México ni la SRE.</strong> No guardamos tus datos personales. El trámite final se realiza en las oficinas consulares oficiales.
+    </div>
+</div>
 
-            <div class="flex-buttons">
-                <button id="pdf" class="btn">📄 DESCARGAR HOJA DE RUTA EN PDF (EDITABLE)</button>
-                <button id="pdfPreview" class="btn btn-secondary">👁️ Vista Previa en Pantalla</button>
-            <!-- CONTENEDOR DE BOTONES DE ACCIÓN PRINCIPALES -->
-            <div class="flex-buttons">
-                <button id="pdf" class="btn">📄 DESCARGAR HOJA DE RUTA EN PDF (EDITABLE)</button>
-                <button id="pdfPreview" class="btn btn-secondary">👁️ Vista Previa en Pantalla</button>          
-                <a id="oficial" href="https://sre.gob.mx" target="_blank" class="btn btn-secondary">🌐 Ir al Portal de la SRE</a>
-                <button id="nuevo" class="btn btn-muted">PREPARAR NUEVO TRÁMITE</button>
-                <button id="salir" class="btn btn-danger">Salir al Menu de Inicio</button>
-            </div>
-        </div>
+<script>
+    let perfil = {};
+    let casoActual = "";
+    let respuestas = {};
+    let resultadoFinal = null;
 
-        <!-- VENTANA FLOTANTE / MODAL DE VISTA PREVIA (VISOR PDF) -->
-        <div id="visorPdf" class="modal-visor">
-            <div class="modal-contenido">
-                <div class="modal-encabezado">
-                    <h3>Vista Previa Documental</h3>
-                    <button id="cerrarPdf" class="btn-cerrar">&times;</button>
-                </div>
-                <div class="modal-cuerpo">
-                    <iframe id="pdfFrame" src="" width="100%" height="500px" style="border: none;"></iframe>
-                </div>
-                <div class="modal-pie">
-                    <button id="guardarDesdePdf" class="btn">💾 Descargar Archivo</button>
-                    <button id="cerrarPdf2" class="btn btn-secondary">Cerrar</button>
-                </div>
-            </div>
-        </div>
+    function irAPaso(id) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        window.scrollTo(0, 0);
+    }
 
-        <!-- AVISO DE EXENCIÓN TERRITORIAL EN EL PIE DE PÁGINA -->
-        <footer class="aviso-exencion" style="margin-top: 25px; padding: 15px; background-color: #fcf8e3; border: 1px solid #faebcc; border-radius: 4px; font-size: 0.85em; color: #8a6d3b; text-align: justify;">
-            <strong>Aviso de Exención Territorial:</strong> El procesamiento y precalculo automatizado ejecutado por este software no constituye un acto administrativo emitido por consulados, secciones de embajadas o agencias consulares oficiales mexicanas. El usuario conserva la total responsabilidad de agendar su cita por canales federales oficiales autorizados.
-        </footer>
+    function guardarDatos() {
+        const nombre = document.getElementById('input-nombre').value.trim();
+        const tel = document.getElementById('input-tel').value.trim();
+        const edo = document.getElementById('input-estado').value;
+
+        if (!nombre) { alert("Por favor escribe tu Nombre y Apellidos."); return; }
+        
+        perfil = { nombre_completo: nombre, telefono: tel, estado: edo, nacionalidad: "mexicana" };
+        cargarCatalogo();
+    }
+
+async function cargarCatalogo() {
+    try {
+        let res = await fetch('/api/catalogo');     
+        let datos = await res.json();
+        let lista = document.getElementById('lista-tramites');
+        if (!lista) return;
+        lista.innerHTML = "";
+        
+        datos.forEach(t => {
+            let btn = document.createElement('button');
+            btn.className = "option-btn";
+            btn.onclick = () => iniciarTramite(t.caso);
+            // Corregido: Se agregaron los acentos graves obligatorios
+            btn.innerHTML = `<strong>${t.nombre}</strong><span>${t.descripcion}</span>`;
+            lista.appendChild(btn);
+        });
+        irAPaso('paso-tramites');
+    } catch(e) {
+        alert("Error de conexión al cargar trámites.");
+    }
+}
+
+async function iniciarTramite(caso) {
+    casoActual = caso;
+    respuestas = {};
+    try {
+        let res = await fetch('/api/seleccionar-caso', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ caso: casoActual, perfil: perfil, respuestas: respuestas })
+        });
+        let data = await res.json();
+        procesarPaso(data);
+    } catch(e) { 
+        alert("Error al iniciar el trámite."); 
+    }
+}
+
+async function enviarRespuesta(idPregunta, valor) {
+    respuestas[idPregunta] = valor;
+    try {
+        let res = await fetch('/api/continuar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ caso: casoActual, pregunta_id: idPregunta, respuesta: valor, respuestas: respuestas, perfil: perfil })
+        });
+        let data = await res.json();
+        procesarPaso(data);
+    } catch(e) { 
+        alert("Error al registrar respuesta."); 
+    }
+}
+
+function procesarPaso(data) {
+    if (data.pregunta) {
+        irAPaso('paso-preguntas');
+        document.getElementById('pregunta-titulo').innerText = data.servicio;
+        document.getElementById('pregunta-texto').innerText = data.pregunta.pregunta;
+        let opcionesCont = document.getElementById('contenedor-opciones');
+        if (!opcionesCont) return;
+        opcionesCont.innerHTML = "";
+        
+        data.pregunta.opciones.forEach(o => {
+            let lbl = document.createElement('label');
+            lbl.className = "radio-label";
+            // Corregido: Se agregaron los acentos graves obligatorios
+            lbl.innerHTML = `<input type="radio" name="r_opt" value="${o}"> <span>${o}</span>`;
+            lbl.onclick = () => {
+                setTimeout(() => enviarRespuesta(data.pregunta.id, o), 150);
+            };
+            opcionesCont.appendChild(lbl);
+        });
+    } else if (data.resultado) {
+        mostrarResultado(data.resultado);
+    }
+}
+
+function mostrarResultado(r) {
+    resultadoFinal = r;
+    irAPaso('paso-resultado');
+    let cajaEstado = document.getElementById('res-caja-estado');
+    if (!cajaEstado) return;
+    
+    cajaEstado.className = "box-info " + (r.estado === "LISTO PARA TU CITA" ? "success" : "danger");
+    // Corregido: Se agregaron los acentos graves obligatorios
+    cajaEstado.innerHTML = `<strong>ESTATUS: ${r.estado}</strong><br>${r.mensaje_estado}`;
+    
+    document.getElementById('res-consulado').innerText = r.consulado_nombre || "No asignado";
+    document.getElementById('res-direccion').innerText = "📍 " + (r.consulado_direccion || "N/D");
+    document.getElementById('res-telefono').innerText = "📞 Tel central: " + (r.consulado_telefono || "N/D");
+    document.getElementById('res-pago').innerText = r.pago_estimado || "N/D";
+    
+    let citaEl = document.getElementById('res-cita');
+    if (citaEl) {
+        citaEl.innerText = r.cita_estatus || "PENDIENTE";
+        citaEl.style.color = (r.cita_estatus && r.cita_estatus.includes("PENDIENTE")) ? "var(--danger)" : "var(--accent)";
+    }
+    
+    inyectarLista('res-requisitos', r.requisitos_oficiales);
+    let secFaltantes = document.getElementById('seccion-faltantes');
+    if (secFaltantes) {
+        if (r.faltantes && r.faltantes.length > 0) {
+            secFaltantes.style.display = "block";
+            inyectarLista('res-faltantes', r.faltantes);
+        } else {
+            secFaltantes.style.display = "none";
+        }
+    }
+    inyectarLista('res-acciones', r.acciones_recommendedas || r.acciones_recomendadas);
+}
+
+function inyectarLista(id, arreglo) {
+    let el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = "";
+    (arreglo || []).forEach(x => {
+        let li = document.createElement('li');
+        li.innerText = x;
+        el.appendChild(li);
+    });
+}
+
+async function descargarPDF() {
+    if (!resultadoFinal) return;
+    try {
+        let res = await fetch('/api/pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(resultadoFinal)
+        });
+        if (res.ok) {
+            let blob = await res.blob();
+            let url = window.URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            // Corregido: Se agregaron los acentos graves obligatorios
+            a.download = `Hoja_de_Ruta_${casoActual.toUpperCase()}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => window.URL.revokeObjectURL(url), 100);
+        } else { 
+            alert("No se pudo descargar el archivo PDF."); 
+        }
+    } catch(e) { 
+        alert("Error al conectar para generar el PDF."); 
+    }
+}
+
+function abortarCuestionario() { cargarCatalogo(); }
+function reiniciarTodo() { irAPaso('paso-datos'); }
