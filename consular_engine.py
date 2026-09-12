@@ -1,10 +1,13 @@
-# consular_engine.py
+# TRAMO 1: INICIO
 import re, unicodedata
+from copy import deepcopy
+from datetime import date
 
 APP = "MEXICANO APOYA MEXICANO"
-VERSION = "7.0.0"
+VERSION = "10.0.0"
 
 TARIFAS_SRE = {
+    "pasaporte_1": 44,
     "pasaporte_3": 101,
     "pasaporte_6": 137,
     "pasaporte_10": 209,
@@ -16,37 +19,44 @@ DIRECTORIO_SRE = {
     "California": {
         "consulado": "Consulado General de México en Los Ángeles",
         "direccion": "2401 W 6th St, Los Angeles, CA 90057",
-        "telefono": "213-351-6800"
+        "telefono": "213-351-6800", "citas": "1-424-309-0009", "emergencia": "213-219-0175",
+        "url_consulado": "https://sre.gob.mx"
     },
     "Texas": {
         "consulado": "Consulado General de México en Houston",
         "direccion": "4507 San Jacinto St, Houston, TX 77004",
-        "telefono": "713-271-6800"
+        "telefono": "713-271-6800", "citas": "1-424-309-0009", "emergencia": "713-857-6504",
+        "url_consulado": "https://sre.gob.mx"
     },
     "Florida": {
         "consulado": "Consulado General de México en Miami",
         "direccion": "2555 Ponce de Leon Blvd, 4th Floor, Coral Gables, FL 33134",
-        "telefono": "786-268-4900"
+        "telefono": "786-268-4900", "citas": "1-424-309-0009", "emergencia": "305-979-1534",
+        "url_consulado": "https://sre.gob.mx"
     },
     "Illinois": {
         "consulado": "Consulado General de México en Chicago",
         "direccion": "204 S Ashland Ave, Chicago, IL 60607",
-        "telefono": "312-738-2383"
+        "telefono": "312-738-2383", "citas": "1-424-309-0009", "emergencia": "312-925-5022",
+        "url_consulado": "https://sre.gob.mx"
     },
     "New York": {
         "consulado": "Consulado General de México en Nueva York",
         "direccion": "27 E 39th St, New York, NY 10016",
-        "telefono": "212-217-6400"
+        "telefono": "212-217-6400", "citas": "1-424-309-0009", "emergencia": "917-239-6699",
+        "url_consulado": "https://sre.gob.mx"
     },
     "Arizona": {
         "consulado": "Consulado General de México en Phoenix",
         "direccion": "320 E McDowell Rd, Phoenix, AZ 85004",
-        "telefono": "602-242-7398"
+        "telefono": "602-242-7398", "citas": "1-424-309-0009", "emergencia": "602-616-5742",
+        "url_consulado": "https://sre.gob.mx"
     },
     "Otro": {
         "consulado": "Sección Consular de la Embajada de México",
         "direccion": "1250 23rd St NW, Washington, DC 20037",
-        "telefono": "202-736-1000"
+        "telefono": "202-736-1000", "citas": "1-424-309-0009", "emergencia": "202-997-6265",
+        "url_consulado": "https://sre.gob.mx"
     }
 }
 
@@ -55,19 +65,19 @@ def normalizar(v):
     v = unicodedata.normalize("NFD", v)
     return "".join(c for c in v if unicodedata.category(c) != "Mn")
 
-def texto(v):
-    return str(v or "").strip()
-
-def si(v):
-    return normalizar(v) in {"si", "s", "yes", "y", "verdadero", "true", "1"}
-
-def no(v):
-    return normalizar(v) in {"no", "n", "false", "0"}
-
+def texto(v): return str(v or "").strip()
+def si(v): return normalizar(v) in {"si", "s", "yes", "y", "verdadero", "true", "1"}
+def no(v): return normalizar(v) in {"no", "n", "false", "0"}
+def entero(v):
+    try: return int(re.search(r"\d{1,3}", texto(v)).group())
+    except: return None
+# TRAMO 1: FIN
+# TRAMO 2: INICIO
 def perfil_vacio():
     return {
         "nombre_completo": "",
         "fecha_nacimiento": "",
+        "edad": "",
         "direccion_usa": "",
         "telefono": "",
         "origen_mexico": "Michoacán",
@@ -93,6 +103,21 @@ def _perfil_desde(respuestas, perfil=None):
         if texto(respuestas.get(k)): p[k] = respuestas[k]
     return p
 
+def validar_edad_fecha(p):
+    edad = entero(p.get("edad"))
+    f = texto(p.get("fecha_nacimiento"))
+    if edad is None or not f: return []
+    nums = re.findall(r"\d{1,4}", f)
+    if len(nums) != 3: return []
+    try:
+        a, b, c = map(int, nums)
+        ano, mes, dia = (a, b, c) if a > 1900 else (c, b, a)
+        real = date.today().year - ano - ((date.today().month, date.today().day) < (mes, dia))
+        if real != edad:
+            return [f"Aviso: Tu fecha de nacimiento ({f}) y la edad ingresada ({edad} años) no coinciden matemáticamente en el sistema."]
+    except: pass
+    return []
+
 def P(id, texto_, **kw):
     d = {"id": id, "pregunta": texto_}
     d.update(kw)
@@ -105,34 +130,38 @@ def registrar(caso, nombre, descripcion, questions, **info):
         "caso": caso, "nombre": nombre, "descripcion": descripcion,
         "preguntas": questions, **info
     }
-
+# TRAMO 2: FIN
+# TRAMO 3: INICIO
 PASAPORTE_PREGUNTAS = [
-    P("acta_nacimiento", "¿Tienes tu Acta de Nacimiento mexicana original?", tipo="opciones", opciones=["Sí", "No"], required=True),
-    P("identificacion", "¿Tienes una identificación oficial con fotografía vigente (INE, Matrícula anterior, etc.)?", tipo="opciones", opciones=["Sí", "No"], required=True),
-    P("vigencia_pasaporte", "¿Por cuántos años quieres tu pasaporte?", tipo="opciones", opciones=["3 años", "6 años", "10 años"], required=True),
-    P("cita", "¿Ya agendaste tu cita en MiConsulado?", tipo="opciones", opciones=["Sí", "No"], required=True)
+    P("clasificacion_origen", "¿Cómo obtuviste tu nacionalidad mexicana?", tipo="opciones", opciones=["Nací en México", "Nací en EE.UU. (Hijo de padres mexicanos)", "Me naturalicé (Tengo Carta de Naturalización SRE)"], required=True),
+    P("acta_origen", "¿Tienes tu documento original de nacionalidad? (Acta mexicana, Inserción de Acta o Carta de Naturalización)", tipo="opciones", opciones=["Sí", "No"], required=True),
+    P("identificacion", "¿Tienes una identificación oficial original con fotografía vigente (INE, Matrícula, pasaporte anterior o ID de EE.UU.)?", tipo="opciones", opciones=["Sí", "No"], required=True),
+    P("padres_presencia", "[REQUISITO MENOR DE EDAD] ¿Ambos padres pueden asistir físicamente contigo al consulado a firmar el formato de autorización OP-7?", tipo="opciones", opciones=["Sí, ambos asistirán", "No, uno está en México (Requiere OP-7 Remota)", "No, uno está en otro estado de EE.UU.", "No, tengo la patria potestad exclusiva / un padre falleció"], required=False),
+    P("id_padres", "[REQUISITO MENOR DE EDAD] ¿Cuentan ambos padres con identificaciones oficiales vigentes con fotografía en original?", tipo="opciones", opciones=["Sí", "No"], required=False),
+    P("vigencia_pasaporte", "¿Por cuántos años requieres tu pasaporte?", tipo="opciones", opciones=["1 año (Solo menores de 3 años)", "3 años", "6 años", "10 años (Solo adultos mayores de 18)"], required=True),
+    P("cita", "¿Ya agendaste tu cita oficial en MiConsulado?", tipo="opciones", opciones=["Sí", "No"], required=True)
 ]
 
 MATRICULA_PREGUNTAS = [
-    P("acta_nacimiento", "¿Tienes tu Acta de Nacimiento mexicana original?", tipo="opciones", opciones=["Sí", "No"], required=True),
+    P("acta_origen", "¿Tienes tu Acta de Nacimiento mexicana original?", tipo="opciones", opciones=["Sí", "No"], required=True),
     P("identificacion", "¿Tienes una identificación oficial con fotografía vigente?", tipo="opciones", opciones=["Sí", "No"], required=True),
-    P("domicilio", "¿Tienes un comprobante de domicilio original a tu nombre en EE. UU.?", tipo="opciones", opciones=["Sí", "No"], required=True),
+    P("domicilio", "¿Tienes un comprobante de domicilio original a tu nombre en EE. UU.?", tipo="opciones", opciones=["Sí", "No", "A nombre de un tercero"], required=True),
     P("cita", "¿Ya agendaste tu cita en MiConsulado?", tipo="opciones", opciones=["Sí", "No"], required=True)
 ]
 
 INE_PREGUNTAS = [
-    P("acta_nacimiento", "¿Tienes tu Acta de Nacimiento mexicana original?", tipo="opciones", opciones=["Sí", "No"], required=True),
+    P("acta_origen", "¿Tienes tu Acta de Nacimiento mexicana original?", tipo="opciones", opciones=["Sí", "No"], required=True),
     P("identificacion", "¿Tienes una identificación oficial con fotografía vigente?", tipo="opciones", opciones=["Sí", "No"], required=True),
-    P("domicilio", "¿Tienes un comprobante de domicilio original a tu nombre en el extranjero?", tipo="opciones", opciones=["Sí", "No"], required=True),
+    P("domicilio", "¿Tienes un comprobante de domicilio original a tu nombre en el extranjero?", tipo="opciones", opciones=["Sí", "No, a nombre de un tercero"], required=True),
     P("cita", "¿Ya agendaste tu cita en el consulado para el trámite de INE?", tipo="opciones", opciones=["Sí", "No"], required=True)
 ]
 
 registrar(
     "pasaporte", "Pasaporte Mexicano",
-    "Preparación para solicitar o renovar tu pasaporte de adulto.",
+    "Preparación para solicitar o renovar tu pasaporte de adulto o menor (Formato OP-7).",
     PASAPORTE_PREGUNTAS,
-    documentos=["Acta de Nacimiento original", "Identificación oficial con foto vigente", "Pago de derechos"],
-    pago="Según la vigencia elegida (3, 6 o 10 años)."
+    documentos=["Documento de Nacionalidad (Acta o Carta SRE)", "Identificación oficial con foto vigente", "Pago de derechos"],
+    pago="Según la vigencia elegida. Beneficio del 50% de descuento automático por Ley Federal de Derechos a mayores de 60 años."
 )
 
 registrar(
@@ -140,17 +169,18 @@ registrar(
     "Preparación para obtener o renovar tu Matrícula Consular de alta seguridad.",
     MATRICULA_PREGUNTAS,
     documentos=["Acta de Nacimiento original", "Identificación oficial con foto", "Comprobante de domicilio en EE. UU."],
-    pago=f"${TARIFAS_SRE['matricula']} USD exactos en efectivo o tarjeta."
+    pago=f"${TARIFAS_SRE['matricula']} USD exactos."
 )
 
 registrar(
     "ine", "Credencial para Votar (INE)",
-    "Preparación para tramitar tu credencial de elector desde el extranjero.",
+    "Preparación para tramitar tu credencial de elector desde el extranjero de forma gratuita.",
     INE_PREGUNTAS,
     documentos=["Acta de Nacimiento original", "Identificación oficial con foto", "Comprobante de domicilio"],
     pago="El trámite del INE es 100% gratuito. No dejes que nadie te cobre."
 )
-
+# TRAMO 3: FIN
+# TRAMO 4: INICIO
 def identificar_caso(t):
     n = normalizar(t)
     if "pasaporte" in n: return "pasaporte"
@@ -158,20 +188,43 @@ def identificar_caso(t):
     if "ine" in n or "credencial" in n or "votar" in n: return "ine"
     return ""
 
-def obtener_caso(caso):
-    return TRAMITES.get(caso)
+def obtener_caso(caso): return TRAMITES.get(caso)
 
 def pregunta_por_id(caso, pid):
     c = obtener_caso(caso)
     if not c: return None
     return next((q for q in c["preguntas"] if q["id"] == pid), None)
 
-def preguntas_activas(caso, res):
+def preguntas_activas(caso, res, p=None):
     c = obtener_caso(caso)
-    return list(c["preguntas"]) if c else []
+    if not c: return []
+    edad = entero(p.get("edad")) if p else None
+    lista_filtrada = []
+    
+    for q in c["preguntas"]:
+        # 1. Aislar preguntas de la OP-7 si es adulto
+        if "[REQUISITO MENOR DE EDAD]" in q["pregunta"]:
+            if edad is not None and edad < 18: 
+                lista_filtrada.append(q)
+            else: 
+                continue
+        # 2. Filtrar vigencias de pasaporte según la edad real
+        elif q["id"] == "vigencia_pasaporte" and edad is not None:
+            q_mod = deepcopy(q)
+            if edad < 3:
+                q_mod["opciones"] = ["1 año", "3 años"]
+            elif edad < 18:
+                q_mod["opciones"] = ["3 años", "6 años"]
+            else:
+                q_mod["opciones"] = ["3 años", "6 años", "10 años"]
+            lista_filtrada.append(q_mod)
+        else:
+            lista_filtrada.append(q)
+            
+    return lista_filtrada
 
-def siguiente_pregunta(caso, respuestas):
-    for q in preguntas_activas(caso, respuestas):
+def siguiente_pregunta(caso, respuestas, p=None):
+    for q in preguntas_activas(caso, respuestas, p):
         if not texto(respuestas.get(q["id"])): return q
     return None
 
@@ -194,42 +247,69 @@ def interpretar_respuesta(q, v):
         if n in {"si", "s", "yes", "y"}: return "Sí"
         if n in {"no", "n"}: return "No"
     return v
-
-def evaluar_requisitos(caso, res):
-    falt = []; c = obtener_caso(caso)
-    if not c: return ["Trámite no disponible."]
-    for q in c["preguntas"]:
-        v = res.get(q["id"])
-        if no(v) or not texto(v):
-            if q["id"] == "acta_nacimiento": 
-                falt.append("Llevar tu Acta de Nacimiento mexicana original (no copias, no rota, que se lean bien las letras).")
-            elif q["id"] == "identificacion": 
-                falt.append("Llevar UNA de estas identificaciones en original con foto: tu credencial del INE anterior, tu Matrícula anterior, tu Cartilla Militar o tu Cédula Profesional.")
-            elif q["id"] == "domicilio": 
-                falt.append("Llevar un recibo original que demuestre dónde vives (puede ser de luz, agua, un papel de tu banco o tu contrato de renta).")
-            elif q["id"] == "cita": 
-                falt.append("No tienes cita. Tienes que agendar una porque si vas sin cita no te van a dejar pasar.")
-    return unicos(falt)
-
-def calcular_pago(caso, res):
-    if caso == "ine": return "¡GRATUITO! Este trámite no cuesta nada."
+# TRAMO 4: FIN
+# TRAMO 5: INICIO
+def calcular_pago(caso, res, p):
+    if caso == "ine": return "¡GRATUITO! Este trámite no cuesta nada por Ley Federal."
     if caso == "matricula": return f"${TARIFAS_SRE['matricula']} USD."
     if caso == "pasaporte":
         vig = normalizar(res.get("vigencia_pasaporte"))
-        if "10" in vig: return f"${TARIFAS_SRE['pasaporte_10']} USD."
-        if "6" in vig: return f"${TARIFAS_SRE['pasaporte_6']} USD."
-        return f"${TARIFAS_SRE['pasaporte_3']} USD."
+        edad = entero(p.get("edad"))
+        mult = 0.5 if (edad is not None and edad >= 60) else 1.0
+        
+        costo_base = TARIFAS_SRE["pasaporte_3"]
+        if "10" in vig: costo_base = TARIFAS_SRE["pasaporte_10"]
+        elif "6" in vig: costo_base = TARIFAS_SRE["pasaporte_6"]
+        elif "1" in vig: costo_base = TARIFAS_SRE["pasaporte_1"]
+        
+        final_c = round(costo_base * mult, 2)
+        return f"${final_c} USD." + (" (Incluye 50% de descuento por beneficio de Adulto Mayor)." if mult < 1.0 else " (Tarifa ordinaria).")
     return "A confirmar en ventanilla."
+
+def evaluar_requisitos(caso, res, p):
+    falt = []; c = obtener_caso(caso); edad = entero(p.get("edad"))
+    if not c: return ["Trámite no disponible."]
+    
+    for q in preguntas_activas(caso, res, p):
+        v = res.get(q["id"])
+        if no(v) or not texto(v):
+            if q["id"] == "acta_origen":
+                origen = res.get("clasificacion_origen")
+                if "EE.UU." in str(origen):
+                    falt.append("Llevar Acta de Nacimiento estadounidense original Y tu Inserción de Acta mexicana (Doble Nacionalidad).")
+                elif "naturalice" in str(origen).lower():
+                    falt.append("Llevar tu Carta de Naturalización mexicana original expedida por la SRE.")
+                else:
+                    falt.append("Llevar tu Acta de Nacimiento mexicana original en buen estado (que se lean bien las letras).")
+            elif q["id"] == "identificacion":
+                falt.append("Llevar una identificación oficial con foto vigente en original.")
+            elif q["id"] == "domicilio":
+                falt.append("Llevar un comprobante de domicilio original a tu nombre en los Estados Unidos.")
+            elif q["id"] == "cita":
+                falt.append("No tienes cita. Tienes que agendar una cita obligatoria llamando al 1-424-309-0009.")
+
+    if edad is not None and edad < 18 and caso == "pasaporte":
+        padres = res.get("padres_presencia")
+        if "México" in str(padres):
+            falt.append("[ALERTA OP-7 REMOTA] El padre en México debe ir a una delegación de la SRE a firmar el permiso.")
+        elif "otro estado" in str(padres):
+            falt.append("[ALERTA OP-7 INTERCONSULAR] El padre ausente debe firmar la autorización en el consulado más cercano a su residencia.")
+        if no(res.get("id_padres")):
+            falt.append("Presentar identificaciones oficiales vigentes con fotografía de ambos padres en original.")
+            
+    if (res.get("domicilio") == "A nombre de un tercero" or res.get("domicilio") == "No, a nombre de un tercero"):
+        falt.append("Comprobante de domicilio no está a tu nombre. Lleva actas familiares o contratos cruzados para la aprobación en ventanilla.")
+        
+    falt.extend(validar_edad_fecha(p))
+    return unicos(falt)
 
 def pantalla_resultado(caso, res, p):
     c = obtener_caso(caso)
-    faltantes = evaluar_requisitos(caso, res)
+    faltantes = evaluar_requisitos(caso, res, p)
     estado = "INCOMPLETO" if faltantes else "LISTO PARA TU CITA"
     est_usuario = p.get("estado") or "Otro"
     consulado_asig = DIRECTORIO_SRE.get(est_usuario, DIRECTORIO_SRE["Otro"])
     
-    url_oficial = "https://sre.gob.mx" if est_usuario == "Florida" else "https://www.gob.mx"
-
     acciones = ["Revisa muy bien tus papeles originales antes de salir de tu casa."]
     if faltantes: acciones.append("Consigue los documentos exactos que te marcamos en la lista de arriba.")
     if no(res.get("cita")): acciones.append("Llama por teléfono al número 1-424-309-0009 para que te den tu cita oficial.")
@@ -243,34 +323,33 @@ def pantalla_resultado(caso, res, p):
         "direccion_usa": p.get("direccion_usa") or "No indicada",
         "telefono_ciudadano": p.get("telefono") or "No indicado",
         "origen_mexico": p.get("origen_mexico") or "No indicado",
-        "estado_residencia": est_usuario,
-        "requisitos_oficiales": c["documentos"],
-        "faltantes": faltantes,
-        "pago_estimado": calcular_pago(caso, res),
+        "estado_residencia": est_usuario, "requisitos_oficiales": c["documentos"],
+        "faltantes": faltantes, "pago_estimado": calcular_pago(caso, res, p),
         "cita_estatus": "Cita agendada." if si(res.get("cita")) else "PENDIENTE: Debes agendar una cita obligatoriamente.",
-        "consulado_nombre": consulado_asig["consulado"],
-        "consulado_direccion": consulado_asig["direccion"],
-        "consulado_telefono": consulado_asig["telefono"],
-        "acciones_recomendadas": acciones,
-        "url_consulado": url_oficial
+        "consulado_nombre": consulado_asig["consulado"], "consulado_direccion": consulado_asig["direccion"],
+        "consulado_telefono": consulado_asig["telefono"], "acciones_recomendadas": acciones,
+        "url_consulado": consulado_asig["url_consulado"]
     }
+
+def resultado(caso, respuestas=None, perfil=None):
+    res = dict(respuestas or {})
+    p = _perfil_desde(res, perfil)
+    return pantalla_resultado(caso, res, p)
 
 def iniciar(texto_inicial="", perfil=None):
     p = _perfil_desde({}, perfil)
     caso = identificar_caso(texto_inicial)
-    if not caso:
-        return {"ok": True, "pantalla": "inicio", "perfil": p, "tramites": catalogo()}
+    if not caso: return {"ok": True, "pantalla": "inicio", "perfil": p, "tramites": catalogo()}
     return seleccionar_caso(caso, p)
 
 def seleccionar_caso(caso, perfil=None, respuestas=None):
     res = dict(respuestas or {})
     p = _perfil_desde(res, perfil)
-    q = siguiente_pregunta(caso, res)
+    q = siguiente_pregunta(caso, res, p)
     if q:
-        activos = preguntas_activas(caso, res)
+        activos = preguntas_activas(caso, res, p)
         return {
-            "ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"],
-            "perfil": p, "respuestas": res,
+            "ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"], "perfil": p, "respuestas": res,
             "pregunta": pregunta_json(q, activos.index(q) + 1, len(activos))
         }
     return {"ok": True, "caso": caso, "perfil": p, "respuestas": res, "resultado": pantalla_resultado(caso, res, p)}
@@ -281,21 +360,17 @@ def continuar(caso, respuestas=None, perfil=None, pregunta_id="", respuesta=""):
         q = pregunta_por_id(caso, pregunta_id)
         if q: res[pregunta_id] = interpretar_respuesta(q, respuesta)
     p = _perfil_desde(res, perfil)
-    q = siguiente_pregunta(caso, res)
+    q = siguiente_pregunta(caso, res, p)
     if q:
-        activos = preguntas_activas(caso, res)
+        activos = preguntas_activas(caso, res, p)
         return {
-            "ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"],
-            "perfil": p, "respuestas": res,
+            "ok": True, "caso": caso, "servicio": TRAMITES[caso]["nombre"], "perfil": p, "respuestas": res,
             "pregunta": pregunta_json(q, activos.index(q) + 1, len(activos))
         }
     return {"ok": True, "caso": caso, "perfil": p, "respuestas": res, "resultado": pantalla_resultado(caso, res, p)}
 
 def catalogo():
-    return [
-        {"caso": "pasaporte", "nombre": "Pasaporte Mexicano", "descripcion": "Saca o renueva tu pasaporte oficial para viajar o identificarte."},
-        {"caso": "matricula", "nombre": "Matrícula Consular", "descripcion": "Obtén tu certificado de nacionalidad y residencia en Estados Unidos."},
-        {"caso": "ine", "nombre": "Credencial para Votar (INE)", "descripcion": "Tramita gratis tu credencial electoral desde el extranjero para votar en México."}
-    ]
+    return [{"caso": k, "nombre": v["nombre"], "descripcion": v["descripcion"]} for k, v in TRAMITES.items()]
 
-__all__ = ["APP", "VERSION", "TARIFAS_SRE", "DIRECTORIO_SRE", "TRAMITES", "catalogo", "iniciar", "seleccionar_caso", "continuar"]
+__all__ = ["APP", "VERSION", "TARIFAS_SRE", "DIRECTORIO_SRE", "TRAMITES", "catalogo", "iniciar", "seleccionar_caso", "continuar", "resultado"]
+# TRAMO 5: FIN
