@@ -9,105 +9,174 @@
 </head>
 <body>
 <main class="app">
+
 <header class="top">
-  <div>
-    <h1>MEXICANO APOYA MEXICANO</h1>
-    <p>Prepara tu trámite antes de ir.</p>
-  </div>
-  <button id="salir" class="small">SALIR</button>
+ <div>
+  <h1>MEXICANO APOYA MEXICANO</h1>
+  <p>Prepara tu trámite antes de ir.</p>
+ </div>
+ <button id="salir" class="small">SALIR</button>
 </header>
 
 <section id="inicio" class="pantalla active">
-  <div class="card hero">
-    <h2>¿PARA QUIÉN ES?</h2>
-    <p>Para mexicanos que viven en Estados Unidos: niños, jóvenes y adultos.</p>
-    <p class="muted">Escribe, habla o pega tus datos. La app los organiza y te dice qué necesitas.</p>
-    <button id="comenzar" class="primary">EMPEZAR</button>
+ <div class="card hero">
+  <h2>ANTES DE EMPEZAR</h2>
+  <p class="mensaje">Esta aplicación está hecha para mexicanos que viven en Estados Unidos y necesitan prepararse para un trámite consular.</p>
+
+  <div class="bloqueInfo">
+   <h3>¿PARA QUÉ SIRVE?</h3>
+   <p>Te ayuda a saber qué necesitas, qué documentos tienes, qué te falta y qué debes confirmar antes de ir.</p>
   </div>
 
-  <div class="card">
-    <h3>¿QUÉ PUEDES HACER?</h3>
-    <div class="acciones">
-      <span>⌨️ Escribir</span>
-      <span>🎤 Hablar</span>
-      <span>📋 Copiar y pegar</span>
-      <span>✅ Revisar</span>
-      <span>📄 Preparar tu hoja</span>
-    </div>
+  <div class="bloqueInfo">
+   <h3>¿CÓMO FUNCIONA?</h3>
+   <p>Primero identificamos tus datos. Después eliges el trámite. La aplicación trabaja con los requisitos del trámite y prepara una Hoja de Ruta para que la revises.</p>
   </div>
 
-  <div class="card aviso">
-    <strong>IMPORTANTE</strong>
-    <p>La app te ayuda a preparar tu trámite. La información oficial puede cambiar y debe confirmarse con el Consulado correspondiente a tu residencia.</p>
+  <div class="bloqueInfo">
+   <h3>¿QUÉ SERVICIOS TIENE?</h3>
+   <p>Actualmente puedes preparar:</p>
+   <ul class="lista-simple">
+    <li>Pasaporte mexicano — primera vez</li>
+    <li>Pasaporte mexicano — renovación</li>
+    <li>Pasaporte mexicano — perdido, robado o dañado</li>
+    <li>Matrícula consular — primera vez</li>
+    <li>Matrícula consular — renovación</li>
+    <li>Acta de nacimiento mexicana — copia certificada</li>
+   </ul>
   </div>
+
+  <div class="bloqueInfo">
+   <h3>¿QUÉ RESUELVE?</h3>
+   <p>El problema de llegar al Consulado sin saber qué llevar, olvidar un documento, confundir información o descubrir demasiado tarde que falta algo.</p>
+  </div>
+
+  <div class="aviso">
+   <strong>IMPORTANTE</strong>
+   <p>Esta aplicación no es el Gobierno de México ni sustituye al Consulado. Los requisitos oficiales pueden cambiar. La aplicación te ayuda a prepararte y a recordar qué debes confirmar.</p>
+  </div>
+
+  <label class="aceptacion">
+   <input id="aceptarLegal" type="checkbox">
+   <span>He leído y entiendo esta información.</span>
+  </label>
+
+  <button id="comenzar" class="primary" disabled>ACEPTAR Y EMPEZAR</button>
+ </div>
+
+ <div class="card">
+  <h3>PUEDES USAR</h3>
+  <div class="acciones">
+   <span>⌨️ Escribir</span>
+   <span>🎤 Hablar</span>
+   <span>📋 Copiar y pegar</span>
+   <span>📄 Revisar documentos PDF</span>
+   <span>✅ Revisar tus datos</span>
+   <span>📝 Corregir antes de confirmar</span>
+  </div>
+ </div>
 </section>
 
 <section id="tramites" class="pantalla">
-  <div class="card">
-    <h2>¿QUÉ NECESITAS?</h2>
-    <p class="muted">Elige una opción.</p>
-    <div id="listaTramites" class="tramites"></div>
+ <div class="card">
+  <button id="volverInicio" class="back">← ATRÁS</button>
+  <h2>¿QUÉ NECESITAS?</h2>
+  <p class="muted">Elige solamente el trámite que necesitas preparar.</p>
+  <div id="listaTramites" class="tramites"></div>
+
+  <div class="documentoEntrada">
+   <h3>¿TIENES UN PDF?</h3>
+   <p class="muted">Puedes subir un PDF para que la aplicación lea su texto y te ayude a organizar la información.</p>
+   <input id="archivoPdf" type="file" accept="application/pdf">
+   <button id="leerPdf" class="secondary">📄 LEER PDF</button>
+   <div id="pdfMensaje"></div>
+   <textarea id="pdfTexto" class="oculto" readonly></textarea>
   </div>
+ </div>
 </section>
 
 <section id="identificacion" class="pantalla">
-  <div class="card">
-    <h2>PRIMERO, IDENTIFIQUÉMONOS</h2>
-    <p class="muted">Estos datos ayudan a preparar correctamente tus documentos.</p>
-    <div id="identificacionCampos"></div>
-    <button id="guardarPerfil" class="primary">CONTINUAR</button>
+ <div class="card">
+  <button id="volverTramites" class="back">← ATRÁS</button>
+  <h2>PRIMERO, TUS DATOS</h2>
+  <p class="muted">Los revisaremos contigo antes de preparar tu trámite.</p>
+
+  <div class="recordatorio">
+   <strong>REVISA BIEN</strong>
+   <p>Tu nombre, fecha de nacimiento, edad, dirección, estado, código postal y teléfono deben estar correctos.</p>
   </div>
+
+  <div id="identificacionCampos"></div>
+
+  <button id="guardarPerfil" class="primary">REVISAR Y CONTINUAR</button>
+ </div>
 </section>
 
 <section id="preguntas" class="pantalla">
-  <div class="card">
-    <div class="barraInfo">
-      <strong id="tramiteTitulo">Tu trámite</strong>
-      <span id="paso"></span>
-    </div>
-    <div class="barra"><div id="progresoBarra"></div></div>
+ <div class="card">
+  <button id="volverPregunta" class="back">← ATRÁS</button>
 
-    <h2 id="preguntaTexto"></h2>
-    <div id="opciones"></div>
-
-    <textarea id="textoEntrada" rows="4" placeholder="Escribe o pega aquí..."></textarea>
-
-    <div class="accionesEntrada">
-      <button id="voz" class="secondary">🎤 HABLAR</button>
-      <button id="pegar" class="secondary">📋 PEGAR</button>
-    </div>
-
-    <button id="continuar" class="primary">CONTINUAR</button>
+  <div class="barraInfo">
+   <strong id="tramiteTitulo">Tu trámite</strong>
+   <span id="paso"></span>
   </div>
+
+  <div class="barra"><div id="progresoBarra"></div></div>
+
+  <div class="recordatorio">
+   <strong>REVISA ANTES DE RESPONDER</strong>
+   <p>La información que das aquí se utilizará para preparar tu Hoja de Ruta.</p>
+  </div>
+
+  <h2 id="preguntaTexto"></h2>
+  <div id="opciones"></div>
+
+  <textarea id="textoEntrada" rows="4" placeholder="Escribe o pega aquí..."></textarea>
+
+  <div class="accionesEntrada">
+   <button id="voz" class="secondary">🎤 HABLAR</button>
+   <button id="pegar" class="secondary">📋 PEGAR</button>
+  </div>
+
+  <button id="continuar" class="primary">CONTINUAR</button>
+ </div>
 </section>
 
 <section id="resultado" class="pantalla">
-  <div class="card resultadoCabecera">
-    <span id="estadoResultado" class="estado"></span>
-    <h2 id="nombreResultado"></h2>
-    <p id="mensajeResultado"></p>
-  </div>
+ <div class="card resultadoCabecera">
+  <button id="volverResultado" class="back">← ATRÁS</button>
+  <span id="estadoResultado" class="estado"></span>
+  <h2 id="nombreResultado"></h2>
+  <p id="mensajeResultado"></p>
+ </div>
 
-  <div id="resultadoDatos" class="card seccion"></div>
-  <div id="resultadoNecesitas" class="card seccion"></div>
-  <div id="resultadoFaltantes" class="card seccion"></div>
-  <div id="resultadoAcciones" class="card seccion"></div>
+ <div class="card recordatorio grande">
+  <strong>ANTES DE TERMINAR</strong>
+  <p>Revisa tus datos. Si algo está mal, corrígelo. Esta Hoja de Ruta es para ayudarte a llegar preparado.</p>
+ </div>
 
-  <div class="card accionesFinales">
-    <button id="pdf" class="primary">📄 MI HOJA DE RUTA</button>
-    <a id="oficial" class="secondary link" target="_blank" rel="noopener">🌐 INFORMACIÓN OFICIAL</a>
-    <button id="nuevo" class="secondary">OTRO TRÁMITE</button>
-  </div>
+ <div id="resultadoDatos" class="card seccion"></div>
+ <div id="resultadoNecesitas" class="card seccion"></div>
+ <div id="resultadoFaltantes" class="card seccion"></div>
+ <div id="resultadoAcciones" class="card seccion"></div>
+
+ <div class="card accionesFinales">
+  <button id="pdfPreview" class="primary">👁️ VER HOJA DE RUTA</button>
+  <button id="pdf" class="secondary">📄 GUARDAR PDF</button>
+  <a id="oficial" class="secondary link" target="_blank" rel="noopener">🌐 INFORMACIÓN OFICIAL</a>
+  <button id="nuevo" class="secondary">OTRO TRÁMITE</button>
+ </div>
 </section>
 
 <div id="modal" class="modal">
-  <div class="modalBox">
-    <button id="cerrarModal" class="close">×</button>
-    <div id="modalContenido"></div>
-  </div>
+ <div class="modalBox">
+  <button id="cerrarModal" class="close">×</button>
+  <div id="modalContenido"></div>
+ </div>
 </div>
 
 <div id="toast" class="toast"></div>
+
 </main>
 <script src="/static/app.js"></script>
 </body>
