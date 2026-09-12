@@ -4,85 +4,514 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
-<meta name="description" content="MEXICANO APOYA MEXICANO - prepara tu trámite consular antes de acudir.">
+<meta name="description" content="MEXICANO APOYA MEXICANO: prepara tu trámite consular antes de acudir.">
 <title>MEXICANO APOYA MEXICANO</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <main>
-<header>
+<section id="inicio" class="pantalla">
+<header class="cabecera">
 <h1>MEXICANO APOYA MEXICANO</h1>
 <p>Prepara tu trámite antes de ir al Consulado.</p>
 </header>
 
-<section id="inicio" class="card">
-<h2>ANTES DE IR AL CONSULADO</h2>
-<div class="caja">
-<p><strong>Evita perder un día de trabajo, gastar dinero o regresar porque te falta algo.</strong></p>
-<p>Cuéntanos con tus propias palabras qué necesitas. Puedes escribir, hablar o pegar información que ya tengas.</p>
-<p>La aplicación organiza tu caso y te muestra <strong>qué tienes, qué te falta y qué debes confirmar.</strong></p>
-</div>
-<button id="entrar" class="principal" type="button">ENTRAR</button>
-<p class="legal">Esta aplicación es independiente. No es el Gobierno de México ni representa a ningún Consulado.</p>
-</section>
-
-<section id="servicios" class="card oculto">
-<h2>¿QUÉ NECESITAS?</h2>
-<p class="grande">Elige la opción que más se parece a tu situación.</p>
-<button id="servicioCita" class="opcion" type="button">QUIERO PREPARAR UN TRÁMITE</button>
-<button id="servicioDocumento" class="opcion" type="button">NECESITO UN DOCUMENTO</button>
-</section>
-
-<section id="pregunta" class="card oculto">
-<div id="paso" class="paso"></div>
-<h2 id="preguntaTexto">¿Qué necesitas?</h2>
-<div id="opciones"></div>
-
-<div id="textoEntrada">
-<textarea id="textoUsuario" autocomplete="off" placeholder="Escribe aquí con tus propias palabras..."></textarea>
-<div class="acciones">
-<button id="voz" class="voz" type="button">🎤 HABLAR</button>
-<button id="continuar" class="continuar" type="button">CONTINUAR</button>
-</div>
-<p class="nota">Puedes escribir, hablar o pegar información. No necesitas saber el nombre oficial del trámite.</p>
+<div class="card principal">
+<h2>EVITA IR EN VANO</h2>
+<p>Antes de gastar dinero, perder un día de trabajo o hacer un viaje, revisa qué necesitas para tu trámite.</p>
+<p>Te haremos preguntas sencillas, una por una, y al final tendrás una <strong>Hoja de Ruta</strong> con lo que tienes, lo que te falta y lo que debes confirmar.</p>
+<p class="nota">Esta aplicación no es el Gobierno de México. La información oficial siempre debe confirmarse con el consulado que corresponde a tu lugar de residencia.</p>
+<button id="entrar" class="btn principalBtn">EMPEZAR</button>
 </div>
 </section>
 
-<section id="resultado" class="card oculto">
-<div id="resultadoIcono" class="check">✓</div>
-<h2>TU HOJA DE RUTA</h2>
-<div id="respuesta"></div>
-<div id="accionesResultado" class="acciones resultadoAcciones">
-<button id="pdf" class="principal" type="button">DESCARGAR HOJA DE RUTA PDF</button>
-<button id="oficial" class="opcion" type="button">VER INFORMACIÓN OFICIAL</button>
-<button id="nuevo" class="continuar" type="button">EMPEZAR DE NUEVO</button>
-<button id="salir" class="salir" type="button">SALIR</button>
+<section id="servicios" class="pantalla oculto">
+<div class="card">
+<h2>¿QUÉ NECESITAS HACER?</h2>
+<p>Elige una opción.</p>
+
+<div id="listaTramites" class="lista"></div>
+
+<div class="separador"></div>
+<button id="volverInicio" class="btn secundario">VOLVER</button>
 </div>
 </section>
 
-<div id="infoOficial" class="modal oculto" role="dialog" aria-modal="true">
+<section id="pregunta" class="pantalla oculto">
+<div class="card">
+<div class="barraTop">
+<span id="paso">PASO</span>
+<button id="salirPregunta" class="btn salir">SALIR</button>
+</div>
+
+<div class="progreso">
+<div id="progresoBarra"></div>
+</div>
+
+<h2 id="tramiteTitulo"></h2>
+<p id="preguntaTexto" class="preguntaTexto"></p>
+
+<div id="opciones" class="opciones"></div>
+
+<div id="textoEntrada" class="entrada">
+<label for="textoUsuario">Escribe tu respuesta</label>
+<textarea id="textoUsuario" rows="4" placeholder="Puedes escribir con tus propias palabras..."></textarea>
+</div>
+
+<div class="accionesPregunta">
+<button id="voz" class="btn voz">🎤 HABLAR</button>
+<button id="continuar" class="btn continuar">CONTINUAR</button>
+</div>
+
+<p id="ayudaPregunta" class="nota"></p>
+</div>
+</section>
+
+<section id="resultado" class="pantalla oculto">
+<div class="card">
+<div id="resultadoCabecera" class="resultadoCabecera">
+<div id="resultadoIcono"></div>
+<h2 id="resultadoTitulo"></h2>
+</div>
+
+<h3 id="resultadoTramite"></h3>
+<p id="respuesta"></p>
+
+<div id="resultadoDatos" class="bloque"></div>
+<div id="resultadoPersonas" class="bloque"></div>
+<div id="resultadoRequisitos" class="bloque"></div>
+<div id="resultadoOriginales" class="bloque"></div>
+<div id="resultadoCopias" class="bloque"></div>
+<div id="resultadoFalta" class="bloque"></div>
+<div id="resultadoConfirmar" class="bloque"></div>
+<div id="resultadoPago" class="bloque"></div>
+<div id="resultadoCita" class="bloque"></div>
+<div id="resultadoVigencia" class="bloque"></div>
+<div id="resultadoEntrega" class="bloque"></div>
+<div id="resultadoEspeciales" class="bloque"></div>
+<div id="resultadoAcciones" class="bloque"></div>
+
+<div class="resultadoAcciones">
+<button id="pdf" class="btn principalBtn">📄 DESCARGAR HOJA DE RUTA</button>
+<button id="oficial" class="btn oficial">🌐 INFORMACIÓN OFICIAL</button>
+<button id="nuevo" class="btn secundario">OTRO TRÁMITE</button>
+<button id="salirResultado" class="btn salir">SALIR</button>
+</div>
+</div>
+</section>
+
+<section id="infoOficial" class="modal oculto">
 <div class="modalCaja">
+<button id="cerrarOficial" class="cerrar">×</button>
 <h2>INFORMACIÓN OFICIAL</h2>
-<p>Consulta directamente la información oficial relacionada con tu trámite.</p>
-<a id="fuenteOficial" href="#" target="_blank" rel="noopener noreferrer">ABRIR INFORMACIÓN OFICIAL</a>
-<button id="cerrarOficial" class="salir" type="button">CERRAR</button>
+<p>Consulta siempre la información del consulado que corresponde a tu lugar de residencia.</p>
+<a id="fuenteOficial" href="#" target="_blank" rel="noopener">ABRIR INFORMACIÓN OFICIAL</a>
+<p class="nota">La aplicación no sustituye las instrucciones del consulado.</p>
 </div>
-</div>
+</section>
 
-<div id="salida" class="modal oculto" role="dialog" aria-modal="true">
+<section id="salida" class="modal oculto">
 <div class="modalCaja">
-<h2>¿SALIR?</h2>
-<p>Si sales, esta consulta se cerrará y podrás comenzar otra cuando quieras.</p>
-<div class="acciones">
-<button id="confirmarSalida" class="salir" type="button">SALIR</button>
-<button id="cancelarSalida" class="continuar" type="button">CONTINUAR</button>
+<h2>¿QUIERES SALIR?</h2>
+<p>Si sales, perderás las respuestas de esta sesión.</p>
+<div class="modalAcciones">
+<button id="confirmarSalida" class="btn salir">SALIR</button>
+<button id="cancelarSalida" class="btn secundario">CONTINUAR</button>
 </div>
 </div>
-</div>
+</section>
 
-<div id="toast" class="toast" aria-live="polite"></div>
+<div id="toast" class="toast oculto"></div>
 </main>
 
-<script src="/static/app.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const inicio=$("inicio"),servicios=$("servicios"),pregunta=$("pregunta"),resultado=$("resultado");
+const infoOficial=$("infoOficial"),salida=$("salida");
+let state={
+ servicio:"",
+ caso:"",
+ pregunta_id:"",
+ pregunta:null,
+ respuestas:{},
+ perfil:{},
+ resultado:null
+};
+
+const esc=x=>String(x??"").replace(/[&<>"']/g,m=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[m]));
+const txt=x=>String(x??"").trim();
+
+function mostrar(x){
+ [inicio,servicios,pregunta,resultado].forEach(e=>e.classList.add("oculto"));
+ x.classList.remove("oculto");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function toast(m){
+ $("toast").textContent=m;
+ $("toast").classList.remove("oculto");
+ clearTimeout(window._toast);
+ window._toast=setTimeout(()=>$("toast").classList.add("oculto"),3200);
+}
+
+async function api(url,data=null){
+ try{
+  const opt=data===null?{}:{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify(data)
+  };
+  const r=await fetch(url,opt);
+  const j=await r.json();
+  if(!r.ok)throw new Error(j.detail||j.mensaje||"Error");
+  return j;
+ }catch(e){
+  toast(e.message||"No se pudo conectar.");
+  throw e;
+ }
+}
+
+async function despertar(){
+ try{await fetch("/api/estado");}catch(e){}
+}
+
+function limpiarEstado(){
+ state={
+  servicio:"",
+  caso:"",
+  pregunta_id:"",
+  pregunta:null,
+  respuestas:{},
+  perfil:{},
+  resultado:null
+ };
+}
+
+function renderCatalogo(lista){
+ const box=$("listaTramites");
+ box.innerHTML="";
+ (lista||[]).forEach(t=>{
+  const b=document.createElement("button");
+  b.className="opcion grande";
+  b.type="button";
+  b.innerHTML="<strong>"+esc(t.nombre)+"</strong><small>"+esc(t.descripcion||"")+"</small>";
+  b.onclick=()=>seleccionar(t.id);
+  box.appendChild(b);
+ });
+}
+
+async function cargarCatalogo(){
+ const j=await api("/api/catalogo");
+ renderCatalogo(j.tramites||[]);
+}
+
+function iniciarApp(){
+ limpiarEstado();
+ mostrar(servicios);
+ cargarCatalogo();
+}
+
+$("entrar").onclick=iniciarApp;
+$("volverInicio").onclick=()=>mostrar(inicio);
+
+async function seleccionar(caso){
+ state.caso=caso;
+ state.respuestas={};
+ state.perfil={};
+ try{
+  const j=await api("/api/seleccionar-caso",{
+   servicio:caso.startsWith("pasaporte")?"pasaporte":
+           caso.startsWith("matricula")?"matricula":"acta",
+   caso,
+   respuestas:{},
+   perfil:{}
+  });
+  aplicar(j);
+ }catch(e){}
+}
+
+function aplicar(j){
+ if(!j)return;
+
+ if(j.tipo==="seleccion"){
+  renderCatalogo(j.catalogo||[]);
+  mostrar(servicios);
+  return;
+ }
+
+ if(j.tipo==="pregunta"){
+  state.servicio=j.servicio||state.servicio;
+  state.caso=j.caso||state.caso;
+  state.pregunta_id=j.pregunta_id||j.pregunta?.id||"";
+  state.pregunta=j.pregunta||null;
+  state.respuestas=j.respuestas||state.respuestas||{};
+  state.perfil=j.perfil||state.perfil||{};
+  renderPregunta();
+  mostrar(pregunta);
+  return;
+ }
+
+ if(j.tipo==="resultado"||j.estado||j.titulo){
+  state.resultado=j;
+  state.respuestas=j.respuestas||state.respuestas||{};
+  state.perfil=j.perfil||state.perfil||{};
+  renderResultado();
+  mostrar(resultado);
+  return;
+ }
+
+ if(j.tipo==="error"){
+  toast(j.mensaje||"No se pudo continuar.");
+ }
+}
+
+function renderPregunta(){
+ const q=state.pregunta;
+ if(!q)return;
+
+ $("tramiteTitulo").textContent=
+  state.caso==="pasaporte_primera_vez"?"PASAPORTE MEXICANO":
+  state.caso==="pasaporte_renovacion"?"RENOVACIÓN DE PASAPORTE":
+  state.caso==="pasaporte_perdido_robo_mutilado"?"PASAPORTE PERDIDO, ROBADO O DAÑADO":
+  state.caso==="matricula_primera_vez"?"MATRÍCULA CONSULAR":
+  state.caso==="matricula_renovacion"?"RENOVACIÓN DE MATRÍCULA CONSULAR":
+  "ACTA DE NACIMIENTO MEXICANA";
+
+ $("paso").textContent="PASO "+(q.paso||"")+" DE "+(q.total||"");
+ $("preguntaTexto").textContent=q.texto||"";
+ $("ayudaPregunta").textContent="";
+
+ const bar=$("progresoBarra");
+ const total=Number(q.total||1);
+ const paso=Number(q.paso||1);
+ bar.style.width=Math.min(100,Math.max(5,paso/total*100))+"%";
+
+ const opciones=$("opciones");
+ opciones.innerHTML="";
+ $("textoEntrada").classList.toggle("oculto",q.tipo==="opciones");
+
+ if(q.tipo==="opciones"){
+  (q.opciones||[]).forEach(v=>{
+   const b=document.createElement("button");
+   b.type="button";
+   b.className="opcion";
+   b.textContent=v;
+   b.onclick=()=>{
+    opciones.querySelectorAll(".opcion").forEach(x=>x.classList.remove("seleccionado"));
+    b.classList.add("seleccionado");
+    state.respuestas[state.pregunta_id]=v;
+    $("textoUsuario").value="";
+   };
+   opciones.appendChild(b);
+  });
+ }else{
+  $("textoUsuario").value=state.respuestas[state.pregunta_id]||"";
+ }
+
+ $("textoUsuario").focus();
+}
+
+async function continuar(){
+ const q=state.pregunta;
+ if(!q)return;
+
+ let valor="";
+ if(q.tipo==="opciones"){
+  valor=state.respuestas[state.pregunta_id]||"";
+  if(!valor){
+   toast("Selecciona una opción para continuar.");
+   return;
+  }
+ }else{
+  valor=txt($("textoUsuario").value);
+  if(q.obligatorio!==false&&!valor){
+   toast("Necesitamos esta información para continuar.");
+   $("textoUsuario").focus();
+   return;
+  }
+  if(valor)state.respuestas[state.pregunta_id]=valor;
+ }
+
+ try{
+  const j=await api("/api/continuar",{
+   servicio:state.servicio,
+   caso:state.caso,
+   pregunta_id:state.pregunta_id,
+   texto:q.tipo==="opciones"?"":valor,
+   respuestas:state.respuestas,
+   perfil:state.perfil
+  });
+  aplicar(j);
+ }catch(e){}
+}
+
+$("continuar").onclick=continuar;
+
+$("textoUsuario").addEventListener("keydown",e=>{
+ if(e.key==="Enter"&&e.ctrlKey)continuar();
+});
+
+let reconocimiento=null;
+
+$("voz").onclick=()=>{
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){
+  toast("Tu navegador no permite entrada por voz.");
+  return;
+ }
+ if(reconocimiento){
+  reconocimiento.stop();
+  reconocimiento=null;
+  $("voz").textContent="🎤 HABLAR";
+  return;
+ }
+
+ reconocimiento=new SR();
+ reconocimiento.lang="es-MX";
+ reconocimiento.interimResults=false;
+ reconocimiento.continuous=false;
+
+ reconocimiento.onstart=()=>{
+  $("voz").textContent="🔴 ESCUCHANDO...";
+ };
+
+ reconocimiento.onresult=e=>{
+  let s="";
+  for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript+" ";
+  $("textoUsuario").value=s.trim();
+
+  if(state.pregunta?.tipo==="opciones"){
+   const n=s.trim().toLowerCase();
+   const buttons=[...$("opciones").querySelectorAll(".opcion")];
+   const match=buttons.find(b=>b.textContent.toLowerCase()===n);
+   if(match)match.click();
+  }
+ };
+
+ reconocimiento.onerror=()=>{
+  toast("No se pudo reconocer la voz.");
+ };
+
+ reconocimiento.onend=()=>{
+  reconocimiento=null;
+  $("voz").textContent="🎤 HABLAR";
+ };
+
+ reconocimiento.start();
+};
+
+function bloque(titulo,items){
+ if(!items||!items.length)return "";
+ return "<div class='bloqueInterno'><h4>"+esc(titulo)+"</h4>"+
+ items.map(x=>"<div class='item'>"+esc(x)+"</div>").join("")+
+ "</div>";
+}
+
+function renderResultado(){
+ const d=state.resultado||{};
+ const cab=$("resultadoCabecera");
+ cab.className="resultadoCabecera estado-"+(d.estado||"amarillo");
+
+ $("resultadoIcono").textContent=
+  d.estado==="verde"?"🟢":
+  d.estado==="rojo"?"🔴":"🟡";
+
+ $("resultadoTitulo").textContent=d.titulo||"RESULTADO";
+ $("resultadoTramite").textContent=d.nombre_tramite||"";
+ $("respuesta").textContent=d.mensaje||"";
+
+ const p=d.datos_personales||d.perfil||{};
+ $("resultadoDatos").innerHTML=
+  "<h4>1. DATOS PERSONALES</h4>"+
+  [
+   ["Nombre",p.nombre_completo],
+   ["Nacionalidad",p.nacionalidad],
+   ["Teléfono",p.telefono],
+   ["Dirección",p.direccion],
+   ["Estado",p.estado],
+   ["ZIP",p.zip],
+   ["Correo",p.email]
+  ].filter(x=>txt(x[1])).map(x=>
+   "<div class='dato'><strong>"+esc(x[0])+":</strong> "+esc(x[1])+"</div>"
+  ).join("")||"<div class='vacio'>PENDIENTE DE COMPLETAR</div>";
+
+ $("resultadoPersonas").innerHTML=bloque("2. PERSONAS QUE DEBEN PRESENTARSE",d.personas);
+ $("resultadoRequisitos").innerHTML=bloque("3. REQUISITOS OBLIGATORIOS",d.requisitos);
+ $("resultadoOriginales").innerHTML=bloque("4. DOCUMENTOS ORIGINALES",d.originales);
+ $("resultadoCopias").innerHTML=bloque("5. COPIAS",d.copias);
+ $("resultadoFalta").innerHTML=bloque("6. LO QUE TE FALTA",d.faltan);
+ $("resultadoConfirmar").innerHTML=bloque("7. LO QUE DEBES CONFIRMAR",d.confirmar);
+ $("resultadoPago").innerHTML=bloque("8. PAGO",d.pago?[d.pago]:[]);
+ $("resultadoCita").innerHTML=bloque("9. CITA",d.cita?[d.cita]:[]);
+ $("resultadoVigencia").innerHTML=bloque("10. VIGENCIA",d.vigencia?[d.vigencia]:[]);
+ $("resultadoEntrega").innerHTML=bloque("11. ENTREGA",d.entrega?[d.entrega]:[]);
+ $("resultadoEspeciales").innerHTML=bloque("12. INFORMACIÓN ESPECIAL",d.especiales);
+ $("resultadoAcciones").innerHTML=bloque("13. ¿QUÉ DEBES HACER?",d.acciones);
+}
+
+$("pdf").onclick=async()=>{
+ try{
+  const r=await fetch("/api/pdf",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    servicio:state.servicio,
+    caso:state.caso,
+    respuestas:state.respuestas,
+    perfil:state.perfil
+   })
+  });
+  if(!r.ok)throw new Error("No se pudo generar el PDF.");
+  const blob=await r.blob();
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=(state.caso||"tramite")+".pdf";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+ }catch(e){
+  toast(e.message);
+ }
+};
+
+$("oficial").onclick=()=>{
+ const url=state.resultado?.fuente_oficial||state.resultado?.fuente;
+ if(!url){
+  toast("No hay fuente oficial disponible.");
+  return;
+ }
+ $("fuenteOficial").href=url;
+ infoOficial.classList.remove("oculto");
+};
+
+$("cerrarOficial").onclick=()=>infoOficial.classList.add("oculto");
+
+function pedirSalida(){
+ salida.classList.remove("oculto");
+}
+
+$("salirPregunta").onclick=pedirSalida;
+$("salirResultado").onclick=pedirSalida;
+
+$("cancelarSalida").onclick=()=>salida.classList.add("oculto");
+
+$("confirmarSalida").onclick=()=>{
+ salida.classList.add("oculto");
+ limpiarEstado();
+ mostrar(inicio);
+};
+
+$("nuevo").onclick=()=>{
+ limpiarEstado();
+ mostrar(servicios);
+ cargarCatalogo();
+};
+
+despertar();
+</script>
 </body>
 </html>
