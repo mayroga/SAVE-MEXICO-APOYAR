@@ -20,8 +20,12 @@ document.addEventListener("keydown", iniciarRelojInactividad);
 
 function validarCheck() {
     const chk = document.getElementById('check-legal');
-    document.getElementById('btn-comenzar').disabled = !chk.checked;
+    const btn = document.getElementById('btn-comenzar');
+    if (chk && btn) {
+        btn.disabled = !chk.checked;
+    }
 }
+
 
 function comenzarDeNuevoLimpio() {
     casoActual = "";
