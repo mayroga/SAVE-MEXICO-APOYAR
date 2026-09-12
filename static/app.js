@@ -1,205 +1,295 @@
 const $=id=>document.getElementById(id);
-const inicio=$("inicio"),servicios=$("servicios"),pregunta=$("pregunta"),resultado=$("resultado");
-const preguntaTexto=$("preguntaTexto"),opciones=$("opciones"),textoEntrada=$("textoEntrada"),textoUsuario=$("textoUsuario"),paso=$("paso");
-const respuesta=$("respuesta"),toastBox=$("toast"),infoOficial=$("infoOficial"),salida=$("salida");
-let state={servicio:"",caso:"",pregunta_id:"",pregunta:null,respuestas:{},perfil:{},resultado:null};
+const state={
+ servicio:"",caso:"",pregunta_id:"",pregunta:null,respuestas:{},perfil:{},resultado:null
+};
 
-const t=(x)=>String(x??"").trim();
-const esc=x=>t(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-const arr=x=>Array.isArray(x)?x.filter(v=>t(v)):t(x)?[t(x)]:[];
-const mostrar=e=>e?.classList.remove("oculto");
-const ocultar=e=>e?.classList.add("oculto");
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const texto=v=>String(v??"").trim();
 
-function toast(m){
- if(!toastBox)return;
- toastBox.textContent=m;
- toastBox.classList.add("show");
- clearTimeout(window.__toast);
- window.__toast=setTimeout(()=>toastBox.classList.remove("show"),2800);
+async function api(url,options={}){
+ const r=await fetch(url,{headers:{"Content-Type":"application/json"},...options});
+ const d=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(d.detail||"Error");
+ return d;
 }
-async function api(url,data){
- const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data||{})});
- let j={};
- try{j=await r.json()}catch{}
- if(!r.ok)throw new Error(j.detail||"No se pudo completar la operación.");
- return j;
+
+function toast(msg){
+ const e=$("toast");
+ if(e){e.textContent=msg;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2500);}
 }
-function limpiar(){
- state={servicio:"",caso:"",pregunta_id:"",pregunta:null,respuestas:{},perfil:{},resultado:null};
- textoUsuario.value="";
- opciones.innerHTML="";
- respuesta.innerHTML="";
- ocultar(servicios);ocultar(pregunta);ocultar(resultado);ocultar(infoOficial);ocultar(salida);
- mostrar(inicio);
+
+function mostrar(id){
+ document.querySelectorAll(".pantalla,.screen").forEach(e=>e.classList.remove("active","show"));
+ const e=$(id);
+ if(e)e.classList.add("active","show");
  window.scrollTo({top:0,behavior:"smooth"});
 }
-function comenzar(){
- ocultar(inicio);mostrar(servicios);
- window.scrollTo({top:0,behavior:"smooth"});
+
+function limpiarEntrada(){
+ if($("textoEntrada"))$("textoEntrada").value="";
+ if($("textoUsuario"))$("textoUsuario").value="";
+ document.querySelectorAll("input[name='q']").forEach(e=>e.checked=false);
+ if($("otherInput"))$("otherInput").value="";
 }
-function servicio(s){
- state.servicio=s;
- ocultar(servicios);mostrar(pregunta);
- pedirInicio();
+
+function perfilInicial(d){
+ state.perfil=d?.perfil||{};
 }
-async function pedirInicio(){
+
+async function cargarEstado(){
  try{
-  const j=await api("/api/iniciar",{servicio:state.servicio,respuestas:state.respuestas,texto:""});
-  procesar(j);
- }catch(e){toast(e.message)}
+  const d=await api("/api/estado");
+  perfilInicial(d);
+ }catch(e){}
 }
-function procesar(j){
- if(!j)return;
- if(j.error){toast(j.error);return}
- if(j.tipo==="resultado"||j.estado||j.tiene||j.falta||j.confirmar){
-  mostrarResultado(j);return;
+
+async function cargarCatalogo(){
+ try{
+  const d=await api("/api/catalogo");
+  const lista=d.casos||d.tramites||d.catalogo||[];
+  renderCatalogo(lista);
+ }catch(e){
+  toast("No se pudo cargar la información.");
  }
- if(j.perfil)state.perfil=j.perfil;
- if(j.caso)state.caso=j.caso;
- if(j.pregunta_id)state.pregunta_id=j.pregunta_id;
- if(j.pregunta)state.pregunta=j.pregunta;
- else state.pregunta=j;
- mostrarPregunta(j);
 }
-function mostrarPregunta(j){
- ocultar(resultado);mostrar(pregunta);
- opciones.innerHTML="";
- textoEntrada.style.display="none";
- const q=j.pregunta||j;
+
+function renderCatalogo(lista){
+ const box=$("listaTramites");
+ if(!box)return;
+ box.innerHTML="";
+ lista.forEach(x=>{
+  const id=x.caso||x.id||x.codigo;
+  const nombre=x.nombre||x.titulo||x.servicio||x.descripcion||id;
+  if(!id)return;
+  const b=document.createElement("button");
+  b.type="button";b.className="tramite";
+  b.textContent=nombre;
+  b.onclick=()=>seleccionar(id,nombre);
+  box.appendChild(b);
+ });
+}
+
+async function seleccionar(caso,nombre=""){
+ state.caso=caso;
+ state.servicio=nombre;
+ state.respuestas={};
+ state.resultado=null;
+ limpiarEntrada();
+ try{
+  const d=await api("/api/seleccionar-caso",{
+   method:"POST",body:JSON.stringify({caso,servicio:nombre})
+  });
+  aplicarRespuesta(d);
+ }catch(e){
+  try{
+   const d=await api("/api/seleccionar_caso",{
+    method:"POST",body:JSON.stringify({caso,servicio:nombre})
+   });
+   aplicarRespuesta(d);
+  }catch(err){toast(err.message||"No se pudo iniciar el trámite.");}
+ }
+}
+
+function aplicarRespuesta(d){
+ if(d.caso)state.caso=d.caso;
+ if(d.servicio)state.servicio=d.servicio;
+ if(d.perfil)state.perfil={...state.perfil,...d.perfil};
+ if(d.respuestas)state.respuestas={...state.respuestas,...d.respuestas};
+ if(d.resultado){state.resultado=d.resultado;renderResultado(d.resultado);return;}
+ if(d.pregunta||d.pregunta_id){
+  state.pregunta=d.pregunta||null;
+  state.pregunta_id=d.pregunta_id||d.pregunta?.id||"";
+  renderPregunta(d);
+  mostrar("pantallaPreguntas");
+  return;
+ }
+ if(d.pantalla==="resultado")renderResultado(d);
+}
+
+function renderPregunta(d){
+ const q=d.pregunta||d;
  state.pregunta=q;
- state.pregunta_id=q.id||j.pregunta_id||"";
- state.caso=j.caso||state.caso;
- preguntaTexto.textContent=q.texto||q.pregunta||"¿Qué necesitas?";
- paso.textContent=q.paso?`PASO ${q.paso}`:"";
- const ops=q.opciones||j.opciones||[];
- if(ops.length){
-  opciones.innerHTML=ops.map((o,i)=>{
-   const val=typeof o==="string"?o:(o.value??o.id??o.texto??o.label??"");
-   const lab=typeof o==="string"?o:(o.label??o.texto??o.nombre??val);
-   return `<button class="opcion" type="button" data-value="${esc(val)}">${esc(lab)}</button>`;
-  }).join("");
-  opciones.querySelectorAll("button").forEach(b=>b.onclick=()=>responder(b.dataset.value));
- }else{
-  textoEntrada.style.display="block";
-  textoUsuario.focus();
+ state.pregunta_id=d.pregunta_id||q.id||"";
+ const titulo=q.pregunta||q.texto||q.titulo||"";
+ const paso=d.paso??q.paso??"";
+ const total=d.total??q.total??"";
+ if($("tramiteTitulo"))$("tramiteTitulo").textContent=state.servicio||"Tu trámite";
+ if($("preguntaTexto"))$("preguntaTexto").textContent=titulo;
+ if($("paso"))$("paso").textContent=total?`${paso} de ${total}`:paso;
+ const bar=$("progresoBarra");
+ if(bar){
+  let p=d.progreso;
+  if(p==null&&paso&&total)p=Number(paso)/Number(total)*100;
+  bar.style.width=Math.max(0,Math.min(100,Number(p)||0))+"%";
  }
- window.scrollTo({top:pregunta.offsetTop-10,behavior:"smooth"});
+ const box=$("opciones");
+ if(box){
+  box.innerHTML="";
+  const opciones=q.opciones||q.choices||[];
+  opciones.forEach(o=>{
+   const val=typeof o==="string"?o:(o.valor??o.value??o.texto??o.label??"");
+   const lab=typeof o==="string"?o:(o.label??o.texto??o.nombre??val);
+   if(!val)return;
+   const wrap=document.createElement("label");
+   wrap.className="opcion";
+   wrap.innerHTML=`<input type="radio" name="q" value="${esc(val)}"><span>${esc(lab)}</span>`;
+   const input=wrap.querySelector("input");
+   input.addEventListener("change",()=>{
+    const other=val==="__OTRO__"||val.toLowerCase()==="otro";
+    if(other&&!$("otherInput")){
+     const inp=document.createElement("input");
+     inp.id="otherInput";inp.className="texto-otro";inp.placeholder="Escribe tu respuesta";
+     box.appendChild(inp);
+    }
+   });
+   box.appendChild(wrap);
+  });
+ }
+ if($("textoEntrada")){
+  $("textoEntrada").value="";
+  $("textoEntrada").placeholder=q.placeholder||"Escribe tu respuesta aquí...";
+ }
+ limpiarEntrada();
 }
-async function responder(valor){
- valor=t(valor);
- if(!valor)return;
+
+function obtenerValor(){
+ const q=state.pregunta||{};
+ const sel=document.querySelector("input[name='q']:checked");
+ let v=sel?sel.value:"";
+ if((v==="__OTRO__"||v.toLowerCase()==="otro")&&$("otherInput"))v=texto($("otherInput").value);
+ const txt=texto($("textoEntrada")?.value||$("textoUsuario")?.value);
+ return txt||v;
+}
+
+async function continuar(){
+ const q=state.pregunta||{};
+ const valor=obtenerValor();
+ if(q.required===true&&!valor){toast("Esta respuesta es necesaria.");return;}
+ if((q.tipo==="opciones"||q.type==="opciones")&&q.permite_otro!==false){
+  const sel=document.querySelector("input[name='q']:checked");
+  if(sel&&(sel.value==="__OTRO__"||sel.value.toLowerCase()==="otro")&&!valor){
+   toast("Escribe tu respuesta.");$("otherInput")?.focus();return;
+  }
+ }
+ if(!state.pregunta_id){toast("No hay una pregunta activa.");return;}
  state.respuestas[state.pregunta_id]=valor;
  try{
-  const j=await api("/api/continuar",{
-   servicio:state.servicio,
-   caso:state.caso,
-   pregunta_id:state.pregunta_id,
-   texto:"",
-   respuestas:state.respuestas,
-   perfil:state.perfil
+  const d=await api("/api/continuar",{
+   method:"POST",
+   body:JSON.stringify({
+    caso:state.caso,
+    servicio:state.servicio,
+    pregunta_id:state.pregunta_id,
+    respuesta:valor,
+    texto:valor,
+    respuestas:state.respuestas,
+    perfil:state.perfil
+   })
   });
-  procesar(j);
- }catch(e){toast(e.message)}
+  if(d.perfil)state.perfil={...state.perfil,...d.perfil};
+  if(d.respuestas)state.respuestas={...state.respuestas,...d.respuestas};
+  aplicarRespuesta(d);
+ }catch(e){toast(e.message||"No se pudo continuar.");}
 }
-async function enviarTexto(){
- const v=t(textoUsuario.value);
- if(!v){toast("Escribe o habla antes de continuar.");return}
- const id=state.pregunta_id;
+
+async function interpretar(){
+ const el=$("textoUsuario")||$("textoEntrada");
+ const valor=texto(el?.value);
+ if(!valor){toast("Escribe o habla primero.");return;}
+ if(state.pregunta_id){await continuar();return;}
  try{
-  const j=await api("/api/interpretar",{
-   servicio:state.servicio,
-   caso:state.caso,
-   pregunta_id:id,
-   texto:v,
-   respuestas:state.respuestas,
-   perfil:state.perfil
+  const d=await api("/api/interpretar",{
+   method:"POST",
+   body:JSON.stringify({texto:valor,caso:state.caso,servicio:state.servicio,respuestas:state.respuestas,perfil:state.perfil})
   });
-  textoUsuario.value="";
-  procesar(j);
- }catch(e){toast(e.message)}
+  aplicarRespuesta(d);
+ }catch(e){toast(e.message||"No se pudo interpretar.");}
 }
-function mostrarResultado(j){
- state.resultado=j;
- state.caso=j.caso||state.caso;
- ocultar(inicio);ocultar(servicios);ocultar(pregunta);mostrar(resultado);
- let codigo=j.estado_codigo||(j.estado||{}).codigo||"amarillo";
- const titulo=codigo==="verde"?"PARECES LISTO":codigo==="rojo"?"ATENCIÓN: TODAVÍA NO VAYAS":"TE FALTA CONFIRMAR ALGO";
- const cls=codigo==="verde"?"estado-verde":codigo==="rojo"?"estado-rojo":"estado-amarillo";
- $("resultadoIcono").textContent=codigo==="verde"?"✓":codigo==="rojo"?"!":"?";
- let h=`<div class="resultadoCabecera ${cls}">${titulo}</div>`;
- if(j.mensaje)h+=`<p>${esc(j.mensaje)}</p>`;
- h+=bloqueDatos("DATOS PERSONALES",j.datos_personales);
- h+=bloqueLista("LO QUE YA TIENES",j.tiene,"No se registró todavía un documento como disponible.");
- h+=bloqueLista("LO QUE TE FALTA",j.falta,"No aparece un requisito faltante con las respuestas proporcionadas.");
- h+=bloqueLista("LO QUE DEBES CONFIRMAR",j.confirmar,"No aparece información pendiente de confirmación.");
- h+=bloqueLista("REQUISITOS OBLIGATORIOS",j.obligatorios);
- h+=bloqueLista("PERSONAS QUE DEBEN PRESENTARSE",j.personas);
- if(j.datos_menor?.length)h+=bloqueDatos("INFORMACIÓN DEL MENOR",j.datos_menor);
- if(j.datos_padre_madre_tutor?.length)h+=bloqueDatos("PADRE, MADRE O TUTOR",j.datos_padre_madre_tutor);
- h+=bloqueLista("DOCUMENTOS ORIGINALES",j.documentos_originales);
- if(j.copias?.length)h+=bloqueLista("COPIAS",j.copias);
- if(j.especiales?.length)h+=bloqueLista("INFORMACIÓN IMPORTANTE",j.especiales);
- if(j.instrucciones?.length)h+=bloqueLista("¿QUÉ DEBES HACER?",j.instrucciones);
- if(j.cita?.necesaria)h+=`<div class="bloque"><h3>CITA</h3><p>${esc(j.cita.mensaje||"Debes confirmar la cita.")}</p>${j.cita.telefono?`<p><strong>Teléfono:</strong> ${esc(j.cita.telefono)}</p>`:""}</div>`;
- if(j.pago?.necesario)h+=`<div class="bloque"><h3>PAGO</h3><p>${esc(j.pago.cantidad||"Confirma la tarifa vigente.")}</p><p>${esc(j.pago.mensaje||"")}</p></div>`;
- respuesta.innerHTML=h;
- const url=j.fuente_oficial||j.boton_oficial?.url||j.fuente||"";
- $("fuenteOficial").href=url||"#";
- $("oficial").disabled=!url;
- window.scrollTo({top:resultado.offsetTop-10,behavior:"smooth"});
+
+function renderResultado(r){
+ state.resultado=r||{};
+ mostrar("pantallaResultado");
+ const map={
+  datos:"resultadoDatos",personas:"resultadoPersonas",requisitos:"resultadoRequisitos",
+  originales:"resultadoOriginales",copias:"resultadoCopias",faltantes:"resultadoFaltantes",
+  confirmar:"resultadoConfirmar",pago:"resultadoPago",cita:"resultadoCita",
+  vigencia:"resultadoVigencia",entrega:"resultadoEntrega",especial:"resultadoEspecial",
+  acciones:"resultadoAcciones",fuentes:"resultadoFuentes",contacto:"resultadoContacto"
+ };
+ Object.entries(map).forEach(([k,id])=>{
+  const e=$(id);if(!e)return;
+  let v=r[k];
+  if(v==null)v=r[k==="faltantes"?"missing":k];
+  if(Array.isArray(v))e.innerHTML=v.length?`<ul>${v.map(x=>`<li>${esc(typeof x==="string"?x:x.texto||x.nombre||"")}</li>`).join("")}</ul>`:"<p>No hay información.</p>";
+  else if(typeof v==="object"&&v)e.innerHTML=Object.entries(v).map(([a,b])=>`<p><strong>${esc(a)}:</strong> ${esc(b)}</p>`).join("");
+  else e.innerHTML=esc(v||"");
+ });
+ const oficial=r.fuente||r.url_oficial||r.fuentes?.[0]?.url||"";
+ const b=$("oficial");
+ if(b&&oficial){b.href=oficial;b.target="_blank";b.rel="noopener";}
 }
-function bloqueDatos(titulo,d){
- if(!Array.isArray(d)||!d.length)return"";
- return `<div class="bloque"><h3>${esc(titulo)}</h3><div class="datos">${d.map(x=>`<div><strong>${esc(x[0])}</strong><span>${esc(x[1])}</span></div>`).join("")}</div></div>`;
-}
-function bloqueLista(titulo,d,empty=""){
- const a=arr(d);
- if(!a.length)return empty?`<div class="bloque"><h3>${esc(titulo)}</h3><p class="vacio">${esc(empty)}</p></div>`:"";
- return `<div class="bloque"><h3>${esc(titulo)}</h3><ul>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
-}
+
 async function descargarPDF(){
- if(!state.resultado||!state.caso){toast("Primero completa el trámite.");return}
- const b=$("pdf");b.disabled=true;b.textContent="PREPARANDO PDF...";
  try{
-  const r=await fetch("/api/pdf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
-   servicio:state.servicio,caso:state.caso,respuestas:state.respuestas,perfil:state.perfil
-  })});
-  if(!r.ok){
-   let x={};try{x=await r.json()}catch{}
-   throw new Error(x.detail||"No se pudo generar el PDF.");
-  }
-  const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download="hoja_de_ruta_mexicano_apoya_mexicano.pdf";
-  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
- }catch(e){toast(e.message)}
- finally{b.disabled=false;b.textContent="DESCARGAR HOJA DE RUTA PDF"}
+  const r=await fetch("/api/pdf",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({caso:state.caso,respuestas:state.respuestas,perfil:state.perfil,resultado:state.resultado})
+  });
+  if(!r.ok)throw new Error("No se pudo generar el PDF.");
+  const blob=await r.blob();
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="MEXICANO_APOYA_MEXICANO.pdf";
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+ }catch(e){toast(e.message);}
 }
-function hablar(){
- if(!("webkitSpeechRecognition"in window||"SpeechRecognition"in window)){toast("Tu navegador no permite entrada por voz.");return}
- const R=window.SpeechRecognition||window.webkitSpeechRecognition,r=new R();
- r.lang="es-MX";r.continuous=false;r.interimResults=false;
- $("voz").disabled=true;$("voz").textContent="🎤 ESCUCHANDO...";
- r.onresult=e=>{textoUsuario.value=e.results[0][0].transcript;textoEntrada.style.display="block"};
- r.onerror=()=>toast("No se pudo reconocer la voz. Intenta nuevamente.");
- r.onend=()=>{$("voz").disabled=false;$("voz").textContent="🎤 HABLAR"};
- r.start();
+
+function escuchar(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){toast("Tu navegador no permite entrada por voz.");return;}
+ const rec=new SR();
+ rec.lang="es-MX";rec.interimResults=false;rec.continuous=false;
+ rec.onstart=()=>{$("voz")?.classList.add("activo");};
+ rec.onend=()=>{$("voz")?.classList.remove("activo");};
+ rec.onerror=()=>toast("No se pudo usar el micrófono.");
+ rec.onresult=e=>{
+  const t=e.results?.[0]?.[0]?.transcript||"";
+  const el=$("textoEntrada")||$("textoUsuario");
+  if(el){el.value=t;el.dispatchEvent(new Event("input"));}
+ };
+ rec.start();
 }
+
 function salir(){
- ocultar(infoOficial);mostrar(salida);
+ state.servicio="";state.caso="";state.pregunta_id="";state.pregunta=null;
+ state.respuestas={};state.resultado=null;
+ limpiarEntrada();
+ mostrar("pantallaInicio");
 }
-$("entrar").onclick=comenzar;
-$("servicioCita").onclick=()=>servicio("tramite");
-$("servicioDocumento").onclick=()=>servicio("documento");
-$("continuar").onclick=enviarTexto;
-$("voz").onclick=hablar;
-$("pdf").onclick=descargarPDF;
-$("oficial").onclick=()=>mostrar(infoOficial);
-$("cerrarOficial").onclick=()=>ocultar(infoOficial);
-$("nuevo").onclick=limpiar;
-$("salir").onclick=salir;
-$("cancelarSalida").onclick=()=>ocultar(salida);
-$("confirmarSalida").onclick=limpiar;
-textoUsuario.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.ctrlKey)enviarTexto()});
-window.addEventListener("load",async()=>{
- try{await fetch("/api/estado")}catch{}
+
+function bind(){
+ $("inicio")?.addEventListener("click",()=>mostrar("pantallaTramites"));
+ $("comenzar")?.addEventListener("click",()=>mostrar("pantallaTramites"));
+ $("continuar")?.addEventListener("click",continuar);
+ $("interpretar")?.addEventListener("click",interpretar);
+ $("voz")?.addEventListener("click",escuchar);
+ $("pdf")?.addEventListener("click",descargarPDF);
+ $("generarPDF")?.addEventListener("click",descargarPDF);
+ $("salir")?.addEventListener("click",salir);
+ $("nuevo")?.addEventListener("click",salir);
+ $("volver")?.addEventListener("click",()=>mostrar("pantallaTramites"));
+ $("cerrarModal")?.addEventListener("click",()=>$("modal")?.classList.remove("show"));
+ $("oficial")?.addEventListener("click",()=>{});
+ $("textoEntrada")?.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();continuar();}
+ });
+}
+
+document.addEventListener("DOMContentLoaded",async()=>{
+ bind();
+ mostrar("pantallaInicio");
+ await cargarEstado();
+ await cargarCatalogo();
 });
