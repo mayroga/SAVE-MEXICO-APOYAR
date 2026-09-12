@@ -86,7 +86,36 @@ def construir_pdf(r):
     c.drawString(55, 430, f"Oficina: {r.get('consulado_nombre', '')}")
     c.drawString(55, 410, f"Dirección: {r.get('consulado_direccion', '')}")
     c.drawString(55, 390, f"Teléfono central: {r.get('consulado_telefono', '')}")
-    c.drawString(55, 370, f"Página oficial de internet: {r.get('url_consulado', '')}")
+    # Solución al enlace web del consulado específico
+    c.drawString(55, 370, f"Página oficial de internet: {r.get('url_consulado') or r.get('fuente') or 'https://www.gob.mx'}")
+    
+    # 5. Lista de Documentos Oficiales
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(55, 335, "5. REQUISITOS OFICIALES QUE DEBES LLEVAR")
+    y = 315
+    for req in r.get("requisitos_oficiales", []):
+        c.setFont("Helvetica", 11)
+        c.drawString(70, y, f"• {req}")
+        y -= 20
+        
+    # 6. Faltantes desglosados (Solución al punto huérfano en textos cortos)
+    faltantes = r.get("faltantes", [])
+    if faltantes:
+        y -= 10
+        c.setFont("Helvetica-Bold", 12)
+        c.setFillColorRGB(0.7, 0.1, 0.1)
+        c.drawString(55, y, "6. ¡ATENCIÓN! TE FALTA CONSEGUIR ESTO EXACTAMENTE:")
+        y -= 20
+        for f in faltantes:
+            c.setFont("Helvetica", 10)
+            # Solo divide el texto si realmente supera el tamaño de la hoja
+            if len(f) > 85:
+                c.drawString(70, y, f"• {f[:85]}")
+                y -= 15
+                c.drawString(80, y, f"{f[85:]}")
+            else:
+                c.drawString(70, y, f"• {f}")
+            y -= 20
     
     # 5. Lista de Documentos Oficiales
     c.setFont("Helvetica-Bold", 12)
