@@ -119,7 +119,8 @@ footer{margin-top:25px;border-top:1px solid #e2e8f0;padding-top:12px;text-align:
 
 <div class="form-group">
 <label>¿Qué edad tienes?</label>
-<input type="number" id="input-edad" placeholder="Se calcula automáticamente" readonly>
+<input type="number" id="input-edad" placeholder="Ej. 38" autocomplete="age">
+<button type="button" id="btn-voz-edad" class="btn-voz" onclick="activarMicrofono('input-edad')">🎙️ Dictar Edad</button>
 </div>
 
 <div class="form-group">
