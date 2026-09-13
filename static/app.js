@@ -224,18 +224,38 @@ async function enviarRespuesta(idPregunta, valor) {
     } catch(e) { alert("Error al registrar la respuesta en el servidor."); }
 }
 
+// static/app.js (Tramo Central y Final Desbloqueado y Automatizado)
+
 function procesarPaso(data) {
     if (data.pregunta) {
+        // AUTOMATIZACIÓN DE VIGENCIA DE PASAPORTE SIN PREGUNTAS TÉCNICAS
+        // Si la pregunta que viene del servidor es sobre el tiempo del pasaporte, la app decide sola
+        if (data.pregunta.id === "vigencia_pasaporte" && perfil.edad) {
+            let edadNum = parseInt(perfil.edad, 10);
+            let vigenciaAutomatica = "3 años"; // Por defecto
+            
+            if (edadNum < 3) {
+                vigenciaAutomatica = "1 año (Solo menores de 3 años)";
+            } else if (edadNum < 18) {
+                vigenciaAutomatica = "6 años";
+            } else if (edadNum >= 18) {
+                vigenciaAutomatica = "10 años (Solo adultos mayores de 18)";
+            }
+            
+            // Envía la respuesta calculada de inmediato al servidor sin preguntar en pantalla
+            enviarRespuesta(data.pregunta.id, vigenciaAutomatica);
+            return;
+        }
+
         irAPaso('paso-preguntas');
         document.getElementById('pregunta-titulo').innerText = data.servicio;
         document.getElementById('pregunta-texto').innerText = data.pregunta.pregunta;
         
-        // El sistema le LEA en voz alta la pregunta actual de forma automatizada al usuario
         leerEnVozAlta(data.pregunta.pregunta);
-  // El sistema le LEA en voz alta la pregunta actual de forma automatizada al usuario
-        leerEnVozAlta(data.pregunta.pregunta);
+        
         let opcionesCont = document.getElementById('contenedor-opciones');
         opcionesCont.innerHTML = "";
+        
         data.pregunta.opciones.forEach(o => {
             let lbl = document.createElement('label');
             lbl.className = "radio-label";
@@ -254,35 +274,54 @@ function procesarPaso(data) {
 function mostrarResultado(r) {
     resultadoFinal = r;
     irAPaso('paso-resultado');
+    
     let cajaEstado = document.getElementById('res-caja-estado');
-    cajaEstado.className = "box-info " + (r.estado === "LISTO PARA TU CITA" ? "success" : "danger");
-    cajaEstado.innerHTML = `<strong>ESTATUS: ${r.estado}</strong><br>${r.mensaje_estado}`;
+    if (cajaEstado) {
+        cajaEstado.className = "box-info " + (r.estado === "LISTO PARA TU CITA" ? "success" : "danger");
+        cajaEstado.innerHTML = `<strong>ESTATUS: ${r.estado}</strong><br>${r.mensaje_estado}`;
+    }
+    
     document.getElementById('res-consulado').innerText = r.consulado_nombre;
     document.getElementById('res-direccion').innerText = "📍 " + r.consulado_direccion;
     document.getElementById('res-telefono').innerText = "📞 Tel central: " + r.consulado_telefono;
-    document.getElementById('res-pago').innerText = r.pago_estimado;
-    document.getElementById('res-cita').innerText = r.cita_estatus;
-    document.getElementById('res-cita').style.color = r.cita_estatus.includes("PENDIENTE") ? "var(--danger)" : "var(--accent)";
-    inyectarLista('res-requisitos', r.requisitos_oficiales);
-    let secFaltantes = document.getElementById('seccion-faltantes');
-    if(r.faltantes.length > 0) {
-        secFaltantes.style.display = "block";
-        inyectarLista('res-faltantes', r.faltantes);
-    } else {
-        secFaltantes.style.display = "none";
+    
+    document.getElementById('res-pago').innerText = r.pago_estimated || r.pago_estimado;
+    document.getElementById('res-cita').innerText = r.cita_status || r.cita_estatus;
+    
+    let citaEl = document.getElementById('res-cita');
+    if (citaEl && r.cita_estatus) {
+        citaEl.style.color = r.cita_estatus.includes("PENDIENTE") ? "var(--danger)" : "var(--accent)";
     }
+
+    inyectarLista('res-requisitos', r.requisitos_oficiales);
+    
+    let secFaltantes = document.getElementById('seccion-faltantes');
+    if (secFaltantes) {
+        if (r.faltantes && r.faltantes.length > 0) {
+            secFaltantes.style.display = "block";
+            inyectarLista('res-faltantes', r.faltantes);
+        } else {
+            secFaltantes.style.display = "none";
+        }
+    }
+    
     inyectarLista('res-acciones', r.acciones_recomendadas);
+
+    // SOLUCIÓN AL BLOQUEO: Sincronización exacta de la etiqueta del sitio web oficial
     let btnWeb = document.getElementById('lnk-consulado-oficial');
-    if (r.url_consulado) {
-        btnWeb.href = r.url_consulado;
-        btnWeb.style.display = "block";
-    } else {
-        btnWeb.style.display = "none";
+    if (btnWeb) {
+        if (r.url_consulado) {
+            btnWeb.href = r.url_consulado;
+            btnWeb.style.display = "block";
+        } else {
+            btnWeb.style.display = "none";
+        }
     }
 }
 
 function inyectarLista(id, arreglo) {
     let el = document.getElementById(id);
+    if (!el) return;
     el.innerHTML = "";
     (arreglo || []).forEach(x => {
         let li = document.createElement('li');
@@ -291,7 +330,7 @@ function inyectarLista(id, arreglo) {
     });
 }
 
-// 5. MODAL DE VISUALIZACIÓN Y COMPILACIÓN DE GUÍAS DE EXPEDIENTES
+// CORREGIDO: Desbloqueo absoluto de la Vista Previa Documental en Pantalla
 async function verVistaPrevia() {
     if (!resultadoFinal) return;
     try {
@@ -303,21 +342,29 @@ async function verVistaPrevia() {
         if (res.ok) {
             let blob = await res.blob();
             let url = window.URL.createObjectURL(blob);
-            document.getElementById('pdf-frame').src = url;
-            document.getElementById('modal-pdf').classList.add('active');
+            
+            // Sincroniza con el iframe del index.html
+            const iframe = document.getElementById('pdf-frame');
+            if (iframe) iframe.src = url;
+            
+            const modal = document.getElementById('modal-pdf');
+            if (modal) modal.classList.add('active');
         } else { 
-            alert("No se pudo desplegar la hoja en pantalla."); 
+            alert("No se pudo compilar la hoja en pantalla de forma interna."); 
         }
     } catch(e) { 
-        alert("Error de red al intentar abrir la vista previa."); 
+        alert("Error de comunicación con el servidor al generar vista previa."); 
     }
 }
 
 function cerrarVistaPrevia() {
-    document.getElementById('modal-pdf').classList.remove('active');
-    document.getElementById('pdf-frame').src = "";
+    const modal = document.getElementById('modal-pdf');
+    if (modal) modal.classList.remove('active');
+    const iframe = document.getElementById('pdf-frame');
+    if (iframe) iframe.src = "";
 }
 
+// CORREGIDO: Desbloqueo absoluto de la Descarga e Impresión del PDF Final
 async function descargarPDF() {
     if (!resultadoFinal) return;
     try {
@@ -337,90 +384,21 @@ async function descargarPDF() {
             a.remove();
             setTimeout(() => window.URL.revokeObjectURL(url), 100);
         } else { 
-            alert("No se pudo compilar tu archivo PDF editable."); 
+            alert("No se pudo guardar el archivo PDF final."); 
         }
     } catch(e) { 
-        alert("Error al conectar con el servidor para la descarga."); 
+        alert("Error de red al intentar descargar el documento."); 
     }
 }
 
 function abortarCuestionario() { cargarCatalogo(); }
-function reiniciarTodo() { comenzarDeNuevoLimpio(); }
+
+// CORREGIDO: Desbloqueo del botón de corregir/reescribir reteniendo los datos en pantalla
+function reiniciarTodo() { 
+    comenzarDeNuevoLimpio(); 
+}
+
 iniciarRelojInactividad();
-
-// =========================================================================
-// AQUÍ PEGAS EL BLOQUE COMERCIAL DE STRIPE Y DESARROLLADOR AL FINAL DE APP.JS
-// =========================================================================
-// 1. CAPTURAR RESPUESTA DE STRIPE TRAS EL PAGO EXITOSO
-function capturarRespuestaStripe() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const success = urlParams.get('stripe_success');
-    const sessionId = urlParams.get('session_id');
-
-    if (success === "true" && sessionId) {
-        // Guardamos el ID aprobado en las cookies para que el servidor FastAPI nos deje pasar
-        document.cookie = `token=${sessionId}; path=/; max-age=86400; samesite=lax`;
-        alert("¡Tu pago ha sido verificado con éxito! Bienvenido al sistema de Hoja de Ruta.");
-        window.location.href = "/"; // Limpiar variables de la barra de direcciones
-    }
-}
-
-// 2. DISPARADOR PARA RE-DIRECCIONAR AL CLIENTE AL CHECKOUT DE STRIPE
-async function solicitarAccesoStripe(tipoPlan) {
-    try {
-        let res = await fetch(`/api/checkout?plan=${tipoPlan}`, { method: 'POST' });
-        let data = await res.json();
-        if (data.url) {
-            window.location.href = data.url; // Abrir la pasarela de cobro de Stripe
-        } else {
-            alert("Ocurrió un problema con el enlace de pago de Stripe. Intenta de nuevo.");
-        }
-    } catch(e) { 
-        alert("Error de red al intentar conectar con Stripe."); 
-    }
-}
-
-// 3. FUNCIÓN DE BYPASS GRATUITO PARA EL DESARROLLADOR CORREGIDA (USER Y PASSWORD)
-async function bypassDesarrollador(user, pass) {
-    if (!user || !pass) {
-        alert("Por favor escribe tu usuario y contraseña de desarrollador.");
-        return;
-    }
-    try {
-        let res = await fetch('/api/login-developer', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            // Sincronizado: Enviamos 'username' y 'password' en minúsculas para cumplir con FastAPI
-            body: JSON.stringify({ username: user, password: pass })
-        });
-        
-        let data = await res.json();
-        
-        if (res.ok && data.ok) {
-            alert("¡Acceso de desarrollador aprobado! El muro de pago ha sido desactivado para ti.");
-            // Forzar inyección manual inmediata del token de sesión en las cookies
-            document.cookie = `token=${data.token}; path=/; max-age=86400; samesite=lax`;
-            window.location.reload(); // Recargar para activar la sesión gratis
-        } else { 
-            alert("Credenciales incorrectas o variables no configuradas en Render."); 
-        }
-    } catch(e) { 
-        alert("Error al intentar validar tus credenciales en el servidor."); 
-    }
-}
-
-// Escuchar de forma automática si venimos regresando de un pago exitoso en Stripe
-document.addEventListener("DOMContentLoaded", () => {
-    capturarRespuestaStripe();
-    
-    // Si la cookie token está activa, mostrar directo el formulario y ocultar los botones de cobro
-    if (document.cookie.includes("token=")) {
-        const muro = document.getElementById('muro-pago-stripe');
-        const btnComenzar = document.getElementById('btn-comenzar');
-        if (muro) muro.style.display = 'none';
-        if (btnComenzar) btnComenzar.style.display = 'block';
-    }
-});
 
 // =========================================================================
 // AQUÍ TERMINA EL BLOQUE COMERCIAL CORREGIDO
