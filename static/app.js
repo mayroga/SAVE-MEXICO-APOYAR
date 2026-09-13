@@ -351,7 +351,6 @@ iniciarRelojInactividad();
 // =========================================================================
 // AQUÍ PEGAS EL BLOQUE COMERCIAL DE STRIPE Y DESARROLLADOR AL FINAL DE APP.JS
 // =========================================================================
-
 // 1. CAPTURAR RESPUESTA DE STRIPE TRAS EL PAGO EXITOSO
 function capturarRespuestaStripe() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -381,7 +380,7 @@ async function solicitarAccesoStripe(tipoPlan) {
     }
 }
 
-// 3. FUNCIÓN DE BYPASS GRATUITO PARA EL DESARROLLADOR (USER Y PASSWORD)
+// 3. FUNCIÓN DE BYPASS GRATUITO PARA EL DESARROLLADOR CORREGIDA (USER Y PASSWORD)
 async function bypassDesarrollador(user, pass) {
     if (!user || !pass) {
         alert("Por favor escribe tu usuario y contraseña de desarrollador.");
@@ -391,13 +390,19 @@ async function bypassDesarrollador(user, pass) {
         let res = await fetch('/api/login-developer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            // Sincronizado: Enviamos 'username' y 'password' en minúsculas para cumplir con FastAPI
             body: JSON.stringify({ username: user, password: pass })
         });
-        if (res.ok) {
+        
+        let data = await res.json();
+        
+        if (res.ok && data.ok) {
             alert("¡Acceso de desarrollador aprobado! El muro de pago ha sido desactivado para ti.");
+            // Forzar inyección manual inmediata del token de sesión en las cookies
+            document.cookie = `token=${data.token}; path=/; max-age=86400; samesite=lax`;
             window.location.reload(); // Recargar para activar la sesión gratis
         } else { 
-            alert("Credenciales incorrectas. No se pudo saltar el muro de pago."); 
+            alert("Credenciales incorrectas o variables no configuradas en Render."); 
         }
     } catch(e) { 
         alert("Error al intentar validar tus credenciales en el servidor."); 
@@ -418,7 +423,5 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // =========================================================================
-// AQUÍ TERMINA EL BLOQUE COMERCIAL
+// AQUÍ TERMINA EL BLOQUE COMERCIAL CORREGIDO
 // =========================================================================
-
-      
