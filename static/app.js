@@ -1,4 +1,4 @@
-// static/app.js
+// static/app.js — PRIMERA PARTE CORREGIDA Y BLINDADA
 let perfil = {};
 let casoActual = "";
 let respuestas = {};
@@ -27,11 +27,12 @@ function validarCheck() {
     }
 }
 
-// 1. CÁLCULO DE EDAD AUTOMÁTICO EN SEGUNDOS
+// 1. CÁLCULO DE EDAD AUTOMÁTICO REPARADO Y SEGURO
 function calcularEdadAutomaticamente(valorFecha) {
     if (!valorFecha) return;
     const numeros = valorFecha.match(/\d{4}/); 
-    if (numeros) {
+    // CORREGIDO: Se valida físicamente que existan números antes de intentar leer la posición [0]
+    if (numeros && numeros[0]) {
         const anoNacimiento = parseInt(numeros[0], 10);
         const anoActual = new Date().getFullYear();
         const edadCalculada = anoActual - anoNacimiento;
@@ -165,18 +166,20 @@ async function cargarCatalogo() {
         let res = await fetch('/api/catalogo');
         let datos = await res.json();
         let lista = document.getElementById('lista-tramites');
-        lista.innerHTML = "";
-        datos.forEach(t => {
-            let btn = document.createElement('button');
-            btn.className = "option-btn";
-            btn.onclick = () => iniciarTramite(t.caso);
-            btn.innerHTML = `<strong>${t.nombre}</strong><span>${t.descripcion}</span>`;
-            lista.appendChild(btn);
-        });
-        irAPaso('paso-tramites');
+        if (lista) {
+            lista.innerHTML = "";
+            datos.forEach(t => {
+                let btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.onclick = () => iniciarTramite(t.caso);
+                btn.innerHTML = `<strong>${t.nombre}</strong><span>${t.descripcion}</span>`;
+                lista.appendChild(btn);
+            });
+            irAPaso('paso-tramites');
+        }
     } catch(e) { alert("Error al cargar el catálogo."); }
 }
-
+// static/app.js — SEGUNDA PARTE CORREGIDA Y RECONSTRUIDA
 async function iniciarTramite(caso) {
     casoActual = caso;
     respuestas = {};
@@ -227,7 +230,6 @@ function procesarPaso(data) {
             data.pregunta.opciones.forEach(o => {
                 let lbl = document.createElement('label');
                 lbl.className = "radio-label";
-                // CORREGIDO: Se agregaron los acentos graves obligatorios para inyectar HTML dinámico
                 lbl.innerHTML = `<input type="radio" name="r_opt" value="${o}"> <span>${o}</span>`;
                 lbl.onclick = () => { setTimeout(() => enviarRespuesta(data.pregunta.id, o), 150); };
                 opcionesCont.appendChild(lbl);
@@ -245,7 +247,6 @@ function mostrarResultado(r) {
     let cajaEstado = document.getElementById('res-caja-estado');
     if (cajaEstado) {
         cajaEstado.className = "box-info " + (r.estado === "LISTO PARA TU CITA" ? "success" : "danger");
-        // CORREGIDO: Se agregaron los acentos graves obligatorios
         cajaEstado.innerHTML = `<strong>ESTATUS: ${r.estado}</strong><br>${r.mensaje_estado}`;
     }
     document.getElementById('res-consulado').innerText = r.consulado_nombre;
@@ -325,7 +326,6 @@ async function descargarPDF() {
             let url = window.URL.createObjectURL(blob);
             let a = document.createElement('a');
             a.href = url;
-            // CORREGIDO: Se agregaron los acentos graves obligatorios
             a.download = `Hoja_de_Ruta_${casoActual.toUpperCase()}.pdf`;
             document.body.appendChild(a);
             a.click();
@@ -369,33 +369,34 @@ async function bypassDesarrollador(user, pass) {
         let data = await res.json();
         if (res.ok && data.ok) {
             localStorage.setItem("modo_desarrollador", "activo");
-            // CORREGIDO: Se agregaron acentos graves y comillas correspondientes al string de asignación de cookies
             document.cookie = `token=${data.token}; path=/; max-age=86400; samesite=lax`;
             alert("Bypass de pago activado.");
             window.location.href = "/";
-        } else { 
-            alert("Credenciales incorrectas."); 
-        }
-    } catch(e) { 
-        alert("Error de autenticación."); 
-    }
+        } else { alert("Credenciales incorrectas."); }
+    } catch(e) { alert("Error de autenticación."); }
+}
+// static/app.js — TERCERA PARTE COMPLETADA Y DESBLOQUEADA
+
+// FUNCIÓN INTEGRADA OBLIGATORIA: Controla el cambio de pantallas sin congelamientos
+function irAPaso(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(id);
+    if (target) target.classList.add('active');
+    window.scrollTo(0, 0);
 }
 
-async function solicitarAccesoStripe(tipoPlan) {
-    try {
-        // CORREGIDO: Se agregaron acentos graves obligatorios para construir la URL del fetch comercial
-        let res = await fetch(`/api/checkout?plan=${tipoPlan}`, { method: 'POST' });
-        let data = await res.json();
-        if (data.url) window.location.href = data.url;
-    } catch(e) { 
-        alert("Error al llamar a Stripe."); 
-    }
+function solicitarAccesoStripe(tipoPlan) {
+    fetch(`/api/checkout?plan=${tipoPlan}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.url) window.location.href = data.url;
+        })
+        .catch(() => alert("Error al llamar a Stripe."));
 }
 
 function capturarRespuestaStripe() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('stripe_success') === "true") {
-        // CORREGIDO: Se agregaron acentos graves obligatorios para concatenar la sesión de Stripe en la cookie
         document.cookie = `token=${urlParams.get('session_id')}; path=/; max-age=86400; samesite=lax`;
         localStorage.setItem("pago_stripe_activo", "activo");
         window.location.href = "/";
