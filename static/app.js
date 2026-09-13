@@ -399,7 +399,3 @@ function reiniciarTodo() {
 }
 
 iniciarRelojInactividad();
-
-// =========================================================================
-// AQUÍ TERMINA EL BLOQUE COMERCIAL CORREGIDO
-// =========================================================================
