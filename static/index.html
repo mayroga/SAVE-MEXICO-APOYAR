@@ -293,7 +293,7 @@
  </footer>
 </div> <!-- CIERRE CORRECTO DEL CONTENEDOR '.CONTAINER' -->
 
-<!-- FUNCIÓN COMPLEMENTARIA DE SEGURIDAD INTEGRADA CORREGIDA -->
+<!-- FUNCIÓN COMPLEMENTARIA DE SEGURIDAD INTEGRADA Y BLOQUE COMERCIAL DE STRIPE -->
 <script>
 function validarCheck() {
     const chk = document.getElementById('check-legal');
@@ -307,4 +307,74 @@ function validarCheck() {
         if (btnComenzar) btnComenzar.disabled = !chk.checked;
     }
 }
+
+// 1. DISPARADOR PARA RE-DIRECCIONAR AL CLIENTE AL CHECKOUT DE STRIPE
+async function solicitarAccesoStripe(tipoPlan) {
+    try {
+        let res = await fetch(`/api/checkout?plan=${tipoPlan}`, { method: 'POST' });
+        let data = await res.json();
+        if (data.url) {
+            window.location.href = data.url; // Abrir la pasarela de cobro de Stripe
+        } else {
+            alert("Ocurrió un problema con el enlace de pago de Stripe. Intenta de nuevo.");
+        }
+    } catch(e) { 
+        alert("Error de red al intentar conectar con Stripe."); 
+    }
+}
+
+// 2. FUNCIÓN DE BYPASS GRATUITO PARA EL DESARROLLADOR CON INMUNIDAD DE REINICIOS
+async function bypassDesarrollador(user, pass) {
+    if (!user || !pass) { alert("Por favor escribe tu usuario y contraseña."); return; }
+    try {
+        let res = await fetch('/api/login-developer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        });
+        let data = await res.json();
+        if (res.ok && data.ok) {
+            // Guardamos el estatus en el almacenamiento del navegador
+            localStorage.setItem("modo_desarrollador", "activo");
+            document.cookie = `token=${data.token}; path=/; max-age=86400; samesite=lax`;
+            alert("¡Acceso de desarrollador aprobado! El muro de pago ha sido desactivado.");
+            window.location.href = "/";
+        } else { 
+            alert("Credenciales incorrectas."); 
+        }
+    } catch(e) { 
+        alert("Error al intentar validar tus credenciales."); 
+    }
+}
+
+// 3. CAPTURAR RESPUESTA DE STRIPE TRAS EL PAGO EXITOSO
+function capturarRespuestaStripe() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('stripe_success');
+    const sessionId = urlParams.get('session_id');
+    if (success === "true" && sessionId) {
+        document.cookie = `token=${sessionId}; path=/; max-age=86400; samesite=lax`;
+        localStorage.setItem("pago_stripe_activo", "activo");
+        alert("¡Tu pago ha sido verificado con éxito!");
+        window.location.href = "/";
+    }
+}
+
+// Escuchar de forma automática el estatus al encender la página
+document.addEventListener("DOMContentLoaded", () => {
+    capturarRespuestaStripe();
+    
+    if (document.cookie.includes("token=") || localStorage.getItem("modo_desarrollador") === "activo" || localStorage.getItem("pago_stripe_activo") === "activo") {
+        // Forzar bypass visual de botones si ya estamos autorizados
+        const muro = document.getElementById('muro-pago-stripe');
+        const btnComenzar = document.getElementById('btn-comenzar');
+        if (muro) muro.style.display = 'none';
+        if (btnComenzar) btnComenzar.style.display = 'block';
+    }
+});
 </script>
+
+<!-- Carga del archivo JavaScript externo optimizado con control de caché de versión -->
+<script src="/static/app.js?v=10.0.6"></script>
+</body>
+</html>
