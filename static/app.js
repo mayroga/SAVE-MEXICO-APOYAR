@@ -357,25 +357,9 @@ function comenzarDeNuevoLimpio() {
     validarCheck();
     irAPaso('paso-legal');
 }
-
-async function bypassDesarrollador(user, pass) {
-    if (!user || !pass) { alert("Ingresa tus credenciales."); return; }
-    try {
-        let res = await fetch('/api/login-developer', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: user, password: pass })
-        });
-        let data = await res.json();
-        if (res.ok && data.ok) {
-            localStorage.setItem("modo_desarrollador", "activo");
-            document.cookie = `token=${data.token}; path=/; max-age=86400; samesite=lax`;
-            alert("Bypass de pago activado.");
-            window.location.href = "/";
-        } else { alert("Credenciales incorrectas."); }
-    } catch(e) { alert("Error de autenticación."); }
-}
-// static/app.js — TERCERA PARTE COMPLETADA Y DESBLOQUEADA
+// =========================================================================
+// BLOQUE DE REEMPLAZO FINAL TOTALMENTE CORREGIDO Y BLINDADO PARA ENTRAR EN RENDER
+// =========================================================================
 
 // FUNCIÓN INTEGRADA OBLIGATORIA: Controla el cambio de pantallas sin congelamientos
 function irAPaso(id) {
@@ -383,6 +367,47 @@ function irAPaso(id) {
     const target = document.getElementById(id);
     if (target) target.classList.add('active');
     window.scrollTo(0, 0);
+}
+
+// 1. FUNCIÓN DE BYPASS MEJORADA: Elimina las recargas de página que congelan la app
+async function bypassDesarrollador(user, pass) {
+    if (!user || !pass) { 
+        alert("Por favor escribe tu usuario y contraseña."); 
+        return; 
+    }
+    try {
+        let res = await fetch('/api/login-developer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        });
+        let data = await res.json();
+        
+        if (res.ok && data.ok) {
+            // Guardamos de inmediato en la memoria local física del dispositivo
+            localStorage.setItem("modo_desarrollador", "activo");
+            localStorage.setItem("token_dev_auth", data.token);
+            
+            // Inyectamos la cookie forzada compatible con el HTTPS de Render
+            document.cookie = `token=${data.token}; path=/; max-age=86400; samesite=lax`;
+            
+            alert("¡Acceso de desarrollador aprobado! Abriendo formulario...");
+            
+            // SOLUCIÓN AL CONGELAMIENTO: En lugar de recargar la página entera,
+            // modificamos directamente el DOM para ocultar el candado
+            const muro = document.getElementById('muro-pago-stripe');
+            const btnComenzar = document.getElementById('btn-comenzar');
+            if (muro) muro.style.display = 'none';
+            if (btnComenzar) btnComenzar.style.display = 'block';
+            
+            // Saltamos de inmediato al Paso 1 (Formulario de datos) de forma fluida
+            irAPaso('paso-datos');
+        } else { 
+            alert("Credenciales incorrectas o variables no configuradas en Render."); 
+        }
+    } catch(e) { 
+        alert("Error de red al intentar conectar con el servidor de Render."); 
+    }
 }
 
 function solicitarAccesoStripe(tipoPlan) {
@@ -403,16 +428,26 @@ function capturarRespuestaStripe() {
     }
 }
 
+// Escucha automática corregida con doble capa de persistencia
 document.addEventListener("DOMContentLoaded", () => {
     capturarRespuestaStripe();
+    
+    // Si detecta cookie o registro local activo, rompe el bucle inicial y avanza solo
     if (document.cookie.includes("token=") || localStorage.getItem("modo_desarrollador") === "activo" || localStorage.getItem("pago_stripe_activo") === "activo") {
         const muro = document.getElementById('muro-pago-stripe');
         const btnComenzar = document.getElementById('btn-comenzar');
         if (muro) muro.style.display = 'none';
         if (btnComenzar) btnComenzar.style.display = 'block';
+        
+        // Te redirige directamente a la caja de texto para escribir tu nombre
+        irAPaso('paso-datos');
     }
 });
 
 function abortarCuestionario() { cargarCatalogo(); }
 function reiniciarTodo() { comenzarDeNuevoLimpio(); }
 iniciarRelojInactividad();
+
+// =========================================================================
+// AQUÍ TERMINA EL REEMPLAZO FINAL EN TU ARCHIVO STATIC/APP.JS
+// =========================================================================
