@@ -264,14 +264,14 @@
  </div>
  </div>
 
- <button class="btn" style="background: #117a65;" onclick="verVistaPrevia()">👁️ REVISAR ANTES (VISTA PREVIA EN PANTALLA)</button>
- <button class="btn" onclick="descargarPDF()">📥 GUARDAR HOJA DE RUTA FINAL (PDF)</button>
- <button class="btn btn-secondary" onclick="irAPaso('paso-datos')">📝 REESCRIBIR DATOS (CORREGIR ERROR)</button>
+ <button id="pdfPreview" class="btn" style="background: #117a65;" onclick="verVistaPrevia()">👁️ REVISAR ANTES (VISTA PREVIA EN PANTALLA)</button>
+ <button id="pdf" class="btn" onclick="descargarPDF()">📥 GUARDAR HOJA DE RUTA FINAL (PDF)</button>
+ <button class="btn btn-secondary" onclick="reiniciarTodo()">📝 REESCRIBIR DATOS (CORREGIR ERROR)</button>
  <a id="lnk-consulado-oficial" href="#" target="_blank" class="btn" style="background: #7d6608; color: white; display: none; text-align: center;">🌐 SITIO WEB OFICIAL DEL CONSULADO</a>
  <button class="btn btn-danger" onclick="reiniciarTodo()">CERRAR SESIÓN Y SALIR</button>
  </div>
 
- <!-- VENTANA EMERGENTE: MODAL VISOR DE PDF -->
+ <!-- VENTANA EMERGENTE (MODAL DE REVISIÓN DOCUMENTAL DEL VISOR) -->
  <div id="modal-pdf" class="pdf-modal">
  <div class="pdf-box">
  <div class="pdf-header">
@@ -291,20 +291,20 @@
  <footer class="disclaimer">
  <strong>Términos de Orientación:</strong> Esta herramienta de software es un desarrollo independiente propiedad de MAY ROGA LLC. No constituye un canal de emisión gubernamental y debe confirmarse la información con la autoridad correspondiente.
  </footer>
-</div>
+</div> <!-- CIERRE CORRECTO DEL CONTENEDOR '.CONTAINER' -->
 
-<!-- FUNCIÓN COMPLEMENTARIA DE SEGURIDAD INTEGRADA -->
+<!-- FUNCIÓN COMPLEMENTARIA DE SEGURIDAD INTEGRADA CORREGIDA -->
 <script>
 function validarCheck() {
     const chk = document.getElementById('check-legal');
-    const btn = document.getElementById('btn-comenzar');
-    if (chk && btn) {
-        btn.disabled = !chk.checked;
+    const btnDiario = document.getElementById('btn-plan-diario');
+    const btnMensual = document.getElementById('btn-plan-mensual');
+    const btnComenzar = document.getElementById('btn-comenzar');
+    
+    if (chk) {
+        if (btnDiario) btnDiario.disabled = !chk.checked;
+        if (btnMensual) btnMensual.disabled = !chk.checked;
+        if (btnComenzar) btnComenzar.disabled = !chk.checked;
     }
 }
 </script>
-
-<!-- Carga del archivo JavaScript externo optimizado con control de caché -->
-<script src="/static/app.js?v=10.0.4"></script>
-</body>
-</html>
