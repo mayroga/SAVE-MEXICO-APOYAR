@@ -59,25 +59,16 @@ class LoginDev(BaseModel):
 # TRAMO 1: FIN
 # TRAMO 2: INICIO
 def verificar_acceso_paywall(token: Optional[str] = Cookie(None)):
+    # Si la cookie viaja en la cabecera o mediante el interceptor de FastAPI
     if not token or token not in SESIONES_PAGADAS:
         raise HTTPException(402, "Muro de pago activo. Por favor procesa tu contribución en Stripe para continuar.")
     
     sesion = SESIONES_PAGADAS[token]
     hoy = str(date.today())
     
-    # Reiniciar contadores si cambió el día de uso
     if sesion.get("fecha") != hoy:
         sesion["fecha"] = hoy
         sesion["usos_hoy"] = 0
-        
-    if sesion["tipo"] == "dev":
-        return token # El desarrollador tiene cuotas infinitas de prueba
-        
-    if sesion["tipo"] == "diario" and sesion["usos_hoy"] >= 1:
-        raise HTTPException(429, "Has agotado tu consulta diaria de Hoja de Ruta. Regresa mañana o adquiere el pase mensual.")
-        
-    if sesion["tipo"] == "mensual" and sesion["usos_hoy"] >= 4:
-        raise HTTPException(429, "Límite de seguridad alcanzado: Máximo 4 consultas de Hoja de Ruta por día en el plan mensual.")
         
     return token
 
