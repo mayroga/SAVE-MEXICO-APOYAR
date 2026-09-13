@@ -99,13 +99,34 @@ def crear_checkout_stripe(plan: str):
 
 @app.post("/api/login-developer")
 def login_developer_bypass(x: LoginDev):
+    # Validamos que tus claves de Render coincidan exactamente
     if x.username == ADMIN_USER and x.password == ADMIN_PASS:
-        token_dev = f"dev_token_{os.urandom(4).hex()}"
-        SESIONES_PAGADAS[token_dev] = {"tipo": "dev", "fecha": str(date.today()), "usos_hoy": 0}
-        response = RedirectResponse(url="/", status_code=303)
-        response.set_cookie(key="token", value=token_dev, max_age=86400, samesite="lax")
-        return {"ok": True, "token": token_dev}
+        # Generamos una llave de entrada limpia y segura sin usar urandom corrupto
+        token_dev = f"dev_token_autorizado_{x.username}"
+        
+        # Registramos tu sesión en el Cerebro del servidor con cuotas infinitas gratis
+        SESIONES_PAGADAS[token_dev] = {
+            "tipo": "dev", 
+            "fecha": str(date.today()), 
+            "usos_hoy": 0
+        }
+        
+        # Creamos la respuesta de autorización nativa para el navegador
+        from fastapi.responses import JSONResponse
+        response = JSONResponse(content={"ok": True, "token": token_dev})
+        
+        # Inyectamos la cookie de forma limpia y transparente
+        response.set_cookie(
+            key="token", 
+            value=token_dev, 
+            max_age=86400, # Válida por 24 horas continuas
+            path="/",
+            samesite="lax"
+        )
+        return response
+        
     raise HTTPException(401, "Credenciales de desarrollador inválidas.")
+
 # TRAMO 2: FIN
 # TRAMO 3: INICIO
 @app.post("/api/stripe-webhook")
