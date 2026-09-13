@@ -41,55 +41,14 @@ function validarCheck(){
  });
 }
 
-function calcularEdadAutomaticamente(valor) {
-    if (!valor) return;
-    
-    // Limpiar y estandarizar separadores (soporta / y -)
-    let limpio = valor.trim().replace(/[-\/]/g, ' ');
-    let partes = limpio.split(/\s+/);
-    
-    if (partes.length < 3) return;
-
-    let p1 = parseInt(partes[0], 10);
-    let p2 = parseInt(partes[1], 10);
-    let p3 = parseInt(partes[2], 10);
-
-    let y, mes, dia;
-
-    // Detectar si el año viene al principio (YYYY-MM-DD) o al final (DD-MM-YYYY)
-    if (p1 > 1900) {
-        y = p1; mes = p2; dia = p3;
-    } else {
-        dia = p1; mes = p2; y = p3;
-    }
-
-    if (isNaN(y) || isNaN(mes) || isNaN(dia)) return;
-    if (y < 1900 || y > new Date().getFullYear() || mes < 1 || mes > 12 || dia < 1 || dia > 31) return;
-
-    const hoy = new Date();
-    const nacimiento = new Date(y, mes - 1, dia);
-
-    // Validar que la fecha sea real (ej. que no sea 31 de febrero)
-    if (nacimiento.getFullYear() !== y || nacimiento.getMonth() !== mes - 1 || nacimiento.getDate() !== dia) return;
-
-    let edad = hoy.getFullYear() - y;
-    const m = hoy.getMonth() - (mes - 1);
-    if (m < 0 || (m === 0 && hoy.getDate() < dia)) {
-        edad--;
-    }
-
-    if (edad >= 0 && edad < 120) {
-        const inp = $("input-edad");
-        if (inp) inp.value = edad;
-        perfil.edad = String(edad);
-    }
-}
 function leerEnVozAlta(texto){
  if(!("speechSynthesis"in window))return;
  speechSynthesis.cancel();
  const u=new SpeechSynthesisUtterance(String(texto||""));
  u.lang="es-MX";u.rate=.95;speechSynthesis.speak(u);
 }
+
+// ELIMINA la función calcularEdadAutomaticamente completa. Ya no va.
 
 function activarMicrofono(id){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -109,13 +68,14 @@ function activarMicrofono(id){
   const t=e.results?.[0]?.[0]?.transcript||"";
   const el=$(id);
   if(el)el.value=t.replace(/\.$/,"");
-  if(id==="input-fecha")calcularEdadAutomaticamente(t);
+  // Se eliminó la llamada automática a calcularEdadAutomaticamente
  };
  r.onerror=()=>{};
  r.onend=()=>{
   if(boton){
    boton.innerText=id==="input-nombre"?"🎙️ Dictar Nombre":
-    id==="input-fecha"?"🎙️ Dictar Fecha":"🎙️ Dictar Dirección";
+    id==="input-fecha"?"🎙️ Dictar Fecha":
+    id==="input-edad"?"🎙️ Dictar Edad":"🎙️ Dictar Dirección";
   }
   reconocimientoActual=null;
  };
@@ -595,14 +555,6 @@ function reiniciarTodo(){
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
- const fecha=$("input-fecha");
-
- if(fecha){
-  fecha.addEventListener("blur",()=>{
-   calcularEdadAutomaticamente(fecha.value);
-  });
- }
-
  validarCheck();
  comprobarAcceso();
  iniciarRelojInactividad();
