@@ -41,25 +41,49 @@ function validarCheck(){
  });
 }
 
-function calcularEdadAutomaticamente(valor){
- const partes=String(valor||"").match(/\d{1,4}/g)||[];
- if(partes.length<3)return;
- let a=parseInt(partes[0]),b=parseInt(partes[1]),c=parseInt(partes[2]);
- let y,mes,dia;
- if(a>1900){y=a;mes=b;dia=c}
- else{y=c;mes=b;dia=a}
- if(!(y>1900&&mes>=1&&mes<=12&&dia>=1&&dia<=31))return;
- const hoy=new Date(),nacimiento=new Date(y,mes-1,dia);
- if(nacimiento.getFullYear()!==y||nacimiento.getMonth()!==mes-1||nacimiento.getDate()!==dia)return;
- let edad=hoy.getFullYear()-y;
- if(hoy.getMonth()<mes-1||(hoy.getMonth()===mes-1&&hoy.getDate()<dia))edad--;
- if(edad>=0&&edad<120){
-  const inp=$("input-edad");
-  if(inp)inp.value=edad;
-  perfil.edad=String(edad);
- }
-}
+function calcularEdadAutomaticamente(valor) {
+    if (!valor) return;
+    
+    // Limpiar y estandarizar separadores (soporta / y -)
+    let limpio = valor.trim().replace(/[-\/]/g, ' ');
+    let partes = limpio.split(/\s+/);
+    
+    if (partes.length < 3) return;
 
+    let p1 = parseInt(partes[0], 10);
+    let p2 = parseInt(partes[1], 10);
+    let p3 = parseInt(partes[2], 10);
+
+    let y, mes, dia;
+
+    // Detectar si el año viene al principio (YYYY-MM-DD) o al final (DD-MM-YYYY)
+    if (p1 > 1900) {
+        y = p1; mes = p2; dia = p3;
+    } else {
+        dia = p1; mes = p2; y = p3;
+    }
+
+    if (isNaN(y) || isNaN(mes) || isNaN(dia)) return;
+    if (y < 1900 || y > new Date().getFullYear() || mes < 1 || mes > 12 || dia < 1 || dia > 31) return;
+
+    const hoy = new Date();
+    const nacimiento = new Date(y, mes - 1, dia);
+
+    // Validar que la fecha sea real (ej. que no sea 31 de febrero)
+    if (nacimiento.getFullYear() !== y || nacimiento.getMonth() !== mes - 1 || nacimiento.getDate() !== dia) return;
+
+    let edad = hoy.getFullYear() - y;
+    const m = hoy.getMonth() - (mes - 1);
+    if (m < 0 || (m === 0 && hoy.getDate() < dia)) {
+        edad--;
+    }
+
+    if (edad >= 0 && edad < 120) {
+        const inp = $("input-edad");
+        if (inp) inp.value = edad;
+        perfil.edad = String(edad);
+    }
+}
 function leerEnVozAlta(texto){
  if(!("speechSynthesis"in window))return;
  speechSynthesis.cancel();
@@ -99,54 +123,64 @@ function activarMicrofono(id){
 }
 
 function iniciarMecanismoRevision(){
- const nombre=$("input-nombre").value.trim();
- const fecha=$("input-fecha").value.trim();
- const edad=$("input-edad").value.trim();
- const origen=$("input-origen").value;
- const direccion=$("input-direccion").value.trim();
- const tel=$("input-tel").value.trim();
- const edo=$("input-estado").value;
+    const nombre = $("input-nombre").value.trim();
+    const fecha = $("input-fecha").value.trim();
+    const edad = $("input-edad").value.trim();
+    const origen = $("input-origen").value;
+    const direccion = $("input-direccion").value.trim();
+    const tel = $("input-tel").value.trim();
+    const edo = $("input-estado").value;
 
- if(!nombre||!fecha||!edad||!direccion){
-  alert("Por favor rellena todos tus datos obligatorios.");
-  return;
- }
+    if(!nombre || !fecha || !edad || !direccion){
+        alert("Por favor rellena todos tus datos obligatorios.");
+        return;
+    }
 
- perfil={
-  nombre_completo:nombre,
-  fecha_nacimiento:fecha,
-  edad,
-  origen_mexico:origen,
-  direccion_usa:direccion,
-  telefono:tel,
-  estado:edo,
-  nacionalidad:"mexicana"
- };
+    // Validación inteligente de dirección vs Estado seleccionado en USA
+    const dirLower = direccion.toLowerCase();
+    const edoLower = edo.toLowerCase();
+    
+    // Si el estado seleccionado es específico y la dirección no contiene indicios del estado o código postal válido
+    if(edo !== "Otro" && !dirLower.includes(edoLower)) {
+        const confirmarEstado = confirm(`⚠️ Nota de validación:\nSeleccionaste el estado de "${edo}", pero tu dirección escrita no parece incluirlo claramente.\n\n¿Deseas continuar de todas formas o corregirlo?`);
+        if(!confirmarEstado) return;
+    }
 
- try{
-  localStorage.setItem("perfil_retenido",JSON.stringify(perfil));
- }catch(_){}
+    perfil = {
+        nombre_completo: nombre,
+        fecha_nacimiento: fecha,
+        edad,
+        origen_mexico: origen,
+        direccion_usa: direccion,
+        telefono: tel,
+        estado: edo,
+        nacionalidad: "mexicana"
+    };
 
- const resumen=$("resumen-visual-datos");
- if(resumen){
-  resumen.innerHTML="";
-  [
-   ["Tu Nombre",nombre],
-   ["Tu Fecha de Nacimiento",`${fecha} (${edad} años)`],
-   ["Tu Dirección en USA",direccion],
-   ["Tu Teléfono",tel||"No indicado"],
-   ["Tu Estado Seleccionado",edo]
-  ].forEach(x=>{
-   const p=document.createElement("p"),b=document.createElement("strong");
-   b.textContent=x[0]+": ";
-   p.append(b,document.createTextNode(x[1]));
-   resumen.appendChild(p);
-  });
- }
+    try{
+        localStorage.setItem("perfil_retenido", JSON.stringify(perfil));
+    }catch(_){}
 
- contadorRevisiones=0;
- actualizarAlertaYVozRevision();
- irAPaso("paso-triple-revision");
+    const resumen = $("resumen-visual-datos");
+    if(resumen){
+        resumen.innerHTML = "";
+        [
+            ["Tu Nombre", nombre],
+            ["Tu Fecha de Nacimiento", `${fecha} (${edad} años)`],
+            ["Tu Dirección en USA", direccion],
+            ["Tu Teléfono", tel || "No indicado"],
+            ["Tu Estado Seleccionado", edo]
+        ].forEach(x => {
+            const p = document.createElement("p"), b = document.createElement("strong");
+            b.textContent = x[0] + ": ";
+            p.append(b, document.createTextNode(x[1]));
+            resumen.appendChild(p);
+        });
+    }
+
+    contadorRevisiones = 0;
+    actualizarAlertaYVozRevision();
+    irAPaso("paso-triple-revision");
 }
 
 function actualizarAlertaYVozRevision(){
