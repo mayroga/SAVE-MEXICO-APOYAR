@@ -97,11 +97,15 @@ def crear_checkout_stripe(plan: str):
     except Exception as e:
         raise HTTPException(400, f"Error al inicializar pasarela: {e}")
 
+# =========================================================================
+# ARCHIVO app.py PARA ENTRAR EN RENDER:
+# =========================================================================
+
 @app.post("/api/login-developer")
 def login_developer_bypass(x: LoginDev):
     # Validamos que tus claves de Render coincidan exactamente
     if x.username == ADMIN_USER and x.password == ADMIN_PASS:
-        # Generamos una llave de entrada limpia y segura sin usar urandom corrupto
+        # Generamos una llave de entrada limpia y segura
         token_dev = f"dev_token_autorizado_{x.username}"
         
         # Registramos tu sesión en el Cerebro del servidor con cuotas infinitas gratis
@@ -115,13 +119,16 @@ def login_developer_bypass(x: LoginDev):
         from fastapi.responses import JSONResponse
         response = JSONResponse(content={"ok": True, "token": token_dev})
         
-        # Inyectamos la cookie de forma limpia y transparente
+        # BLINDAJE DE COOKIE PARA PRODUCCIÓN EN RENDER
         response.set_cookie(
             key="token", 
             value=token_dev, 
-            max_age=86400, # Válida por 24 horas continuas
-            path="/",
-            samesite="lax"
+            max_age=86400,            # Válida por 24 horas continuas
+            path="/",                 # Alcance total para la ruta de catálogos
+            domain=None,              # Permite que Render asigne el subdominio nativo
+            secure=True,              # OBLIGATORIO: Fuerza el canal seguro HTTPS de Render
+            httponly=False,           # OBLIGATORIO: Permite que javascript (app.js) lea la persistencia
+            samesite="lax"            # Protección estándar de navegación cruzada
         )
         return response
         
