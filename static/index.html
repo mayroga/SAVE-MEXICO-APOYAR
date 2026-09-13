@@ -142,11 +142,13 @@
         <button type="button" class="btn btn-secondary btn-sm mt-1">🎙️ Dictar Nombre</button>
     </div>
 
-    <div class="form-group">
-        <label>Fecha de Nacimiento:</label>
-        <input type="date" class="form-control">
-        <button type="button" class="btn btn-secondary btn-sm mt-1">🎙️ Dictar Fecha</button>
-    </div>
+<!-- REEMPLAZA EL BLOQUE DE FECHA EN TU INDEX.HTML CON ESTA CONFIGURACIÓN LIMPIA -->
+<div class="form-group">
+  <label>Fecha de Nacimiento:</label>
+  <!-- Se fuerza type="text" e inputmode="text" para evitar que el celular meta el calendario mm/dd/yyyy que rompe la app -->
+  <input type="text" id="input-fecha" placeholder="Ej. 15 de Mayo de 1985 o 12/12/2000" inputmode="text" autocomplete="off">
+  <button type="button" id="btn-voz-fecha" class="btn-voz" onclick="activarMicrofono('input-fecha')">🎙️ Dictar Fecha</button>
+</div>
 
     <div class="form-group">
         <label>¿Qué edad tienes? (Se calcula automático al escribir la fecha):</label>
